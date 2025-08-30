@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import BottomBar from "@/components/BottomBar";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +29,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <div className="bg-orange-400 py-4 p-4 font-serif font-bold flex justify-between mb-4">
+        <nav className="text-xl">Thaihealth</nav>
+        <div className="bg-amber-50 flex gap-4 px-2 rounded-full py-2">
+          <Image src="/topbar/coin.png" width={30} height={24} alt="coin"/>
+          <div className="text-lg">100</div>
+        </div>
+        </div>
         {children}
+        <BottomBar/>
       </body>
     </html>
   );
