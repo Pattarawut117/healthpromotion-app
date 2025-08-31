@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import liff from "@line/liff";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
   useEffect(() => {
@@ -17,7 +16,7 @@ export default function Home() {
         const profile = await liff.getProfile();
         console.log(profile);
         
-        const userId = profile.userId;
+        // const userId = profile.userId;
 
         
       } catch (err) {

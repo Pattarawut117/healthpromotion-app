@@ -5,6 +5,17 @@ import { Avatar, Form, Input, DatePicker, Select, message, Upload, Button } from
 import { UserOutlined, InboxOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 
+type RegisterFormValues = {
+  firstname: string;
+  surname: string;
+  phone: string;
+  birthdate: string;
+  gender: string;
+  height: number;
+  weight: number;
+  activity: string;
+};
+
 export default function RegisterPage() {
   const { Dragger } = Upload;
 
@@ -22,9 +33,8 @@ export default function RegisterPage() {
     },
   };
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: RegisterFormValues) => {
     console.log("Form Submitted: ", values);
-    message.success("บันทึกข้อมูลสำเร็จ!");
   };
 
   return (
