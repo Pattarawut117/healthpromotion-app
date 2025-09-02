@@ -11,7 +11,7 @@ export default function Home() {
 
         if (!liff.isLoggedIn()) {
           liff.login();
-          return;
+          return false;
         }
         const profile = await liff.getProfile();
         console.log(profile);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import BottomBar from "@/components/BottomBar";
+import ConditionalBottomBar from "@/components/ConditionalBottomBar";
 import Image from "next/image";
 
 const geistSans = Geist({
@@ -37,7 +37,7 @@ export default function RootLayout({
         </div>
         </div>
         {children}
-        <BottomBar/>
+        <ConditionalBottomBar/>
       </body>
     </html>
   );
