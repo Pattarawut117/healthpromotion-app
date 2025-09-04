@@ -32,7 +32,7 @@ export default function RootLayout({
         {/* จัด layout ให้อยู่กลางจอ */}
         <div className="flex justify-center items-center min-h-screen">
           {/* กรอบมือถือ */}
-          <div className="relative bg-white w-full max-w-sm min-h-screen shadow-lg border rounded-lg overflow-hidden">
+          <div className="relative bg-gray-100 w-full max-w-sm min-h-screen shadow-lg overflow-hidden">
             {/* Topbar */}
             <div className="bg-orange-400 py-4 px-4 font-serif font-bold flex justify-between items-center">
               <nav className="text-xl">Thaihealth</nav>

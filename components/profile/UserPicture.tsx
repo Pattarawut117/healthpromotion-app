@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import liff from "@line/liff";
-import Image from "next/image"; // ✅ Import the Image component
+import Image from "next/image";
 
 export default function UserPicture() {
   const [pictureUrl, setPictureUrl] = useState<string>();
