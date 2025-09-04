@@ -1,32 +1,25 @@
-"use client"
+"use client";
 
 import React from "react";
 import {
-  Avatar,
   Form,
   Input,
   DatePicker,
   Select,
   message,
   Upload,
-  Button,
 } from "antd";
-import { UserOutlined, InboxOutlined } from "@ant-design/icons";
+import { InboxOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 import UserPicture from "./profile/UserPicture";
+import dayjs from "dayjs";
 
-type RegisterFormValues = {
-  firstname: string;
-  surname: string;
-  phone: string;
-  birthdate: string;
-  gender: string;
-  height: number;
-  weight: number;
-  activity: string;
+type Props = {
+  formData: any;
+  onChange: (field: string, value: any) => void;
 };
 
-export default function RegisterForm() {
+export default function RegisterForm({ formData, onChange }: Props) {
   const { Dragger } = Upload;
 
   const props: UploadProps = {
@@ -37,63 +30,65 @@ export default function RegisterForm() {
       const { status } = info.file;
       if (status === "done") {
         message.success(`${info.file.name} อัปโหลดสำเร็จแล้ว`);
+        // ✅ เก็บเฉพาะ URL ของไฟล์ (string)
+        onChange("before_pic", info.file.response?.url || "");
       } else if (status === "error") {
         message.error(`${info.file.name} อัปโหลดไม่สำเร็จ`);
       }
     },
   };
 
-  const onFinish = (values: RegisterFormValues) => {
-    console.log("Form Submitted: ", values);
-  };
   return (
     <div className="px-4 py-1 flex flex-col items-center">
       {/* Avatar */}
-      <UserPicture/>
+      <UserPicture />
 
       {/* Form */}
-      <Form
-        layout="vertical"
-        onFinish={onFinish}
-        className="w-full max-w-md space-y-2"
-      >
+      <Form layout="vertical" className="w-full max-w-md space-y-2">
         {/* ข้อมูลทั่วไป */}
         <div className="p-4 border rounded-2xl shadow-sm bg-white">
           <legend className="font-semibold mb-2">ข้อมูลทั่วไป</legend>
           <div className="grid grid-cols-2 gap-2">
-            <Form.Item
-              name="firstname"
-              rules={[{ required: true, message: "กรอกชื่อจริง" }]}
-            >
-              <Input placeholder="ชื่อจริง" />
+            <Form.Item required>
+              <Input
+                placeholder="ชื่อจริง"
+                value={formData.sname}
+                onChange={(e) => onChange("sname", e.target.value || "")}
+              />
             </Form.Item>
-            <Form.Item
-              name="surname"
-              rules={[{ required: true, message: "กรอกนามสกุล" }]}
-            >
-              <Input placeholder="นามสกุล" />
+            <Form.Item required>
+              <Input
+                placeholder="นามสกุล"
+                value={formData.lname}
+                onChange={(e) => onChange("lname", e.target.value || "")}
+              />
             </Form.Item>
           </div>
 
-          <Form.Item
-            name="phone"
-            rules={[{ required: true, message: "กรอกเบอร์โทรศัพท์" }]}
-          >
-            <Input placeholder="เบอร์โทรศัพท์" />
+          <Form.Item required>
+            <Input
+              placeholder="เบอร์โทรศัพท์"
+              value={formData.tel}
+              onChange={(e) => onChange("tel", e.target.value || "")}
+            />
           </Form.Item>
 
-          <Form.Item
-            name="birthdate"
-            rules={[{ required: true, message: "เลือกวันเกิด" }]}
-          >
-            <DatePicker placeholder="วันเกิด" className="w-full" />
+          <Form.Item required>
+            <DatePicker
+              placeholder="วันเกิด"
+              className="w-full"
+              value={formData.dob ? dayjs(formData.dob) : null}
+              // ✅ เก็บค่าเป็น string YYYY-MM-DD
+              onChange={(_, dateString) => onChange("dob", dateString || null)}
+            />
           </Form.Item>
 
-          <Form.Item
-            name="gender"
-            rules={[{ required: true, message: "เลือกเพศ" }]}
-          >
-            <Select placeholder="เพศ">
+          <Form.Item required>
+            <Select
+              placeholder="เพศ"
+              value={formData.gender}
+              onChange={(val) => onChange("gender", val || "")}
+            >
               <Select.Option value="ชาย">ชาย</Select.Option>
               <Select.Option value="หญิง">หญิง</Select.Option>
               <Select.Option value="อื่นๆ">อื่นๆ</Select.Option>
@@ -105,30 +100,49 @@ export default function RegisterForm() {
         <div className="p-4 border rounded-2xl shadow-sm bg-white">
           <legend className="font-semibold ">ข้อมูลสุขภาพ</legend>
           <div className="grid grid-cols-2 gap-2">
-            <Form.Item
-              name="height"
-              rules={[{ required: true, message: "กรอกส่วนสูง" }]}
-            >
-              <Input type="number" placeholder="ส่วนสูง (ซม.)" />
+            <Form.Item required>
+              <Input
+                type="number"
+                placeholder="ส่วนสูง (ซม.)"
+                value={formData.height}
+                onChange={(e) =>
+                  onChange("height", e.target.value ? Number(e.target.value) : 0)
+                }
+              />
             </Form.Item>
-            <Form.Item
-              name="weight"
-              rules={[{ required: true, message: "กรอกน้ำหนัก" }]}
-            >
-              <Input type="number" placeholder="น้ำหนัก (กก.)" />
+            <Form.Item required>
+              <Input
+                type="number"
+                placeholder="น้ำหนัก (กก.)"
+                value={formData.weight}
+                onChange={(e) =>
+                  onChange("weight", e.target.value ? Number(e.target.value) : 0)
+                }
+              />
             </Form.Item>
           </div>
 
-          <Form.Item
-            name="activity"
-            rules={[{ required: true, message: "เลือกระดับกิจกรรม" }]}
-          >
-            <Select placeholder="ระดับกิจกรรมทางกาย">
-              <Select.Option value="นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย">นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย</Select.Option>
-              <Select.Option value="ออกกำลังกาย 1-2 ครั้ง/สัปดาห์">ออกกำลังกาย 1-2 ครั้ง/สัปดาห์</Select.Option>
-              <Select.Option value="ออกกำลังกาย 3-5 ครั้ง/สัปดาห์">ออกกำลังกาย 3-5 ครั้ง/สัปดาห์</Select.Option>
-              <Select.Option value="ออกกำลังกาย 6-7 ครั้ง/สัปดาห์">ออกกำลังกาย 6-7 ครั้ง/สัปดาห์</Select.Option>
-              <Select.Option value="เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป">เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป</Select.Option>
+          <Form.Item required>
+            <Select
+              placeholder="ระดับกิจกรรมทางกาย"
+              value={formData.level_activity}
+              onChange={(val) => onChange("level_activity", val || "")}
+            >
+              <Select.Option value="นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย">
+                นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย
+              </Select.Option>
+              <Select.Option value="ออกกำลังกาย 1-2 ครั้ง/สัปดาห์">
+                ออกกำลังกาย 1-2 ครั้ง/สัปดาห์
+              </Select.Option>
+              <Select.Option value="ออกกำลังกาย 3-5 ครั้ง/สัปดาห์">
+                ออกกำลังกาย 3-5 ครั้ง/สัปดาห์
+              </Select.Option>
+              <Select.Option value="ออกกำลังกาย 6-7 ครั้ง/สัปดาห์">
+                ออกกำลังกาย 6-7 ครั้ง/สัปดาห์
+              </Select.Option>
+              <Select.Option value="เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป">
+                เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป
+              </Select.Option>
             </Select>
           </Form.Item>
         </div>

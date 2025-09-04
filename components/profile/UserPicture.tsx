@@ -28,7 +28,7 @@ export default function UserPicture() {
   }, []);
 
   return (
-    <div className="flex mb-2">
+    <div className="flex flex-col justify-center items-center space-y-2">
       {pictureUrl ? (
         <>
           <img
@@ -40,6 +40,7 @@ export default function UserPicture() {
       ) : (
         <p className="text-gray-500">กำลังโหลดข้อมูลผู้ใช้...</p>
       )}
+      <p className="text-lg font-bold">{displayName}</p>
     </div>
   );
 }

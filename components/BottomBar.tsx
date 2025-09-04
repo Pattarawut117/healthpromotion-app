@@ -22,7 +22,7 @@ export default function BottomBar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-md border-t border-gray-200 flex justify-around py-[16] z-50 px-8">
+    <div className="absolute bottom-0 w-full left-0 right-0 bg-white shadow-md border-t border-gray-200 flex justify-around py-[16] z-50 px-8">
       {menuItems.map((item) => (
         <button
           key={item.name}
