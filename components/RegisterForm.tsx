@@ -1,22 +1,17 @@
 "use client";
 
 import React from "react";
-import {
-  Form,
-  Input,
-  DatePicker,
-  Select,
-  message,
-  Upload,
-} from "antd";
+import { Form, Input, DatePicker, Select, message, Upload } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import type { UploadProps } from "antd";
 import UserPicture from "./profile/UserPicture";
 import dayjs from "dayjs";
+import { RegisterFormData } from "@/app/user/register/page";
 
+// ✅ แก้ไข Props ให้ใช้ generic type แทน 'any'
 type Props = {
-  formData: any;
-  onChange: (field: string, value: any) => void;
+  formData: RegisterFormData;
+  onChange: <T>(field: keyof RegisterFormData, value: T) => void;
 };
 
 export default function RegisterForm({ formData, onChange }: Props) {
@@ -78,7 +73,6 @@ export default function RegisterForm({ formData, onChange }: Props) {
               placeholder="วันเกิด"
               className="w-full"
               value={formData.dob ? dayjs(formData.dob) : null}
-              // ✅ เก็บค่าเป็น string YYYY-MM-DD
               onChange={(_, dateString) => onChange("dob", dateString || null)}
             />
           </Form.Item>

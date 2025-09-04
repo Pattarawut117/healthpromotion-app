@@ -5,14 +5,14 @@ import { Button, Steps, message } from "antd";
 import RegisterForm from "@/components/RegisterForm";
 import TargetForm from "@/components/TargetForm";
 import liff from "@line/liff";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 export type RegisterFormData = {
   user_id: string;
   sname: string;
   lname: string;
   tel: string;
-  dob: Dayjs | string;
+  dob: Dayjs | string | null;
   gender: string;
   height: number;
   weight: number;
@@ -21,11 +21,6 @@ export type RegisterFormData = {
   exercise_target: number;
   water_target: number;
 }
-
-type formDataProps = {
-  formData: RegisterFormData;
-  onChange?: (field: keyof RegisterFormData, value: any) => void; // ฟังก์ชันอัพเดตค่า
-};
 
 export default function RegisterPage() {
   const [current, setCurrent] = useState(0);
@@ -79,7 +74,7 @@ export default function RegisterPage() {
   });
 
   // ฟังก์ชันอัพเดตค่า (child component เรียกใช้)
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: keyof RegisterFormData, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

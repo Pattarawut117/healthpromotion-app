@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import liff from "@line/liff";
+import Image from "next/image"; // ✅ Import the Image component
 
 export default function UserPicture() {
   const [pictureUrl, setPictureUrl] = useState<string>();
@@ -31,9 +32,11 @@ export default function UserPicture() {
     <div className="flex flex-col justify-center items-center space-y-2">
       {pictureUrl ? (
         <>
-          <img
+          <Image
             src={pictureUrl}
             alt="LINE Profile"
+            width={128} // ✅ Use the actual width
+            height={128} // ✅ Use the actual height
             className="w-32 h-32 rounded-full shadow-lg border-4 border-white"
           />
         </>
