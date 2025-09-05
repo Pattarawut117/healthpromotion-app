@@ -2,18 +2,7 @@
 
 import React, { useState } from "react";
 import { Segmented } from "antd";
-import type { TabsProps } from "antd";
 import CampaignCard from "@/components/campaign/CampaignCard";
-
-const onChange = (key: string) => {
-  console.log(key);
-};
-
-const items: TabsProps["items"] = [
-  { key: "1", label: "Tab 1", children: "Content of Tab Pane 1" },
-  { key: "2", label: "Tab 2", children: "Content of Tab Pane 2" },
-  { key: "3", label: "Tab 3", children: "Content of Tab Pane 3" },
-];
 
 type Align = "ปัจจุบัน" | "กำลังมาถึง" | "ผ่านไปแล้ว";
 
@@ -35,7 +24,7 @@ export default function CampaignPage() {
         <Segmented
           value={alignValue}
           style={{ marginBottom: 8 }}
-          onChange={setAlignValue}
+          onChange={(value) => setAlignValue(value as Align)}
           options={["ปัจจุบัน", "กำลังมาถึง", "ผ่านไปแล้ว"]}
         />
       </div>

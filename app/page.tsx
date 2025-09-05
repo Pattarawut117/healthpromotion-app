@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import liff from "@line/liff";
 import Carousel from "@/components/home/Carousel";
-import LinearGauge from "@/components/home/LinearGauge";
 import { FloatButton } from "antd";
 import { CommentOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 

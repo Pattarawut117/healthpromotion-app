@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "antd";
 import React from "react";
 import Image from "next/image";
@@ -19,27 +21,28 @@ const campaignMenu = [
 export default function CampaignCard() {
   const { Meta } = Card;
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       {campaignMenu.map((item) => (
-        <div className="grid grid-cols-1">
-          <Card
-            hoverable
-            cover={
-              <Image
-                alt="Campaign Picture"
-                width={48}
-                height={48}
-                src={item.pictureUrl}
-              />
-            }
-          >
-            <Meta title={item.descMain} description={item.unit} />
-            <div className="flex border bg-orange-400 px-2 py-1 mt-2">
-              <p>เข้าร่วม</p>
-              <RightOutlined/>
-            </div>
-          </Card>
-        </div>
+        <Card
+          key={item.unit}
+          hoverable
+          cover={
+            <Image
+              alt="Campaign Picture"
+              width={48}
+              height={48}
+              src={item.pictureUrl}
+              className="p-4"
+            />
+          }
+          className="shadow-md"
+        >
+          <Meta title={item.descMain} description={item.unit} />
+          <div className="flex items-center justify-center gap-2 border bg-orange-400 text-white rounded-full px-4 py-1 mt-4 cursor-pointer">
+            <p className="text-sm">เข้าร่วม</p>
+            <RightOutlined />
+          </div>
+        </Card>
       ))}
     </div>
   );
