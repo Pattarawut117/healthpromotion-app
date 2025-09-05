@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalBottomBar from "@/components/ConditionalBottomBar";
 import Image from "next/image";
+import { LiffProvider } from "@/contexts/LiffContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,7 +44,7 @@ export default function RootLayout({
             </div>
 
             {/* เนื้อหาหลัก */}
-            <main className="pb-24">{children}</main>
+            <main className="pb-24"><LiffProvider>{children}</LiffProvider></main>
 
             {/* Bottombar */}
             <div className="absolute bottom-0 w-full">

@@ -1,31 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import liff from "@line/liff";
+import { useLiff } from "@/contexts/LiffContext";
 import Carousel from "@/components/home/Carousel";
 import { FloatButton } from "antd";
 import { CommentOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 
 export default function Home() {
-  useEffect(() => {
-    const initLiff = async () => {
-      try {
-        await liff.init({ liffId: "2007987577-9DzlZY4K" });
+  const {profile, isLoggedIn} = useLiff();
 
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return false;
-        }
-        const profile = await liff.getProfile();
-        console.log(profile);
-
-        // const userId = profile.userId;
-      } catch (err) {
-        console.error("LIFF init error", err);
-      }
-    };
-    initLiff();
-  }, []);
+  if(!isLoggedIn) return <p>กำลังโหลด...</p>
 
   return (
     <div className="flex flex-col gap-4 justify-center mt-2 p-2">
