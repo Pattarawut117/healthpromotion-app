@@ -37,7 +37,7 @@ const columns = [
 export default function RankTable() {
   return (
     <div className='p-2'>
-      <Table dataSource={dataSource} columns={columns} />;
+      <Table dataSource={dataSource} columns={columns} />
     </div>
   )
 }

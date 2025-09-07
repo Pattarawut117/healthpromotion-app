@@ -149,11 +149,6 @@ export default function RegisterPage() {
 
   return (
     <div className="p-4 flex flex-col justify-center">
-      {/* Steps header */}
-      <Steps
-        current={current}
-        items={steps.map((s) => ({ key: s.title, title: s.title }))}
-      />
 
       {/* Content */}
       <div className="my-4">{steps[current].content}</div>
