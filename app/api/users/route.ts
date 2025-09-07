@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { RowDataPacket } from "mysql2"; // ✅ Import RowDataPacket
 
 // กำหนด TypeScript Interface สำหรับข้อมูลที่คาดว่าจะได้รับจาก req.json()
 interface UserInfo {
@@ -25,8 +26,8 @@ export async function GET(req: Request) {
   }
 
   try {
-    // ดึงเฉพาะ user ที่ตรงกับ user_id
-    const [rows]: any = await db.query(
+    // ใช้ RowDataPacket[] เพื่อกำหนดประเภทข้อมูลที่ได้จาก db.query
+    const [rows] = await db.query<RowDataPacket[]>(
       "SELECT sname, lname FROM user_info WHERE user_id = ? LIMIT 1",
       [userId]
     );
@@ -35,7 +36,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(rows[0]); // { sname, lname }
+    // Since `rows` is now typed, you can safely return the first element.
+    return NextResponse.json(rows[0]);
   } catch (error: unknown) {
     console.error("DB Error:", error);
 

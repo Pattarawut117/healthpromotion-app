@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 const users = [
   {
     value: 'user1',
-    label: <img src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" alt="user1" className="w-8 h-8 rounded-full" />,
+    label: <Image src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" alt="user1" className="w-8 h-8 rounded-full" width={32} height={32} />,
   },
   {
     value: 'user2',

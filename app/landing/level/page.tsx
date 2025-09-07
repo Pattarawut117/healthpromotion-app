@@ -6,11 +6,11 @@ import { useLiff } from '@/contexts/LiffContext';
 type TabPosition = 'history' | 'rule';
 
 export default function HistoryCoin() {
-  const { profile, isLoggedIn } = useLiff();
-
-  if (!isLoggedIn) return <p>Loading...</p>;
+  const { isLoggedIn } = useLiff();
 
   const [detail, setDetail] = useState<TabPosition>('history');
+
+  if (!isLoggedIn) return <p>Loading...</p>;
 
   return (
     <div className="px-4 py-6 flex flex-col ">

@@ -198,6 +198,7 @@ export default function RegisterPage() {
         onClose={() => setNotification({ message: '', type: '' })}
       />
       
+      <CustomSteps steps={steps} current={current} />
 
       <div className="my-4">{steps[current].content}</div>
 

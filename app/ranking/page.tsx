@@ -2,15 +2,18 @@
 
 import React, { useState } from 'react';
 import RankTable from '@/components/ranking/RankTable';
+import Image from 'next/image';
 
 const users = [
   {
     value: 'user1',
     label: (
-      <img
+      <Image
         src="https://api.dicebear.com/7.x/miniavs/svg?seed=8"
         alt="user1"
         className="w-8 h-8 rounded-full"
+        width={32}
+        height={32}
       />
     ),
   },

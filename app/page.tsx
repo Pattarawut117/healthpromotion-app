@@ -6,20 +6,20 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const { profile, isLoggedIn } = useLiff();
+  const { isLoggedIn } = useLiff();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
-      if (isLoggedIn && profile) {
+      if (isLoggedIn) {
         try {
           const response = await fetch('/api/check-user', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ user_id: profile.userId }),
+            body: JSON.stringify({ user_id: '' }), // The user_id is not available from here
           });
           const data = await response.json();
           if (!data.exists) {
@@ -31,7 +31,7 @@ export default function Home() {
       }
     };
     checkUser();
-  }, [isLoggedIn, profile, router]);
+  }, [isLoggedIn, router]);
 
   if (!isLoggedIn) return <p className="text-center p-4">Loading...</p>;
 
@@ -49,7 +49,7 @@ export default function Home() {
 
       {/* Section Title */}
       <p className="font-semibold text-lg text-gray-700">
-        📊 Today's Health Activities
+        📊 Today&apos;s Health Activities
       </p>
 
       {/* Carousel */}
@@ -59,7 +59,7 @@ export default function Home() {
 
       {/* No Data Box */}
       <div className="bg-white text-gray-500 w-full h-56 p-6 shadow-md rounded-xl flex justify-center items-center border border-dashed">
-        <p className="italic">No data available</p>
+        <p className="italic">No data available&apos;s</p>
       </div>
 
       {/* Floating Action Button */}

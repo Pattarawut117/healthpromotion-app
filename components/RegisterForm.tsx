@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import UserPicture from './profile/UserPicture';
 import { RegisterFormData } from '@/app/user/register/page';
+import Image from 'next/image'; // ✅ Import Image component
 
 // Props type
 type Props = {
@@ -64,9 +65,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onChange}) => {
       />
       <label htmlFor="file-upload" className="cursor-pointer">
         {preview ? (
-          <img
+          <Image // ✅ Use Next.js Image component
             src={preview}
             alt="Preview"
+            width={96} // ✅ Add a fixed width
+            height={96} // ✅ Add a fixed height
             className="mx-auto h-24 w-24 object-cover rounded-lg"
           />
         ) : (
