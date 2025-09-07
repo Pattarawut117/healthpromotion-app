@@ -16,17 +16,36 @@ interface UserInfo {
   water_target?: number;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("user_id");
+
+  if (!userId) {
+    return NextResponse.json({ error: "user_id is required" }, { status: 400 });
+  }
+
   try {
-    const [rows] = await db.query("SELECT * FROM user_info");
-    return NextResponse.json(rows);
+    // ดึงเฉพาะ user ที่ตรงกับ user_id
+    const [rows]: any = await db.query(
+      "SELECT sname, lname FROM user_info WHERE user_id = ? LIMIT 1",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(rows[0]); // { sname, lname }
   } catch (error: unknown) {
     console.error("DB Error:", error);
-    // ตรวจสอบว่า error เป็น instance ของ Error ก่อนเข้าถึง message
+
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
+    return NextResponse.json(
+      { error: "An unknown error occurred" },
+      { status: 500 }
+    );
   }
 }
 

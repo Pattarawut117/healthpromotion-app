@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import liff from "@line/liff";
-import { useRouter, usePathname } from "next/navigation";
 
 type Profile = {
   userId: string;
@@ -28,8 +27,6 @@ export const useLiff = () => useContext(LiffContext);
 export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const init = async () => {
@@ -42,30 +39,16 @@ export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         setIsLoggedIn(true);
-
         const prof = await liff.getProfile();
         setProfile(prof);
-
-        // ✅ ตรวจสอบ DB
-        const res = await fetch("/api/check-user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: prof.userId }),
-        });
-
-        const data = await res.json();
-
-        if (!data.exists && pathname !== "/user/register") {
-          // ❌ ถ้า user_id ไม่มีใน DB และไม่ได้อยู่หน้า register
-          router.push("/user/register");
-        }
+        console.log(prof);
       } catch (err) {
         console.error("LIFF init error", err);
       }
     };
 
     init();
-  }, [router, pathname]);
+  }, []);
 
   return (
     <LiffContext.Provider value={{ isLoggedIn, profile, liffObject: liff }}>

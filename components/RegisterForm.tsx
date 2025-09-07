@@ -1,161 +1,282 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Form, Input, DatePicker, Select, message, Upload } from "antd";
-import { InboxOutlined } from "@ant-design/icons";
-import type { UploadProps } from "antd";
-import UserPicture from "./profile/UserPicture";
-import dayjs from "dayjs";
-import { RegisterFormData } from "@/app/user/register/page";
+import React, { useState } from 'react';
+import UserPicture from './profile/UserPicture';
+import { RegisterFormData } from '@/app/user/register/page';
 
-// ✅ แก้ไข Props ให้ใช้ generic type แทน 'any'
+// Props type
 type Props = {
   formData: RegisterFormData;
   onChange: <T>(field: keyof RegisterFormData, value: T) => void;
 };
 
-export default function RegisterForm({ formData, onChange }: Props) {
-  const { Dragger } = Upload;
+type FileUploaderProps = {
+  onChange: <T>(field: keyof RegisterFormData, value: T) => void;
+}; 
 
-  const props: UploadProps = {
-    name: "file",
-    multiple: false,
-    action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
-    onChange(info) {
-      const { status } = info.file;
-      if (status === "done") {
-        message.success(`${info.file.name} อัปโหลดสำเร็จแล้ว`);
-        // ✅ เก็บเฉพาะ URL ของไฟล์ (string)
-        onChange("before_pic", info.file.response?.url || "");
-      } else if (status === "error") {
-        message.error(`${info.file.name} อัปโหลดไม่สำเร็จ`);
+// Custom File Uploader Component
+const FileUploader: React.FC<FileUploaderProps> = ({ onChange}) => {
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Mock upload
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch(
+          'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+        const result = await response.json();
+        if (response.ok) {
+          console.log('Upload success:', result.url);
+          onChange('before_pic', result.url || '');
+        } else {
+          console.error('Upload failed');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
       }
-    },
+    }
   };
 
   return (
+    <div className="border-2 border-dashed border-input rounded-lg p-8 text-center">
+      <input
+        type="file"
+        id="file-upload"
+        className="hidden"
+        onChange={handleFileChange}
+        accept=".png,.jpg,.jpeg"
+      />
+      <label htmlFor="file-upload" className="cursor-pointer">
+        {preview ? (
+          <img
+            src={preview}
+            alt="Preview"
+            className="mx-auto h-24 w-24 object-cover rounded-lg"
+          />
+        ) : (
+          <div className="flex flex-col items-center">
+            <svg
+              className="w-12 h-12 text-muted-foreground"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4H7z"
+              ></path>
+            </svg>
+            <p className="mt-2 text-sm text-muted-foreground">+ Upload Image</p>
+            <p className="text-xs text-muted-foreground">
+              Supports .png, .jpg, .jpeg
+            </p>
+          </div>
+        )}
+      </label>
+    </div>
+  );
+};
+
+export default function RegisterForm({ formData, onChange }: Props) {
+  const inputClasses =
+    'w-full p-2 border border-input rounded-md focus:ring-primary focus:border-primary bg-background';
+
+  return (
     <div className="px-4 py-1 flex flex-col items-center">
-      {/* Avatar */}
       <UserPicture />
 
-      {/* Form */}
-      <Form layout="vertical" className="w-full max-w-md space-y-2">
-        {/* ข้อมูลทั่วไป */}
-        <div className="p-4 border rounded-2xl shadow-sm bg-white">
-          <legend className="font-semibold mb-2">ข้อมูลทั่วไป</legend>
-          <div className="grid grid-cols-2 gap-2">
-            <Form.Item required>
-              <Input
-                placeholder="ชื่อจริง"
+      <form className="w-full max-w-md space-y-4">
+        <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
+          <legend className="font-semibold mb-4">General Information</legend>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="sname"
+                className="block text-sm font-medium text-muted-foreground mb-1"
+              >
+                First Name
+              </label>
+              <input
+                type="text"
+                id="sname"
+                placeholder="First Name"
                 value={formData.sname}
-                onChange={(e) => onChange("sname", e.target.value || "")}
+                onChange={(e) => onChange('sname', e.target.value || '')}
+                className={inputClasses}
+                required
               />
-            </Form.Item>
-            <Form.Item required>
-              <Input
-                placeholder="นามสกุล"
+            </div>
+            <div>
+              <label
+                htmlFor="lname"
+                className="block text-sm font-medium text-muted-foreground mb-1"
+              >
+                Last Name
+              </label>
+              <input
+                type="text"
+                id="lname"
+                placeholder="Last Name"
                 value={formData.lname}
-                onChange={(e) => onChange("lname", e.target.value || "")}
+                onChange={(e) => onChange('lname', e.target.value || '')}
+                className={inputClasses}
+                required
               />
-            </Form.Item>
+            </div>
           </div>
 
-          <Form.Item required>
-            <Input
-              placeholder="เบอร์โทรศัพท์"
-              value={formData.tel}
-              onChange={(e) => onChange("tel", e.target.value || "")}
-            />
-          </Form.Item>
-
-          <Form.Item required>
-            <DatePicker
-              placeholder="วันเกิด"
-              className="w-full"
-              value={formData.dob ? dayjs(formData.dob) : null}
-              onChange={(_, dateString) => onChange("dob", dateString || null)}
-            />
-          </Form.Item>
-
-          <Form.Item required>
-            <Select
-              placeholder="เพศ"
-              value={formData.gender}
-              onChange={(val) => onChange("gender", val || "")}
+          <div className="mt-4">
+            <label
+              htmlFor="tel"
+              className="block text-sm font-medium text-muted-foreground mb-1"
             >
-              <Select.Option value="ชาย">ชาย</Select.Option>
-              <Select.Option value="หญิง">หญิง</Select.Option>
-              <Select.Option value="อื่นๆ">อื่นๆ</Select.Option>
-            </Select>
-          </Form.Item>
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="tel"
+              placeholder="Phone Number"
+              value={formData.tel}
+              onChange={(e) => onChange('tel', e.target.value || '')}
+              className={inputClasses}
+              required
+            />
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor="dob"
+              className="block text-sm font-medium text-muted-foreground mb-1"
+            >
+              Date of Birth
+            </label>
+            <input
+              type="date"
+              id="dob"
+              className={inputClasses}
+              value={formData.dob ? formData.dob.toString() : ''}
+              onChange={(e) => onChange('dob', e.target.value || null)}
+              required
+            />
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor="gender"
+              className="block text-sm font-medium text-muted-foreground mb-1"
+            >
+              Gender
+            </label>
+            <select
+              id="gender"
+              value={formData.gender}
+              onChange={(e) => onChange('gender', e.target.value || '')}
+              className={inputClasses}
+              required
+            >
+              <option value="" disabled>
+                Select Gender
+              </option>
+              <option value="ชาย">ชาย</option>
+              <option value="หญิง">หญิง</option>
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+          </div>
         </div>
 
-        {/* ข้อมูลสุขภาพ */}
-        <div className="p-4 border rounded-2xl shadow-sm bg-white">
-          <legend className="font-semibold ">ข้อมูลสุขภาพ</legend>
-          <div className="grid grid-cols-2 gap-2">
-            <Form.Item required>
-              <Input
+        <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
+          <legend className="font-semibold mb-4">Health Information</legend>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="height"
+                className="block text-sm font-medium text-muted-foreground mb-1"
+              >
+                Height (cm)
+              </label>
+              <input
                 type="number"
-                placeholder="ส่วนสูง (ซม.)"
+                id="height"
+                placeholder="Height (cm)"
                 value={formData.height}
                 onChange={(e) =>
-                  onChange("height", e.target.value ? Number(e.target.value) : 0)
+                  onChange('height', e.target.value ? Number(e.target.value) : 0)
                 }
+                className={inputClasses}
+                required
               />
-            </Form.Item>
-            <Form.Item required>
-              <Input
+            </div>
+            <div>
+              <label
+                htmlFor="weight"
+                className="block text-sm font-medium text-muted-foreground mb-1"
+              >
+                Weight (kg)
+              </label>
+              <input
                 type="number"
-                placeholder="น้ำหนัก (กก.)"
+                id="weight"
+                placeholder="Weight (kg)"
                 value={formData.weight}
                 onChange={(e) =>
-                  onChange("weight", e.target.value ? Number(e.target.value) : 0)
+                  onChange('weight', e.target.value ? Number(e.target.value) : 0)
                 }
+                className={inputClasses}
+                required
               />
-            </Form.Item>
+            </div>
           </div>
 
-          <Form.Item required>
-            <Select
-              placeholder="ระดับกิจกรรมทางกาย"
-              value={formData.level_activity}
-              onChange={(val) => onChange("level_activity", val || "")}
+          <div className="mt-4">
+            <label
+              htmlFor="level_activity"
+              className="block text-sm font-medium text-muted-foreground mb-1"
             >
-              <Select.Option value="นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย">
-                นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย
-              </Select.Option>
-              <Select.Option value="ออกกำลังกาย 1-2 ครั้ง/สัปดาห์">
-                ออกกำลังกาย 1-2 ครั้ง/สัปดาห์
-              </Select.Option>
-              <Select.Option value="ออกกำลังกาย 3-5 ครั้ง/สัปดาห์">
-                ออกกำลังกาย 3-5 ครั้ง/สัปดาห์
-              </Select.Option>
-              <Select.Option value="ออกกำลังกาย 6-7 ครั้ง/สัปดาห์">
-                ออกกำลังกาย 6-7 ครั้ง/สัปดาห์
-              </Select.Option>
-              <Select.Option value="เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป">
-                เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป
-              </Select.Option>
-            </Select>
-          </Form.Item>
+              Physical Activity Level
+            </label>
+            <select
+              id="level_activity"
+              value={formData.level_activity}
+              onChange={(e) => onChange('level_activity', e.target.value || '')}
+              className={inputClasses}
+              required
+            >
+              <option value="" disabled>
+                Select Activity Level
+              </option>
+              <option value="นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย">นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย</option>
+              <option value="ออกกำลังกาย 1-2 ครั้ง/สัปดาห์">ออกกำลังกาย 1-2 ครั้ง/สัปดาห์</option>
+              <option value="ออกกำลังกาย 3-5 ครั้ง/สัปดาห์">ออกกำลังกาย 3-5 ครั้ง/สัปดาห์</option>
+              <option value="ออกกำลังกาย 6-7 ครั้ง/สัปดาห์">ออกกำลังกาย 6-7 ครั้ง/สัปดาห์</option>
+              <option value="เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป">เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป</option>
+            </select>
+          </div>
         </div>
 
-        {/* อัปโหลดรูป */}
-        <div className="p-4 border rounded-2xl shadow-sm bg-white">
-          <legend className="font-semibold mb-2">รูปภาพ</legend>
-          <Dragger {...props}>
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">+ อัปโหลดรูปภาพ</p>
-            <p className="ant-upload-hint">
-              รองรับเฉพาะไฟล์ .png .jpg .jpeg <br />
-              ขนาดไม่เกิน 10 MB
-            </p>
-          </Dragger>
+        <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
+          <legend className="font-semibold mb-2">Profile Picture</legend>
+          <FileUploader onChange={onChange} />
         </div>
-      </Form>
+      </form>
     </div>
   );
 }

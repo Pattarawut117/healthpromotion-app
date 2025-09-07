@@ -1,48 +1,60 @@
-"use client";
+'use client';
 
-import { Card } from "antd";
-import React from "react";
-import Image from "next/image";
-import { RightOutlined } from "@ant-design/icons";
+import React from 'react';
+import Image from 'next/image';
 
 const campaignMenu = [
   {
-    pictureUrl: "/targetForm/exercise.png",
-    unit: "TUH",
-    descMain: "Fit for Fun",
+    pictureUrl: '/targetForm/exercise.png',
+    unit: 'TUH',
+    descMain: 'Fit for Fun',
   },
   {
-    pictureUrl: "/targetForm/exercise.png",
-    unit: "FTECH",
-    descMain: "Health Eating",
+    pictureUrl: '/targetForm/exercise.png',
+    unit: 'FTECH',
+    descMain: 'Health Eating',
   },
 ];
 
 export default function CampaignCard() {
-  const { Meta } = Card;
   return (
-    <div className="flex flex-col gap-4">
+    <div className="grid grid-cols-2 gap-4">
       {campaignMenu.map((item) => (
-        <Card
+        <div
           key={item.unit}
-          hoverable
-          cover={
+          className="bg-card text-card-foreground rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col"
+        >
+          <div className="p-4 flex-grow">
             <Image
               alt="Campaign Picture"
               width={48}
               height={48}
               src={item.pictureUrl}
-              className="p-4"
+              className="mx-auto"
             />
-          }
-          className="shadow-md"
-        >
-          <Meta title={item.descMain} description={item.unit} />
-          <div className="flex items-center justify-center gap-2 border bg-orange-400 text-white rounded-full px-4 py-1 mt-4 cursor-pointer">
-            <p className="text-sm">เข้าร่วม</p>
-            <RightOutlined />
           </div>
-        </Card>
+          <div className="p-4 text-center">
+            <p className="font-semibold text-lg">{item.descMain}</p>
+            <p className="text-muted-foreground text-sm">{item.unit}</p>
+          </div>
+          <div className="flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-primary/90 transition-colors duration-300">
+            <p className="text-sm">Join</p>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
+          </div>
+        </div>
       ))}
     </div>
   );

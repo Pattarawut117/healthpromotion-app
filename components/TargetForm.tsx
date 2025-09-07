@@ -1,18 +1,23 @@
-"use client";
+'use client';
 
-import React from "react";
-import Image from "next/image";
-import { PlusCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import { RegisterFormData } from "@/app/user/register/page"; // ✅ Import type ที่ถูกต้อง
+import React from 'react';
+import Image from 'next/image';
+import { RegisterFormData } from '@/app/user/register/page';
 
-// ✅ แก้ไข Props ให้ใช้ generic type แทน 'any'
 type Props = {
   formData: RegisterFormData;
   onChange: <T>(field: keyof RegisterFormData, value: T) => void;
 };
 
+const MinusIcon = ({ className, onClick }: { className: string, onClick: () => void }) => (
+  <svg onClick={onClick} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+);
+
+const PlusIcon = ({ className, onClick }: { className: string, onClick: () => void }) => (
+  <svg onClick={onClick} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+);
+
 export default function TargetForm({ formData, onChange }: Props) {
-  // ฟังก์ชันป้องกันไม่ให้ค่าติดลบ
   const decrease = (field: keyof RegisterFormData, value: number) => {
     onChange(field, Math.max(0, value - 5));
   };
@@ -33,14 +38,14 @@ export default function TargetForm({ formData, onChange }: Props) {
             className="mb-2"
           />
           <div className="flex items-center gap-4 text-xl font-bold">
-            <MinusCircleOutlined
-              className="text-red-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => decrease("exercise_target", formData.exercise_target)}
+            <MinusIcon
+              className="w-8 h-8 text-red-500 cursor-pointer hover:scale-110 transition-transform"
+              onClick={() => decrease('exercise_target', formData.exercise_target)}
             />
             <span className="w-12 text-center">{formData.exercise_target}</span>
-            <PlusCircleOutlined
-              className="text-green-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => onChange("exercise_target", formData.exercise_target + 5)}
+            <PlusIcon
+              className="w-8 h-8 text-green-500 cursor-pointer hover:scale-110 transition-transform"
+              onClick={() => onChange('exercise_target', formData.exercise_target + 5)}
             />
           </div>
         </div>
@@ -58,14 +63,14 @@ export default function TargetForm({ formData, onChange }: Props) {
             className="mb-2"
           />
           <div className="flex items-center gap-4 text-xl font-bold">
-            <MinusCircleOutlined
-              className="text-red-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => decrease("water_target", formData.water_target)}
+            <MinusIcon
+              className="w-8 h-8 text-red-500 cursor-pointer hover:scale-110 transition-transform"
+              onClick={() => decrease('water_target', formData.water_target)}
             />
             <span className="w-12 text-center">{formData.water_target}</span>
-            <PlusCircleOutlined
-              className="text-blue-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => onChange("water_target", formData.water_target + 5)}
+            <PlusIcon
+              className="w-8 h-8 text-blue-500 cursor-pointer hover:scale-110 transition-transform"
+              onClick={() => onChange('water_target', formData.water_target + 5)}
             />
           </div>
         </div>

@@ -1,32 +1,41 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Segmented } from "antd";
-import CampaignCard from "@/components/campaign/CampaignCard";
+import React, { useState } from 'react';
+import CampaignCard from '@/components/campaign/CampaignCard';
 
-type Align = "ปัจจุบัน" | "กำลังมาถึง" | "ผ่านไปแล้ว";
+type Align = 'Current' | 'Upcoming' | 'Past';
+
+const options: Align[] = ['Current', 'Upcoming', 'Past'];
 
 export default function CampaignPage() {
-  const [alignValue, setAlignValue] = useState<Align>("ปัจจุบัน");
+  const [alignValue, setAlignValue] = useState<Align>('Current');
 
   return (
-    <div className="flex flex-col p-2 justify-center">
-      <div className="flex justify-between px-2 py-2 items-center">
-        <p className="text-xl font-bold font-sans">แคมเปญ</p>
-        <select className="flex px-2 py-2 rounded bg-white">
-          <option value="ทั้งหมด">ทั้งหมด</option>
-          <option value="องค์กร">องค์กร</option>
-          <option value="บุคคทั่วไป">บุคคทั่วไป</option>
-          <option value="แคมเปญพิเศษ">แคมเปญพิเศษ</option>
+    <div className="flex flex-col p-4 gap-4">
+      <div className="flex justify-between items-center">
+        <p className="text-2xl font-bold">Campaigns</p>
+        <select className="px-2 py-2 rounded-md bg-card text-card-foreground border">
+          <option value="all">All</option>
+          <option value="organization">Organization</option>
+          <option value="general">General</option>
+          <option value="special">Special</option>
         </select>
       </div>
-      <div>
-        <Segmented
-          value={alignValue}
-          style={{ marginBottom: 8 }}
-          onChange={(value) => setAlignValue(value as Align)}
-          options={["ปัจจุบัน", "กำลังมาถึง", "ผ่านไปแล้ว"]}
-        />
+      <div className="w-full mb-4">
+        <div className="flex bg-secondary rounded-lg p-1">
+          {options.map((option) => (
+            <button
+              key={option}
+              onClick={() => setAlignValue(option)}
+              className={`w-full text-center py-2 rounded-lg transition-colors duration-300 ${
+                alignValue === option
+                  ? 'bg-primary text-primary-foreground shadow'
+                  : 'text-muted-foreground'
+              }`}>
+              {option}
+            </button>
+          ))}
+        </div>
       </div>
       <div>
         <CampaignCard />

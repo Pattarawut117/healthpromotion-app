@@ -1,18 +1,80 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Button, Steps, message } from "antd";
-import RegisterForm from "@/components/RegisterForm";
-import TargetForm from "@/components/TargetForm";
-import liff from "@line/liff";
-import { Dayjs } from "dayjs";
+import React, { useState, useEffect } from 'react';
+import RegisterForm from '@/components/RegisterForm';
+import TargetForm from '@/components/TargetForm';
+import { useLiff } from '@/contexts/LiffContext';
+import { useRouter } from 'next/navigation';
+
+// Notification component
+const Notification = ({
+  message,
+  type,
+  onClose,
+}: {
+  message: string;
+  type: 'success' | 'error' | '';
+  onClose: () => void;
+}) => {
+  if (!message || !type) return null;
+
+  const baseClasses = 'p-4 rounded-md text-white';
+  const typeClasses =
+    type === 'success' ? 'bg-green-500' : 'bg-destructive';
+
+  return (
+    <div className={`fixed top-5 right-5 ${baseClasses} ${typeClasses}`}>
+      {message}
+      <button onClick={onClose} className="ml-4 font-bold">
+        X
+      </button>
+    </div>
+  );
+};
+
+// Custom Steps component
+const CustomSteps = ({
+  steps,
+  current,
+}: {
+  steps: { title: string }[];
+  current: number;
+}) => (
+  <div className="flex justify-center items-center mb-8">
+    {steps.map((step, index) => (
+      <React.Fragment key={step.title}>
+        <div className="flex flex-col items-center">
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
+              index <= current ? 'bg-primary' : 'bg-secondary'
+            }`}>
+            {index + 1}
+          </div>
+          <p
+            className={`mt-2 text-sm ${
+              index <= current ? 'text-primary' : 'text-muted-foreground'
+            }`}>
+            {step.title}
+          </p>
+        </div>
+        {index < steps.length - 1 && (
+          <div
+            className={`flex-auto border-t-2 mx-4 ${
+              index < current ? 'border-primary' : 'border-border'
+            }`}
+          />
+        )}
+      </React.Fragment>
+    ))}
+  </div>
+);
 
 export type RegisterFormData = {
   user_id: string;
   sname: string;
   lname: string;
   tel: string;
-  dob: Dayjs | string | null;
+  dob: string | null;
   gender: string;
   height: number;
   weight: number;
@@ -20,60 +82,45 @@ export type RegisterFormData = {
   before_pic: string;
   exercise_target: number;
   water_target: number;
-}
+};
 
 export default function RegisterPage() {
   const [current, setCurrent] = useState(0);
-  const [userId, setUserId] = useState<string>("");
-  const [isLiffInitialized, setIsLiffInitialized] = useState(false);
+  const { profile } = useLiff();
+  const router = useRouter();
+  const [notification, setNotification] = useState({
+    message: '',
+    type: '' as 'success' | 'error' | '',
+  });
 
-  useEffect(() => {
-    const initLiff = async () => {
-      try {
-        await liff.init({ liffId: "2007987577-9DzlZY4K" });
-        setIsLiffInitialized(true);
+  const showNotification = (message: string, type: 'success' | 'error') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification({ message: '', type: '' });
+    }, 3000);
+  };
 
-        if (!liff.isLoggedIn()) {
-          // Check if LIFF is running in a browser environment (not LINE app)
-          // and prevent infinite login loop
-          if (liff.getOS() === "web") {
-            console.warn(
-              "User is not logged in via LIFF on a web browser. Please log in first."
-            );
-            // You might want to redirect to a different page or show a login button
-            return;
-          }
-          liff.login();
-          return;
-        }
-
-        const profile = await liff.getProfile();
-        console.log("LIFF Profile:", profile);
-        setUserId(profile.userId);
-      } catch (err) {
-        console.error("LIFF init error", err);
-      }
-    };
-    initLiff();
-  }, []);
-
-  // state เก็บค่าฟอร์มทั้งหมด
   const [formData, setFormData] = useState<RegisterFormData>({
-    user_id: userId, // This will be replaced by the real userId later
-    sname: "",
-    lname: "",
-    tel: "",
-    dob: "",
-    gender: "",
+    user_id: '',
+    sname: '',
+    lname: '',
+    tel: '',
+    dob: '',
+    gender: '',
     height: 0,
     weight: 0,
-    level_activity: "",
-    before_pic: "",
+    level_activity: '',
+    before_pic: '',
     exercise_target: 0,
     water_target: 0,
   });
 
-  // ฟังก์ชันอัพเดตค่า (child component เรียกใช้)
+  useEffect(() => {
+    if (profile) {
+      setFormData((prev) => ({ ...prev, user_id: profile.userId }));
+    }
+  }, [profile]);
+
   const handleChange = (field: keyof RegisterFormData, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
@@ -81,89 +128,102 @@ export default function RegisterPage() {
     }));
   };
 
-  // ฟังก์ชันส่งข้อมูลไป API
   const handleSubmit = async () => {
     try {
-      if (!isLiffInitialized || !userId) {
-        message.error("กรุณารอสักครู่... กำลังเชื่อมต่อกับ LINE");
+      if (!profile) {
+        showNotification('Waiting for LINE user data...', 'error');
         return;
       }
 
-      // ✅ แปลงค่าให้พร้อม stringify
       const safeData = {
         ...formData,
-        dob: formData.dob
-          ? typeof formData.dob === "string"
-            ? formData.dob
-            : formData.dob.format("YYYY-MM-DD")
-          : null,
+        dob: formData.dob ? formData.dob : null,
       };
 
-      // ✅ รวม userId เข้าไปใน payload ก่อนส่ง
-      const payload = { ...safeData, user_id: userId };
+      const payload = { ...safeData, user_id: profile.userId };
 
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), // ตอนนี้ stringify ได้แล้ว
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (res.ok) {
-        message.success("สมัครสมาชิกเรียบร้อยแล้ว! 🎉");
+        showNotification('Registration successful! 🎉', 'success');
+        router.push('/');
       } else {
-        message.error("Error: " + data.error);
+        showNotification('Error: ' + data.error, 'error');
       }
     } catch (err) {
       console.error(err);
-      message.error("เกิดข้อผิดพลาดที่ server");
+      showNotification('Server error occurred.', 'error');
     }
   };
 
-  // Array ของ steps
   const steps = [
     {
-      title: "ข้อมูลทั่วไป",
+      title: 'General Info',
       content: <RegisterForm formData={formData} onChange={handleChange} />,
     },
     {
-      title: "เป้าหมายประจำวัน",
+      title: 'Daily Goals',
       content: <TargetForm formData={formData} onChange={handleChange} />,
     },
     {
-      title: "เสร็จสิ้น",
+      title: 'Finish',
       content: (
         <div>
-          ✅ ตรวจสอบข้อมูลและกดยืนยัน
-          <pre className="bg-gray-100 text-xs p-2 mt-2 rounded">
-            {JSON.stringify(formData, null, 2)}
+          ✅ Review your information and confirm.
+          <pre className="bg-secondary text-xs p-2 mt-2 rounded">
+            {JSON.stringify(
+              { ...formData, user_id: profile?.userId },
+              null,
+              2
+            )}
           </pre>
         </div>
       ),
     },
   ];
 
-  // ฟังก์ชันเปลี่ยน step
   const next = () => setCurrent((prev) => prev + 1);
   const prev = () => setCurrent((prev) => prev - 1);
 
   return (
     <div className="p-4 flex flex-col justify-center">
+      <Notification
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ message: '', type: '' })}
+      />
+      
 
-      {/* Content */}
       <div className="my-4">{steps[current].content}</div>
 
-      {/* Navigation buttons */}
       <div className="flex gap-2 justify-around">
-        {current > 0 && <Button onClick={prev}>ย้อนกลับ</Button>}
+        {current > 0 && (
+          <button
+            onClick={prev}
+            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md"
+          >
+            Back
+          </button>
+        )}
         {current === steps.length - 1 ? (
-          <Button type="primary" onClick={handleSubmit}>
-            เสร็จสิ้น
-          </Button>
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+          >
+            Finish
+          </button>
         ) : (
-          <Button type="primary" onClick={next}>
-            ถัดไป
-          </Button>
+          <button
+            onClick={next}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+          >
+            Next
+          </button>
         )}
       </div>
     </div>

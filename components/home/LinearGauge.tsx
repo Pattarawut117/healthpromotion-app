@@ -1,12 +1,16 @@
 import React from 'react';
-import { Flex, Progress } from 'antd';
 
 export default function LinearGauge() {
+  const percent = 70;
+
   return (
-    <div>
-      <Flex gap="small" vertical>
-        <Progress percent={70} status="active" />
-      </Flex>
+    <div className="w-full">
+      <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div
+          className="bg-blue-600 h-2.5 rounded-full"
+          style={{ width: `${percent}%` }}
+        ></div>
+      </div>
     </div>
-  )
+  );
 }

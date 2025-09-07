@@ -1,10 +1,5 @@
 import React from "react";
 import UserPicture from "@/components/profile/UserPicture";
-import {
-  InfoCircleOutlined,
-  RightOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
 
 export default function ProfilePage() {
   return (
@@ -18,7 +13,7 @@ export default function ProfilePage() {
       {/* ระดับผู้ใช้ */}
       <div className="flex items-center justify-between w-full border rounded-xl px-4 py-2 shadow-sm">
         <p className="font-medium">ผู้เริ่มต้น</p>
-        <InfoCircleOutlined className="text-gray-500" />
+        
       </div>
 
       {/* น้ำหนัก */}
@@ -26,7 +21,7 @@ export default function ProfilePage() {
         <p className="text-gray-500">น้ำหนัก (กก.)</p>
         <div className="flex justify-between items-center font-bold text-lg">
           <span>70</span>
-          <RightOutlined className="text-gray-400" />
+          
         </div>
         <p className="text-sm text-gray-400">29/08/2025</p>
       </div>
@@ -34,14 +29,14 @@ export default function ProfilePage() {
       {/* ข้อมูลการออกกำลังกาย */}
       <div className="flex justify-between items-center w-full border rounded-xl px-4 py-3 shadow-sm">
         <p>ข้อมูลการออกกำลังกาย</p>
-        <RightOutlined className="text-gray-400" />
+        
       </div>
 
       {/* BMI */}
       <div className="w-full border rounded-xl px-4 py-3 shadow-sm">
         <div className="flex justify-between items-center mb-1">
           <p className="font-medium">BMI</p>
-          <InfoCircleOutlined className="text-gray-500" />
+          
         </div>
         <p className="font-bold text-lg">24.47</p>
         <p className="text-sm text-gray-500">น้ำหนักเกิน (Overweight)</p>
@@ -50,7 +45,7 @@ export default function ProfilePage() {
       {/* BMR & TDEE */}
       <div className="w-full border rounded-xl px-4 py-3 shadow-sm space-y-3">
         <div className="flex justify-end">
-          <InfoCircleOutlined className="text-gray-500" />
+          
         </div>
 
         <div>
@@ -89,10 +84,10 @@ export default function ProfilePage() {
             className="flex justify-between items-center px-4 py-3 hover:bg-gray-50 cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <UserOutlined />
+              
               <span>{item}</span>
             </div>
-            <RightOutlined className="text-gray-400" />
+            
           </div>
         ))}
       </div>

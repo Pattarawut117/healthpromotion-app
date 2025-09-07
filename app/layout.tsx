@@ -4,6 +4,7 @@ import "./globals.css";
 import ConditionalBottomBar from "@/components/ConditionalBottomBar";
 import Image from "next/image";
 import { LiffProvider } from "@/contexts/LiffContext";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,23 +29,30 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-200`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-secondary`}
       >
-        {/* จัด layout ให้อยู่กลางจอ */}
         <div className="flex justify-center items-center min-h-screen">
-          {/* กรอบมือถือ */}
-          <div className="relative bg-gray-100 w-full max-w-sm min-h-screen shadow-lg overflow-hidden">
+          <div className="relative bg-background w-full max-w-sm min-h-screen shadow-lg overflow-y-auto">
             {/* Topbar */}
-            <div className="bg-orange-400 py-4 px-4 font-serif font-bold flex justify-between items-center">
+            <div className="bg-orange-400 text-primary-foreground py-4 px-4 font-serif font-bold flex justify-between items-center">
               <nav className="text-xl">Thaihealth</nav>
-              <div className="bg-amber-50 flex gap-2 px-3 rounded-full py-1 items-center">
-                <Image src="/topbar/coin.png" width={24} height={24} alt="coin" />
-                <span className="text-lg">100</span>
-              </div>
+              <Link href="/landing/level">
+                <div className="bg-primary-foreground text-primary flex gap-2 px-3 rounded-full py-1 items-center">
+                  <Image
+                    src="/topbar/coin.png"
+                    width={24}
+                    height={24}
+                    alt="coin"
+                  />
+                  <span className="text-lg">100</span>
+                </div>
+              </Link>
             </div>
 
-            {/* เนื้อหาหลัก */}
-            <main className="pb-24"><LiffProvider>{children}</LiffProvider></main>
+            {/* Main Content */}
+            <main className="pb-24">
+              <LiffProvider>{children}</LiffProvider>
+            </main>
 
             {/* Bottombar */}
             <div className="absolute bottom-0 w-full">

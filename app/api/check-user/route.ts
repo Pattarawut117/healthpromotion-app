@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   const { user_id } = await req.json();
 
   const [rows]: any = await db.query(
-    "SELECT user_id FROM users_info WHERE user_id = ?",
+    "SELECT user_id FROM user_info WHERE user_id = ?",
     [user_id]
   );
 

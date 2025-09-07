@@ -1,5 +1,4 @@
-import React from 'react'
-import { Table } from 'antd';
+import React from 'react';
 
 const dataSource = [
   {
@@ -18,17 +17,17 @@ const dataSource = [
 
 const columns = [
   {
-    title: 'อันดับ',
+    title: 'Rank',
     dataIndex: 'rank',
     key: 'rank',
   },
   {
-    title: 'ชื่อ',
+    title: 'Name',
     dataIndex: 'name',
     key: 'name',
   },
   {
-    title: 'ระยะทาง (km)',
+    title: 'Distance (km)',
     dataIndex: 'distance',
     key: 'distance',
   },
@@ -36,8 +35,31 @@ const columns = [
 
 export default function RankTable() {
   return (
-    <div className='p-2'>
-      <Table dataSource={dataSource} columns={columns} />
+    <div className="p-2">
+      <div className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+        {/* Table Header */}
+        <div className="grid grid-cols-3 bg-secondary text-secondary-foreground p-4 font-semibold">
+          {columns.map((col) => (
+            <div key={col.key} className="text-left">
+              {col.title}
+            </div>
+          ))}
+        </div>
+        {/* Table Body */}
+        <div>
+          {dataSource.map((row, rowIndex) => (
+            <div
+              key={row.key}
+              className={`grid grid-cols-3 p-4 items-center ${
+                rowIndex % 2 === 0 ? 'bg-card' : 'bg-secondary'
+              }`}>
+              <div>{row.rank}</div>
+              <div>{row.name}</div>
+              <div>{row.distance}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
-  )
+  );
 }
