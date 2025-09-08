@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import RegisterForm from '@/components/RegisterForm';
 import TargetForm from '@/components/TargetForm';
 import { useLiff } from '@/contexts/LiffContext';
@@ -114,12 +114,6 @@ export default function RegisterPage() {
     exercise_target: 0,
     water_target: 0,
   });
-
-  useEffect(() => {
-    if (profile) {
-      setFormData((prev) => ({ ...prev, user_id: profile.userId }));
-    }
-  }, [profile]);
 
   const handleChange = (field: keyof RegisterFormData, value: unknown) => {
     setFormData((prev) => ({

@@ -5,6 +5,7 @@ import ConditionalBottomBar from "@/components/ConditionalBottomBar";
 import Image from "next/image";
 import { LiffProvider } from "@/contexts/LiffContext";
 import Link from "next/link";
+import AuthRedirector from "@/components/AuthRedirector"; // Added import for AuthRedirector
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,7 +52,9 @@ export default function RootLayout({
 
             {/* Main Content */}
             <main className="pb-24">
-              <LiffProvider>{children}</LiffProvider>
+              <LiffProvider>
+                <AuthRedirector>{children}</AuthRedirector>
+              </LiffProvider>
             </main>
 
             {/* Bottombar */}

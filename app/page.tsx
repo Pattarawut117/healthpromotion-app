@@ -7,31 +7,7 @@ import { useEffect, useState } from 'react';
 
 export default function Home() {
   const { isLoggedIn } = useLiff();
-  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      if (isLoggedIn) {
-        try {
-          const response = await fetch('/api/check-user', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ user_id: '' }), // The user_id is not available from here
-          });
-          const data = await response.json();
-          if (!data.exists) {
-            router.push('/user/register');
-          }
-        } catch (error) {
-          console.error('Error checking user:', error);
-        }
-      }
-    };
-    checkUser();
-  }, [isLoggedIn, router]);
 
   if (!isLoggedIn) return <p className="text-center p-4">Loading...</p>;
 

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { RowDataPacket } from "mysql2"; // ✅ Import RowDataPacket
+import { RowDataPacket } from "mysql2";
 
-// กำหนด TypeScript Interface สำหรับข้อมูลที่คาดว่าจะได้รับจาก req.json()
+// กำหนด TypeScript Interface สำหรับข้อมูลผู้ใช้
 interface UserInfo {
   user_id: string;
   sname?: string;
@@ -17,18 +17,21 @@ interface UserInfo {
   water_target?: number;
 }
 
+// ✅ GET /api/users?user_id=xxx
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("user_id");
-
-  if (!userId) {
-    return NextResponse.json({ error: "user_id is required" }, { status: 400 });
-  }
-
   try {
-    // ใช้ RowDataPacket[] เพื่อกำหนดประเภทข้อมูลที่ได้จาก db.query
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("user_id");
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "user_id is required" },
+        { status: 400 }
+      );
+    }
+
     const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT sname, lname FROM user_info WHERE user_id = ? LIMIT 1",
+      "SELECT user_id, sname, lname FROM user_info WHERE user_id = ? LIMIT 1",
       [userId]
     );
 
@@ -36,63 +39,72 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Since `rows` is now typed, you can safely return the first element.
     return NextResponse.json(rows[0]);
   } catch (error: unknown) {
-    console.error("DB Error:", error);
-
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    console.error("DB Error (GET):", error);
     return NextResponse.json(
-      { error: "An unknown error occurred" },
+      { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
 }
 
+// ✅ POST /api/users (Insert or Update user info)
 export async function POST(req: Request) {
   try {
     const body: UserInfo = await req.json();
 
-    // 1. ตรวจสอบว่า `body` มีข้อมูลที่จำเป็นหรือไม่
-    if (!body || Object.keys(body).length === 0) {
-      return NextResponse.json({ error: "No data provided in the request body." }, { status: 400 });
+    if (!body?.user_id) {
+      return NextResponse.json(
+        { error: "user_id is required in request body" },
+        { status: 400 }
+      );
     }
 
-    // 2. สร้าง Array ของค่าที่จะส่งไปยังฐานข้อมูล
     const values = [
-      body.user_id || null, // ตรวจสอบว่าคุณส่งค่า user_id มาด้วยหรือไม่
-      body.sname || null,
-      body.lname || null,
-      body.tel || null,
-      body.dob || null,
-      body.gender || null,
-      body.height || null,
-      body.weight || null,
-      body.level_activity || null,
-      body.exercise_target || null,
-      body.water_target || null,
+      body.user_id,
+      body.sname ?? null,
+      body.lname ?? null,
+      body.tel ?? null,
+      body.dob ?? null,
+      body.gender ?? null,
+      body.height ?? null,
+      body.weight ?? null,
+      body.level_activity ?? null,
+      body.exercise_target ?? null,
+      body.water_target ?? null,
     ];
 
-    // 3. แสดงข้อมูลที่จะนำไป Insert ลงใน Console เพื่อตรวจสอบ (สำหรับการ Debug)
-    console.log("Values to be inserted:", values);
+    console.log("Values to be inserted/updated:", values);
 
-    // 4. สั่ง Insert ข้อมูลลงในฐานข้อมูล
+    // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว
     await db.execute(
       `INSERT INTO user_info 
         (user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+        sname = VALUES(sname),
+        lname = VALUES(lname),
+        tel = VALUES(tel),
+        dob = VALUES(dob),
+        gender = VALUES(gender),
+        height = VALUES(height),
+        weight = VALUES(weight),
+        level_activity = VALUES(level_activity),
+        exercise_target = VALUES(exercise_target),
+        water_target = VALUES(water_target)`,
       values
     );
 
-    return NextResponse.json({ message: "Register success" });
+    return NextResponse.json({
+      message: "Register success",
+      mode: "insert_or_update",
+    });
   } catch (error: unknown) {
-    console.error("Error during POST request:", error);
-    // ตรวจสอบว่า error เป็น instance ของ Error ก่อนเข้าถึง message
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
+    console.error("DB Error (POST):", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
   }
 }
