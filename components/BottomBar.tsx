@@ -5,15 +5,15 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const menuItems = [
-  { name: "Home", icon: "/bottombar/home.png", path: "/" },
-  { name: "Ranking", icon: "/bottombar/ranking.png", path: "/ranking" },
-  { name: "Campaign", icon: "/bottombar/social-media-marketing.png", path: "/campaign" },
-  { name: "Review", icon: "/bottombar/message.png", path: "/review" },
-  { name: "Profile", icon: "/bottombar/user.png", path: "/profile" },
+  { name: "หน้าแรก", icon: "/bottombar/home.png", path: "/" },
+  { name: "จัดลำดับ", icon: "/bottombar/ranking.png", path: "/ranking" },
+  { name: "แคมเปญ", icon: "/bottombar/social-media-marketing.png", path: "/campaign" },
+  { name: "คำแนะนำ", icon: "/bottombar/message.png", path: "/review" },
+  { name: "โปรไฟล์", icon: "/bottombar/user.png", path: "/profile" },
 ];
 
 export default function BottomBar() {
-  const [active, setActive] = useState("Home");
+  const [active, setActive] = useState("หน้าแรก");
   const router = useRouter();
 
   const handleClick = (item: typeof menuItems[0]) => {
@@ -22,7 +22,7 @@ export default function BottomBar() {
   };
 
   return (
-    <div className="absolute bottom-0 w-full left-0 right-0 bg-white shadow-md border-t border-gray-200 flex justify-around py-[16] z-50 px-8">
+    <div className="absolute bottom-0 w-full left-0 right-0 bg-white shadow-md border-t border-gray-200 flex justify-between py-[16] z-50 px-8">
       {menuItems.map((item) => (
         <button
           key={item.name}
@@ -38,7 +38,7 @@ export default function BottomBar() {
             alt={item.name}
             className={`${active === item.name ? "opacity-100" : "opacity-60"}`}
           />
-          <span>{item.name}</span>
+          <span className="mt-1">{item.name}</span>
         </button>
       ))}
     </div>

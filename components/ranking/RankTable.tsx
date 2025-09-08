@@ -17,17 +17,17 @@ const dataSource = [
 
 const columns = [
   {
-    title: 'Rank',
+    title: 'อันดับ',
     dataIndex: 'rank',
     key: 'rank',
   },
   {
-    title: 'Name',
+    title: 'ชื่อ',
     dataIndex: 'name',
     key: 'name',
   },
   {
-    title: 'Distance (km)',
+    title: 'ระยะทาง (km)',
     dataIndex: 'distance',
     key: 'distance',
   },
@@ -36,7 +36,7 @@ const columns = [
 export default function RankTable() {
   return (
     <div className="p-2">
-      <div className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden">
+      <div className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden bg-white">
         {/* Table Header */}
         <div className="grid grid-cols-3 bg-secondary text-secondary-foreground p-4 font-semibold">
           {columns.map((col) => (

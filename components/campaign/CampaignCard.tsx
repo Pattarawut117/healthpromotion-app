@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { RightOutlined } from '@ant-design/icons';
 
 const campaignMenu = [
   {
@@ -27,32 +28,19 @@ export default function CampaignCard() {
           <div className="p-4 flex-grow">
             <Image
               alt="Campaign Picture"
-              width={48}
-              height={48}
+              width={200}
+              height={200}
               src={item.pictureUrl}
               className="mx-auto"
             />
           </div>
-          <div className="p-4 text-center">
+          <div className="p-2 text-center">
             <p className="font-semibold text-lg">{item.descMain}</p>
             <p className="text-muted-foreground text-sm">{item.unit}</p>
           </div>
-          <div className="flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-primary/90 transition-colors duration-300">
-            <p className="text-sm">Join</p>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5l7 7-7 7"
-              ></path>
-            </svg>
+          <div className="flex items-center justify-center gap-2 bg-orange-300 text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-primary/90 transition-colors duration-300">
+            <p className="text-sm">เข้าร่วม</p>
+            <RightOutlined/>
           </div>
         </div>
       ))}

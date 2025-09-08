@@ -1,6 +1,7 @@
 import React from "react";
 import UserPicture from "@/components/profile/UserPicture";
 import { RightOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import Link from "next/link";
 
 export default function ProfilePage() {
   return (
@@ -14,7 +15,7 @@ export default function ProfilePage() {
       {/* ระดับผู้ใช้ */}
       <div className="flex items-center justify-between w-full border rounded-xl px-4 py-2 shadow-sm">
         <p className="font-medium">ผู้เริ่มต้น</p>
-        <InfoCircleOutlined />
+        <Link href='/landing/level'><InfoCircleOutlined /></Link>
       </div>
 
       {/* น้ำหนัก */}
@@ -46,7 +47,7 @@ export default function ProfilePage() {
       {/* BMR & TDEE */}
       <div className="w-full border rounded-xl px-4 py-3 shadow-sm space-y-3">
         <div className="flex justify-end">
-        <InfoCircleOutlined />
+        <Link href="/landing/activity-kcal"><InfoCircleOutlined /></Link>
         </div>
 
         <div>

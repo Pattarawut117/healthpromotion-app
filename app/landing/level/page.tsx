@@ -1,19 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useLiff } from '@/contexts/LiffContext';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import Link from 'next/link';
 
 type TabPosition = 'history' | 'rule';
 
 export default function HistoryCoin() {
-  const { isLoggedIn } = useLiff();
-
   const [detail, setDetail] = useState<TabPosition>('history');
 
-  if (!isLoggedIn) return <p>Loading...</p>;
-
   return (
-    <div className="px-4 py-6 flex flex-col ">
+    <div className='p-4'>
+      <Link href="/profile">
+      <div className='flex gap-4 mb-6'>
+        <ArrowLeftOutlined/> <p>การทำกิจกรรม</p>
+      </div>
+      </Link>
+      <div className=' flex flex-col'>
       <div className="flex justify-center">
         <div className="flex bg-gray-200 rounded-lg p-1">
           <button
@@ -32,12 +35,12 @@ export default function HistoryCoin() {
                 ? 'bg-white text-blue-500 shadow'
                 : 'bg-transparent text-gray-600'
             }`}>
-            กติกาการับเหรียญ
+            กติกาการรับเหรียญ
           </button>
         </div>
       </div>
 
-      <div className="mt-4 border rounded-2xl bg-white shadow-xl">
+      <div className="mt-4 rounded-2xl bg-white shadow-xl">
         {detail === 'history' && (
           <div className="p-4 text-center">
             <h2 className="text-lg font-bold">ยังไม่มีข้อมูล</h2>
@@ -88,6 +91,7 @@ export default function HistoryCoin() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

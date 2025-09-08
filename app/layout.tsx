@@ -33,7 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-secondary`}
       >
         <div className="flex justify-center items-center min-h-screen">
-          <div className="relative bg-background w-full max-w-sm min-h-screen shadow-lg overflow-y-auto">
+          <div className="relative bg-background w-full max-w-sm min-h-screen shadow-lg overflow-y-auto bg-gray-50">
             {/* Topbar */}
             <div className="bg-orange-400 text-primary-foreground py-4 px-4 font-serif font-bold flex justify-between items-center">
               <nav className="text-xl">Thaihealth</nav>

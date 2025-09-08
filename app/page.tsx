@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { useLiff } from '@/contexts/LiffContext';
-import Carousel from '@/components/home/Carousel';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useLiff } from "@/contexts/LiffContext";
+import Carousel from "@/components/home/Carousel";
+import { useState } from "react";
 
 export default function Home() {
   const { isLoggedIn } = useLiff();
@@ -15,7 +14,7 @@ export default function Home() {
     <div className="flex flex-col gap-6 p-6 bg-gray-50 min-h-screen">
       {/* Header Card */}
       <div className="w-full flex flex-col items-center bg-white text-gray-800 rounded-xl shadow-md p-6">
-        <p className="font-bold text-lg">🏦 Pinky Bank</p>
+        <p className="font-bold text-lg">🏦 Piggy Bank</p>
         <div className="grid grid-cols-3 divide-x w-full bg-gray-100 px-4 py-3 rounded-lg mt-4">
           <div className="text-center font-semibold text-blue-500">1</div>
           <div className="text-center font-semibold text-green-500">2</div>
@@ -24,8 +23,8 @@ export default function Home() {
       </div>
 
       {/* Section Title */}
-      <p className="font-semibold text-lg text-gray-700">
-        📊 Today&apos;s Health Activities
+      <p className="font-bold text-lg text-gray-700">
+        กิจกรรมสุขภาพของวันนี้
       </p>
 
       {/* Carousel */}
@@ -45,7 +44,7 @@ export default function Home() {
             {/* Record Exercise */}
             <div className="flex items-center gap-2 animate-slideInRight">
               <p className="bg-white text-gray-800 px-3 py-2 rounded-lg shadow-md text-sm">
-                Record Exercise
+                บันทึกการออกกำลังกาย
               </p>
               <button className="bg-gradient-to-r from-pink-500 to-red-500 hover:scale-110 transition transform text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center">
                 💪
@@ -55,7 +54,7 @@ export default function Home() {
             {/* Record Water */}
             <div className="flex items-center gap-2 animate-slideInRight delay-100">
               <p className="bg-white text-gray-800 px-3 py-2 rounded-lg shadow-md text-sm">
-                Record Water Intake
+                บันทึกการดื่มน้ำ
               </p>
               <button className="bg-gradient-to-r from-blue-400 to-blue-600 hover:scale-110 transition transform text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center">
                 💧
@@ -69,7 +68,7 @@ export default function Home() {
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="bg-green-500 hover:bg-green-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-3xl transition-transform hover:rotate-90"
         >
-          {isMenuOpen ? '×' : '+'}
+          {isMenuOpen ? "×" : "+"}
         </button>
       </div>
     </div>
