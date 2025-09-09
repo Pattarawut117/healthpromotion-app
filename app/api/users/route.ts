@@ -15,6 +15,14 @@ interface UserInfo {
   level_activity?: string;
   exercise_target?: number;
   water_target?: number;
+  waist? : number;
+  fat? :number,
+  muscle?: number,
+  bp_up?: number,
+  bp_down?: number,
+  fat_abnominal?:number,
+  before_pic?: string,
+  after_pic?: string,
 }
 
 // ✅ GET /api/users?user_id=xxx
@@ -76,6 +84,14 @@ export async function POST(req: Request) {
       body.level_activity ?? null,
       body.exercise_target ?? null,
       body.water_target ?? null,
+      body.waist ?? null,
+      body.fat ?? null,
+      body.muscle ?? null,
+      body.bp_up ?? null,
+      body.bp_down ?? null,
+      body.fat_abnominal ?? null,
+      body.before_pic ?? null,
+      body.after_pic?? null,
     ];
 
     console.log("Values to be inserted/updated:", values);
@@ -83,8 +99,8 @@ export async function POST(req: Request) {
     // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว
     await db.execute(
       `INSERT INTO user_info 
-        (user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target, waist, fat, muscle, bp_up, bp_down, fat_abnominal, before_pic, after_pic) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
         sname = VALUES(sname),
         lname = VALUES(lname),
@@ -95,7 +111,15 @@ export async function POST(req: Request) {
         weight = VALUES(weight),
         level_activity = VALUES(level_activity),
         exercise_target = VALUES(exercise_target),
-        water_target = VALUES(water_target)`,
+        water_target = VALUES(water_target),
+        waist = VALUES(waist),
+        fat = VALUES(fat),
+        muscle = VALUES(muscle),
+        bp_up = VALUES(bp_up),
+        bp_down = VALUES(bp_down),
+        fat_abnominal = VALUES(fat_abnominal),
+        before_pic = VALUES(before_pic),
+        after_pic = VALUES(after_pic)`,
       values
     );
 
