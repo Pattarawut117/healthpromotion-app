@@ -5,12 +5,25 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useLiff } from "@/contexts/LiffContext";
 
-export default function EditProfilePage() {
-  const { profile } = useLiff(); // ✅ ได้ user profile จาก LINE
-  const userId = profile?.userId; // ✅ ใช้ userId จริง
-  const [loading, setLoading] = useState(true);
+// ✅ สร้าง Interface สำหรับข้อมูลโปรไฟล์ผู้ใช้
+interface UserProfile {
+  sname: string;
+  lname: string;
+  tel: string;
+  dob: string;
+  gender: string;
+  height: string;
+  weight: string;
+  level_activity: string;
+}
 
-  const [formData, setFormData] = useState<any>({
+export default function EditProfilePage() {
+  const { profile } = useLiff();
+  const userId = profile?.userId;
+  const [loading, setLoading] = useState(true);
+  
+  // ✅ กำหนดประเภทข้อมูลให้กับ useState ด้วย UserProfile
+  const [formData, setFormData] = useState<UserProfile>({
     sname: "",
     lname: "",
     tel: "",
@@ -21,15 +34,19 @@ export default function EditProfilePage() {
     level_activity: "",
   });
 
-  // ✅ โหลดข้อมูลจาก API ด้วย userId
+  // ✅ State สำหรับ Modal
+  const [modalMessage, setModalMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
   useEffect(() => {
-    if (!userId) return; // รอจนกว่าจะมี userId
+    if (!userId) return;
 
     const fetchUser = async () => {
       try {
         const res = await fetch(`/api/users?user_id=${userId}`);
         if (res.ok) {
           const data = await res.json();
+          // ✅ ตรวจสอบและใช้ประเภทข้อมูลที่ถูกต้อง
           setFormData(data);
         }
       } catch (err) {
@@ -42,31 +59,33 @@ export default function EditProfilePage() {
     fetchUser();
   }, [userId]);
 
-  // ✅ handle change input
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: any) => ({ ...prev, [name]: value }));
+    // ✅ กำหนดประเภทให้กับ prev เพื่อให้ TypeScript ตรวจสอบได้
+    setFormData((prev: UserProfile) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ handle submit update
   const handleSubmit = async () => {
     if (!userId) return;
 
     try {
       const res = await fetch("/api/users", {
-        method: "POST", // ✅ API ของคุณรองรับ Insert/Update
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, user_id: userId }),
       });
 
       const data = await res.json();
       if (res.ok) {
-        alert("อัพเดตข้อมูลสำเร็จ!");
+        setModalMessage("อัพเดตข้อมูลสำเร็จ!");
       } else {
-        alert("Error: " + data.error);
+        setModalMessage("ข้อผิดพลาด: " + data.error);
       }
+      setShowModal(true);
     } catch (err) {
       console.error("Error updating user:", err);
+      setModalMessage("เกิดข้อผิดพลาดขณะอัพเดตข้อมูล");
+      setShowModal(true);
     }
   };
 
@@ -178,7 +197,21 @@ export default function EditProfilePage() {
       >
         บันทึก
       </button>
-    
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <p className="text-lg font-semibold text-center">{modalMessage}</p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-4 px-4 py-2 bg-gray-200 rounded w-full"
+            >
+              ปิด
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
