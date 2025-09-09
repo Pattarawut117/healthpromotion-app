@@ -31,7 +31,10 @@ export async function GET(req: Request) {
     }
 
     const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT user_id, sname, lname FROM user_info WHERE user_id = ? LIMIT 1",
+      `SELECT user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target 
+       FROM user_info 
+       WHERE user_id = ? 
+       LIMIT 1`,
       [userId]
     );
 
