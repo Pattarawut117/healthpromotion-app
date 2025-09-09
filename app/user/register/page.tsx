@@ -32,42 +32,6 @@ const Notification = ({
   );
 };
 
-// Custom Steps component
-const CustomSteps = ({
-  steps,
-  current,
-}: {
-  steps: { title: string }[];
-  current: number;
-}) => (
-  <div className="flex justify-center items-center mb-8">
-    {steps.map((step, index) => (
-      <React.Fragment key={step.title}>
-        <div className="flex flex-col items-center">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
-              index <= current ? 'bg-primary' : 'bg-secondary'
-            }`}>
-            {index + 1}
-          </div>
-          <p
-            className={`mt-2 text-sm ${
-              index <= current ? 'text-primary' : 'text-muted-foreground'
-            }`}>
-            {step.title}
-          </p>
-        </div>
-        {index < steps.length - 1 && (
-          <div
-            className={`flex-auto border-t-2 mx-4 ${
-              index < current ? 'border-primary' : 'border-border'
-            }`}
-          />
-        )}
-      </React.Fragment>
-    ))}
-  </div>
-);
 
 export type RegisterFormData = {
   user_id: string;
@@ -192,7 +156,7 @@ export default function RegisterPage() {
         onClose={() => setNotification({ message: '', type: '' })}
       />
       
-      <CustomSteps steps={steps} current={current} />
+      
 
       <div className="my-4">{steps[current].content}</div>
 

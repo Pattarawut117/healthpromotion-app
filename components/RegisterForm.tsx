@@ -34,19 +34,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onChange}) => {
       formData.append('file', file);
 
       try {
-        const response = await fetch(
-          'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
         const result = await response.json();
-        if (response.ok) {
-          console.log('Upload success:', result.url);
-          onChange('before_pic', result.url || '');
+        if (response.ok && result.success) {
+          console.log('Upload success:', result.path);
+          onChange('before_pic', result.path || '');
         } else {
-          console.error('Upload failed');
+          console.error('Upload failed:', result.error);
         }
       } catch (error) {
         console.error('Upload error:', error);
