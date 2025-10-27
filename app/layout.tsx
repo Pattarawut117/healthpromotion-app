@@ -51,7 +51,7 @@ export default function RootLayout({
             </div>
 
             {/* Main Content */}
-            <main className="pb-24">
+            <main className="pb-16">
               <LiffProvider>
                 <AuthRedirector>{children}</AuthRedirector>
               </LiffProvider>

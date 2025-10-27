@@ -39,7 +39,7 @@ export async function GET(req: Request) {
     }
 
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target 
+      `SELECT user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target, waist, muscle, bp_up, bp_down, fat_abnominal, before_pic, after_pic, fat 
        FROM user_info 
        WHERE user_id = ? 
        LIMIT 1`,

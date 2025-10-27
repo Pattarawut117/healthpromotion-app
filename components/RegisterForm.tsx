@@ -101,9 +101,8 @@ export default function RegisterForm({ formData, onChange }: Props) {
     'w-full p-2 border border-input rounded-md focus:ring-primary focus:border-primary bg-background';
 
   return (
-    <div className="px-4 py-1 flex flex-col items-center">
+    <div className="px-4 flex flex-col items-center">
       <UserPicture />
-
       <form className="w-full max-w-md space-y-4">
         <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
           <legend className="font-semibold mb-4">General Information</legend>
