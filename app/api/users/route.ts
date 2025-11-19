@@ -5,24 +5,31 @@ import { RowDataPacket } from "mysql2";
 // กำหนด TypeScript Interface สำหรับข้อมูลผู้ใช้
 interface UserInfo {
   user_id: string;
-  sname?: string;
-  lname?: string;
-  tel?: string;
-  dob?: string;
-  gender?: string;
-  height?: number;
-  weight?: number;
-  level_activity?: string;
-  exercise_target?: number;
-  water_target?: number;
-  waist? : number;
-  fat? :number,
-  muscle?: number,
-  bp_up?: number,
-  bp_down?: number,
-  fat_abnominal?:number,
-  before_pic?: string,
-  after_pic?: string,
+  sname: string;
+  lname: string;
+  tel: string;
+  dob: string | null;
+  gender: string;
+  height: number;
+  weight: number;
+  bmi: number;
+  condentialDisease: string;
+  sleepPerHour: number;
+  sleepEnough: string | null;
+  isSmoke: string;
+  drinkBeer: string;
+  drinkWater: string;
+  sleepProblem: string;
+  adhd: string;
+  madness: string;
+  bored: string;
+  introvert: string;
+  unit: string;
+  eatVegetable: string;
+  eatSour: string;
+  eatSweetness: string;
+  activitiesTried: string;
+  workingLongtime: string;
 }
 
 // ✅ GET /api/users?user_id=xxx
@@ -39,7 +46,7 @@ export async function GET(req: Request) {
     }
 
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target, waist, muscle, bp_up, bp_down, fat_abnominal, before_pic, after_pic, fat 
+      `SELECT *
        FROM user_info 
        WHERE user_id = ? 
        LIMIT 1`,
@@ -81,17 +88,24 @@ export async function POST(req: Request) {
       body.gender ?? null,
       body.height ?? null,
       body.weight ?? null,
-      body.level_activity ?? null,
-      body.exercise_target ?? null,
-      body.water_target ?? null,
-      body.waist ?? null,
-      body.fat ?? null,
-      body.muscle ?? null,
-      body.bp_up ?? null,
-      body.bp_down ?? null,
-      body.fat_abnominal ?? null,
-      body.before_pic ?? null,
-      body.after_pic?? null,
+      body.bmi ?? null,
+      body.condentialDisease ?? null,
+      body.sleepPerHour ?? null,
+      body.sleepEnough ?? null,
+      body.isSmoke ?? null,
+      body.drinkBeer ?? null,
+      body.drinkWater ?? null,
+      body.sleepProblem ?? null,
+      body.adhd ?? null,
+      body.madness ?? null,
+      body.bored ?? null,
+      body.introvert ?? null,
+      body.unit ?? null,
+      body.eatVegetable ?? null,
+      body.eatSour ?? null,
+      body.eatSweetness ?? null,
+      body.activitiesTried ?? null,
+      body.workingLongtime ?? null,
     ];
 
     console.log("Values to be inserted/updated:", values);
@@ -99,8 +113,8 @@ export async function POST(req: Request) {
     // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว
     await db.execute(
       `INSERT INTO user_info 
-        (user_id, sname, lname, tel, dob, gender, height, weight, level_activity, exercise_target, water_target, waist, fat, muscle, bp_up, bp_down, fat_abnominal, before_pic, after_pic) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (user_id, sname, lname, tel, dob, gender, height, weight, bmi, condentialDisease, sleepPerHour, sleepEnough, isSmoke, drinkBeer, drinkWater, sleepProblem, adhd, madness,bored,introvert, unit, eatVegetable,eatSour,eatSweetness,activitiesTried,workingLongtime) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)
        ON DUPLICATE KEY UPDATE
         sname = VALUES(sname),
         lname = VALUES(lname),
@@ -109,17 +123,24 @@ export async function POST(req: Request) {
         gender = VALUES(gender),
         height = VALUES(height),
         weight = VALUES(weight),
-        level_activity = VALUES(level_activity),
-        exercise_target = VALUES(exercise_target),
-        water_target = VALUES(water_target),
-        waist = VALUES(waist),
-        fat = VALUES(fat),
-        muscle = VALUES(muscle),
-        bp_up = VALUES(bp_up),
-        bp_down = VALUES(bp_down),
-        fat_abnominal = VALUES(fat_abnominal),
-        before_pic = VALUES(before_pic),
-        after_pic = VALUES(after_pic)`,
+        bmi = VALUES(bmi),
+        condentialDisease = VALUES(condentialDisease),
+        sleepPerHour = VALUES(sleepPerHour),
+        sleepEnough = VALUES(sleepEnough),
+        isSmoke = VALUES(isSmoke),
+        drinkBeer = VALUES(drinkBeer),
+        drinkWater = VALUES(drinkWater),
+        sleepProblem = VALUES(sleepProblem),
+        adhd = VALUES(adhd),
+        madness = VALUES(madness),
+        bored = VALUES(bored),
+        introvert = VALUES(introvert),
+        unit = VALUES(unit),
+        eatVegetable = VALUES(eatVegetable),
+        eatSour = VALUES(eatSour),
+        eatSweetness = VALUES(eatSweetness),
+        activitiesTried = VALUES(activitiesTried),
+        workingLongtime = VALUES(workingLongtime)`,
       values
     );
 
