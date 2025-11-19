@@ -1,80 +1,401 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { RegisterFormData } from '@/app/user/register/page';
+import React from "react";
+import { RegisterFormData } from "@/app/user/register/page";
 
 type Props = {
   formData: RegisterFormData;
   onChange: <T>(field: keyof RegisterFormData, value: T) => void;
 };
 
-const MinusIcon = ({ className, onClick }: { className: string, onClick: () => void }) => (
-  <svg onClick={onClick} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-);
-
-const PlusIcon = ({ className, onClick }: { className: string, onClick: () => void }) => (
-  <svg onClick={onClick} className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-);
-
 export default function TargetForm({ formData, onChange }: Props) {
-  const decrease = (field: keyof RegisterFormData, value: number) => {
-    onChange(field, Math.max(0, value - 5));
-  };
-
   return (
     <div className="px-4 py-1 flex flex-col items-center">
-      <div className="space-y-4 w-full max-w-md">
-        {/* Exercise */}
-        <div className="flex flex-col items-center border rounded-2xl p-4 shadow-sm bg-white">
-          <p className="mb-2 text-lg font-semibold text-gray-700">
-            เป้าหมายการออกกำลังกาย (นาที)
-          </p>
-          <Image
-            src="/targetForm/exercise.png"
-            width={400}
-            height={400}
-            alt="Exercise"
-            className="mb-2"
-          />
-          <div className="flex items-center gap-4 text-xl font-bold">
-            <MinusIcon
-              className="w-8 h-8 text-red-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => decrease('exercise_target', formData.exercise_target)}
-            />
-            <span className="w-12 text-center">{formData.exercise_target}</span>
-            <PlusIcon
-              className="w-8 h-8 text-green-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => onChange('exercise_target', formData.exercise_target + 5)}
-            />
+      <form className="w-full max-w-md space-y-4">
+        <div className="border">
+          <label htmlFor="sleepPerHour">ส่วนใหญ่ท่านนอนวันละกี่ชั่วโมง</label>
+          <select name="sleepPerHour" onChange={(e)=> onChange("sleepPerHour", e.target.value)}>
+            <option value="4 ชั่วโมง/วัน">4 ชั่วโมง/วัน</option>
+            <option value="5 ชั่วโมง/วัน">5 ชั่วโมง/วัน</option>
+            <option value="6 ชั่วโมง/วัน">6 ชั่วโมง/วัน</option>
+          </select>
+          <div className="flex flex-col">
+          <label htmlFor="sleeoEnough">ท่านคิดว่าชั่วโมงการนอนเพียงพอหรือไม่</label>
+          <div className="grid grid-cols-2">
+            <label><input type="radio" name="sleepEnough" value="เพียงพอ" onChange={(e)=> onChange("sleepEnough",e.target.value)}/>เพียงพอ</label>
+            <label ><input type="radio" name="sleepEnough" value="ไม่เพียงพอ" onChange={(e)=> onChange("sleepEnough",e.target.value)}/>ไม่เพียงพอ</label>
+          </div>
           </div>
         </div>
-
-        {/* Water */}
-        <div className="flex flex-col items-center border rounded-2xl p-4 shadow-sm bg-white">
-          <p className="mb-2 text-lg font-semibold text-gray-700">
-            เป้าหมายการดื่มน้ำ (มิลลิลิตร)
-          </p>
-          <Image
-            src="/targetForm/exercise.png"
-            width={400}
-            height={400}
-            alt="Water"
-            className="mb-2"
-          />
-          <div className="flex items-center gap-4 text-xl font-bold">
-            <MinusIcon
-              className="w-8 h-8 text-red-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => decrease('water_target', formData.water_target)}
-            />
-            <span className="w-12 text-center">{formData.water_target}</span>
-            <PlusIcon
-              className="w-8 h-8 text-blue-500 cursor-pointer hover:scale-110 transition-transform"
-              onClick={() => onChange('water_target', formData.water_target + 5)}
-            />
+        <div className="border">
+          <div className="flex flex-col">
+            <label htmlFor="isSmoke">ท่านสูบบุหรี่หรือไม่ อย่างไร</label>
+            <div className="grid grid-cols-2">
+              <label>
+                <input
+                  type="radio"
+                  name="isSmoke"
+                  value="สูบ"
+                  checked={formData.isSmoke === "สูบ"}
+                  onChange={(e) => onChange("isSmoke", e.target.value)}
+                />
+                สูบ
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="isSmoke"
+                  value="ไม่สูบ"
+                  checked={formData.isSmoke === "ไม่สูบ"}
+                  onChange={(e) => onChange("isSmoke", e.target.value)}
+                />
+                ไม่สูบ
+              </label>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="drinkBeer">
+              ท่านดื่มเบียร์เกิน 4 กระป๋องหรือ 2
+              ขวดใหญ่หรือสุราเกินครึ่งแบนขึ้นไปหรือไม่
+            </label>
+            <div className="grid grid-cols-2">
+              <label>
+                <input
+                  type="radio"
+                  name="drinkBeer"
+                  value="ไม่เคยเลย"
+                  checked={formData.drinkBeer === "ไม่เคยเลย"}
+                  onChange={(e) => onChange("drinkBeer", e.target.value)}
+                />
+                ไม่เคยเลย
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="drinkBeer"
+                  value="เดือนละครั้ง"
+                  checked={formData.drinkBeer === "เดือนละครั้ง"}
+                  onChange={(e) => onChange("drinkBeer", e.target.value)}
+                />
+                เดือนละครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="drinkBeer"
+                  value="สัปดาห์ละครั้ง"
+                  checked={formData.drinkBeer === "สัปดาห์ละครั้ง"}
+                  onChange={(e) => onChange("drinkBeer", e.target.value)}
+                />
+                สัปดาห์ละครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="drinkBeer"
+                  value="ทุกวันหรือเกือบทุกวัน"
+                  checked={formData.drinkBeer === "ทุกวันหรือเกือบทุกวัน"}
+                  onChange={(e) => onChange("drinkBeer", e.target.value)}
+                />
+                ทุกวันหรือเกือบทุกวัน
+              </label>
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="drinkWater">
+              ท่านดื่มน้ำสะอาดวันละเท่าไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล.
+              ขวดใหญ่ 1,500 มล.)
+            </label>
+            <div className="flex flex-col">
+              <label>
+                <input
+                  type="radio"
+                  name="drinkWater"
+                  value="ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)"
+                  checked={
+                    formData.drinkWater === "ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)"
+                  }
+                  onChange={(e) => onChange("drinkWater", e.target.value)}
+                />
+                ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="drinkWater"
+                  value="ดื่ม 4-6 แก้ว (มากกว่า 1,000-1,500 มล.)"
+                  checked={
+                    formData.drinkWater ===
+                    "ดื่ม 4-6 แก้ว (มากกว่า 1,000-1,500 มล.)"
+                  }
+                  onChange={(e) => onChange("drinkWater", e.target.value)}
+                />
+                ดื่ม 4-6 แก้ว (มากกว่า 1,000-1,500 มล.)
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="drinkWater"
+                  value="ดื่มมากกว่า 6-8 แก้ว (มากกว่า 1,500-2,000 มล.)"
+                  checked={
+                    formData.drinkWater ===
+                    "ดื่มมากกว่า 6-8 แก้ว (มากกว่า 1,500-2,000 มล.)"
+                  }
+                  onChange={(e) => onChange("drinkWater", e.target.value)}
+                />
+                ดื่มมากกว่า 6-8 แก้ว (มากกว่า 1,500-2,000 มล.)
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="drinkWater"
+                  value="ดื่มมากกว่า 8-10 แก้ว (มากกว่า 2,000-2,500 มล.)"
+                  checked={
+                    formData.drinkWater ===
+                    "ดื่มมากกว่า 8-10 แก้ว (มากกว่า 2,000-2,500 มล.)"
+                  }
+                  onChange={(e) => onChange("drinkWater", e.target.value)}
+                />
+                ดื่มมากกว่า 8-10 แก้ว (มากกว่า 2,000-2,500 มล.)
+              </label>
+            </div>
           </div>
         </div>
-      </div>
+        <div className="border">
+          {/* 1. */}
+          <div className="flex flex-col">
+            <label htmlFor="sleepProblem">
+              มีปัญหาการนอน นอนไม่หลับหรือนอนมาก
+            </label>
+            <div className="flex flex-col">
+              <label>
+                <input
+                  type="radio"
+                  name="sleepProblem"
+                  value="น้อยมากหรือแทบไม่มี"
+                  checked={formData.sleepProblem === "น้อยมากหรือแทบไม่มี"}
+                  onChange={(e) => onChange("sleepProblem", e.target.value)}
+                />
+                น้อยมากหรือแทบไม่มี
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sleepProblem"
+                  value="เป็นบางครั้ง"
+                  checked={formData.sleepProblem === "เป็นบางครั้ง"}
+                  onChange={(e) => onChange("sleepProblem", e.target.value)}
+                />
+                เป็นบางครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sleepProblem"
+                  value="เป็นบ่อยครั้ง"
+                  checked={formData.sleepProblem === "เป็นบ่อยครั้ง"}
+                  onChange={(e) => onChange("sleepProblem", e.target.value)}
+                />
+                เป็นบ่อยครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="sleepProblem"
+                  value="เป็นประจำ"
+                  checked={formData.sleepProblem === "เป็นประจำ"}
+                  onChange={(e) => onChange("sleepProblem", e.target.value)}
+                />
+                เป็นประจำ
+              </label>
+            </div>
+          </div>
+          {/* 2. */}
+          <div className="flex flex-col">
+            <label htmlFor="adhd">มีสมาธิน้อยลง</label>
+            <div className="flex flex-col">
+              <label>
+                <input
+                  type="radio"
+                  name="adhd"
+                  value="น้อยมากหรือแทบไม่มี"
+                  checked={formData.adhd === "น้อยมากหรือแทบไม่มี"}
+                  onChange={(e) => onChange("adhd", e.target.value)}
+                />
+                น้อยมากหรือแทบไม่มี
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="adhd"
+                  value="เป็นบางครั้ง"
+                  checked={formData.adhd === "เป็นบางครั้ง"}
+                  onChange={(e) => onChange("adhd", e.target.value)}
+                />
+                เป็นบางครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="adhd"
+                  value="เป็นบ่อยครั้ง"
+                  checked={formData.adhd === "เป็นบ่อยครั้ง"}
+                  onChange={(e) => onChange("adhd", e.target.value)}
+                />
+                เป็นบ่อยครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="adhd"
+                  value="เป็นประจำ"
+                  checked={formData.adhd === "เป็นประจำ"}
+                  onChange={(e) => onChange("adhd", e.target.value)}
+                />
+                เป็นประจำ
+              </label>
+            </div>
+          </div>
+          {/* 3. */}
+          <div className="flex flex-col">
+            <label htmlFor="madness">หงุดหงิด</label>
+            <div className="flex flex-col">
+              <label>
+                <input
+                  type="radio"
+                  name="madness"
+                  value="น้อยมากหรือแทบไม่มี"
+                  checked={formData.madness === "น้อยมากหรือแทบไม่มี"}
+                  onChange={(e) => onChange("madness", e.target.value)}
+                />
+                น้อยมากหรือแทบไม่มี
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="madness"
+                  value="เป็นบางครั้ง"
+                  checked={formData.madness === "เป็นบางครั้ง"}
+                  onChange={(e) => onChange("madness", e.target.value)}
+                />
+                เป็นบางครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="madness"
+                  value="เป็นบ่อยครั้ง"
+                  checked={formData.madness === "เป็นบ่อยครั้ง"}
+                  onChange={(e) => onChange("madness", e.target.value)}
+                />
+                เป็นบ่อยครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="madness"
+                  value="เป็นประจำ"
+                  checked={formData.madness === "เป็นประจำ"}
+                  onChange={(e) => onChange("madness", e.target.value)}
+                />
+                เป็นประจำ
+              </label>
+            </div>
+          </div>
+          {/* 4. */}
+          <div className="flex flex-col">
+            <label htmlFor="bored">รู้สึกเบื่อ เซ็ง</label>
+            <div className="flex flex-col">
+              <label>
+                <input
+                  type="radio"
+                  name="bored"
+                  value="น้อยมากหรือแทบไม่มี"
+                  checked={formData.bored === "น้อยมากหรือแทบไม่มี"}
+                  onChange={(e) => onChange("bored", e.target.value)}
+                />
+                น้อยมากหรือแทบไม่มี
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="bored"
+                  value="เป็นบางครั้ง"
+                  checked={formData.bored === "เป็นบางครั้ง"}
+                  onChange={(e) => onChange("bored", e.target.value)}
+                />
+                เป็นบางครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="bored"
+                  value="เป็นบ่อยครั้ง"
+                  checked={formData.bored === "เป็นบ่อยครั้ง"}
+                  onChange={(e) => onChange("bored", e.target.value)}
+                />
+                เป็นบ่อยครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="bored"
+                  value="เป็นประจำ"
+                  checked={formData.bored === "เป็นประจำ"}
+                  onChange={(e) => onChange("bored", e.target.value)}
+                />
+                เป็นประจำ
+              </label>
+            </div>
+          </div>
+          {/* 5. */}
+          <div className="flex flex-col">
+            <label htmlFor="introvert">ไม่อยากพบปะผู้คน</label>
+            <div className="flex flex-col">
+              <label>
+                <input
+                  type="radio"
+                  name="introvert"
+                  value="น้อยมากหรือแทบไม่มี"
+                  checked={formData.introvert === "น้อยมากหรือแทบไม่มี"}
+                  onChange={(e) => onChange("introvert", e.target.value)}
+                />
+                น้อยมากหรือแทบไม่มี
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="introvert"
+                  value="เป็นบางครั้ง"
+                  checked={formData.introvert === "เป็นบางครั้ง"}
+                  onChange={(e) => onChange("introvert", e.target.value)}
+                />
+                เป็นบางครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="introvert"
+                  value="เป็นบ่อยครั้ง"
+                  checked={formData.introvert === "เป็นบ่อยครั้ง"}
+                  onChange={(e) => onChange("introvert", e.target.value)}
+                />
+                เป็นบ่อยครั้ง
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="introvert"
+                  value="เป็นประจำ"
+                  checked={formData.introvert === "เป็นประจำ"}
+                  onChange={(e) => onChange("introvert", e.target.value)}
+                />
+                เป็นประจำ
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }
