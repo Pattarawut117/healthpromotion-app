@@ -11,7 +11,7 @@ export default function Home() {
   if (!isLoggedIn) return <p className="text-center p-4">Loading...</p>;
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-gray-50 min-h-screen">
+    <div className="flex flex-col gap-6 p-6 bg-gray-50 min-h-full">
       {/* Header Card */}
       <div className="w-full flex flex-col items-center bg-white text-gray-800 rounded-xl shadow-md p-6">
         <p className="font-bold text-lg">🏦 Piggy Bank</p>
