@@ -39,11 +39,11 @@ export type RegisterFormData = {
   tel: string;
   dob: string | null;
   gender: string;
-  height: number;
-  weight: number;
+  height: string;
+  weight: string;
   bmi: number;
-  condentialDisease: string;
-  sleepPerHour: number;
+  condentialDisease: string | string[];
+  sleepPerhour: string; // Changed from number to string based on API usage (often inputs are strings) or keep as string if API expects string
   sleepEnough: string;
   isSmoke: string;
   drinkBeer: string;
@@ -78,32 +78,32 @@ export default function RegisterPage() {
   };
 
   const [formData, setFormData] = useState<RegisterFormData>({
-    user_id: "",
-    sname: "",
-    lname: "",
-    tel: "",
-    dob: "",
-    gender: "",
-    height: 0,
-    weight: 0,
+    user_id: '',
+    sname: '',
+    lname: '',
+    tel: '',
+    dob: '',
+    gender: '',
+    height: '',
+    weight: '',
     bmi: 0,
-    condentialDisease: "",
-    sleepPerHour: 0,
-    sleepEnough: "",
-    isSmoke: "",
-    drinkBeer: "",
-    drinkWater: "",
-    sleepProblem: "",
-    adhd: "",
-    madness: "",
-    bored: "",
-    introvert: "",
-    unit: "",
-    eatVegetable: "",
-    eatSour: "",
-    eatSweetness: "",
-    activitiesTried: "",
-    workingLongtime: "",
+    condentialDisease: '',
+    sleepPerhour: '',
+    sleepEnough: '',
+    isSmoke: '',
+    drinkBeer: '',
+    drinkWater: '',
+    sleepProblem: '',
+    adhd: '',
+    madness: '',
+    bored: '',
+    introvert: '',
+    unit: '',
+    eatVegetable: '',
+    eatSour: '',
+    eatSweetness: '',
+    activitiesTried: '',
+    workingLongtime: '',
   });
   console.log(formData);
 
@@ -190,7 +190,7 @@ export default function RegisterPage() {
       content: <RegisterForm formData={formData} onChange={handleChange} />,
     },
     {
-      title: "Daily Goals",
+      title: 'Health & Lifestyle',
       content: <TargetForm formData={formData} onChange={handleChange} />,
     },
     {
@@ -221,7 +221,9 @@ export default function RegisterPage() {
         onClose={() => setNotification({ message: "", type: "" })}
       />
 
-      <div className="my-4">{steps[current].content}</div>
+
+
+      <div className="">{steps[current].content}</div>
 
       <div className="flex gap-2 justify-around">
         {current > 0 && (

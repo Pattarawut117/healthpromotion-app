@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalBottomBar from "@/components/ConditionalBottomBar";
-import Image from "next/image";
 import { LiffProvider } from "@/contexts/LiffContext";
 import Link from "next/link";
 import AuthRedirector from "@/components/AuthRedirector"; // Added import for AuthRedirector
@@ -39,13 +38,7 @@ export default function RootLayout({
               <nav className="text-xl">Thaihealth</nav>
               <Link href="/landing/level">
                 <div className="bg-primary-foreground text-primary flex gap-2 px-3 rounded-full py-1 items-center">
-                  <Image
-                    src="/topbar/coin.png"
-                    width={24}
-                    height={24}
-                    alt="coin"
-                  />
-                  <span className="text-lg">100</span>
+
                 </div>
               </Link>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { RegisterFormData } from "@/app/user/register/page";
+import React from 'react';
+import { RegisterFormData } from '@/app/user/register/page';
 
 type Props = {
   formData: RegisterFormData;
@@ -9,393 +9,240 @@ type Props = {
 };
 
 export default function TargetForm({ formData, onChange }: Props) {
+  const inputClasses =
+    'w-full p-2 border border-input rounded-md focus:ring-primary focus:border-primary bg-background';
+
+  interface Field {
+    id: keyof RegisterFormData;
+    label: string;
+    type: 'text' | 'select' | 'checkbox';
+    options?: string[];
+  }
+
+  interface Section {
+    title: string;
+    fields: Field[];
+  }
+
+  const sections: Section[] = [
+    {
+      title: 'Health Status',
+      fields: [
+        {
+          id: 'condentialDisease',
+          label: 'Congenital Disease (โรคประจำตัว)',
+          type: 'checkbox',
+          options: ['ความดันโลหิตสูง', 'ไขมันในเลือดสูง', 'โรคเบาหวาน', 'โรคหัวใจ', 'โรคไต', 'โรคปอดอุดกั้นเรื้อรัง', 'มะเร็ง', 'โรคอื่นๆ'],
+        },
+        {
+          id: 'isSmoke',
+          label: 'Do you smoke? (การสูบบุหรี่)',
+          type: 'select',
+          options: ['ไม่สูบ', 'สูบ', 'เคยสูบแต่เลิกแล้ว'],
+        },
+        {
+          id: 'drinkBeer',
+          label: 'ท่านดื่มเบียร์เกิน 4 กระป๋องหรือ 2 ขวดใหญ่หรือสุราเกินครึ่งแบนขึ้นไปหรือไม่',
+          type: 'select',
+          options: ['ไม่เคยเลย', 'เดือนละครั้ง', 'สัปดาห์ละครั้ง', 'ทุกวันหรือเกือบทุกวัน'],
+        },
+        {
+          id: 'drinkWater',
+          label: 'ท่านดื่มวันละไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล. ขวดใหญ่ 1500 มล.)',
+          type: 'select',
+          options: ['ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)', '4-6 แก้ว (1,000-1,500 มล.)', 'มากกว่า 6-8 แก้ว (1,500-2,000 มล.)', 'มากกว่า 8-10 แก้ว (2,000-2,500 มล.)'],
+        },
+      ],
+    },
+    {
+      title: 'Sleep Habits',
+      fields: [
+        {
+          id: 'sleepPerhour',
+          label: 'ส่วนใหญ่ท่านนอนวันละกี่ชั่วโมง',
+          type: 'select',
+          options: ['4 ชั่วโมง/วัน', '5 ชั่วโมง/วัน', '6 ชั่วโมง/วัน', '7 ชั่วโมง/วัน', '8 ชั่วโมง/วัน', 'อื่นๆ'],
+        },
+        {
+          id: 'sleepEnough',
+          label: 'ท่านคิดว่าการนอนเพียงพอหรือไม่',
+          type: 'select',
+          options: ['เพียงพอ', 'ไม่เพียงพอ'],
+        },
+        {
+          id: 'sleepProblem',
+          label: 'ท่านมีปัญหาการนอนไม่หลับหรือนอนมาก',
+          type: 'select',
+          options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
+        },
+      ],
+    },
+    {
+      title: 'Mental Health Check',
+      fields: [
+        {
+          id: 'adhd',
+          label: 'มีสมาธิน้อยลง',
+          type: 'select',
+          options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
+        },
+        {
+          id: 'madness',
+          label: 'หงุดหงิด กระวนกระวาย วุ่นวายใจหรือไม่',
+          type: 'select',
+          options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
+        },
+        {
+          id: 'bored',
+          label: 'รู้สึกเบื่อหน่ายหรือไม่',
+          type: 'select',
+          options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
+        },
+        {
+          id: 'introvert',
+          label: 'ไม่อยากพบปะผู้คนหรือไม่',
+          type: 'select',
+          options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
+        },
+      ],
+    },
+    {
+      title: 'Eat Habits (พฤติกรรมการกิน)',
+      fields: [
+        {
+          id: 'eatVegetable',
+          label: 'ท่านกินผักอย่างน้อย 5 ทัพพีต่อวันอย่างไร',
+          type: 'select',
+          options: ['ไม่กินเลย', 'กิน 1-3 วันต่อสัปดาห์', 'กิน 4-6 วันต่อสัปดาห์', 'กินทุกวัน'],
+        },
+        {
+          id: 'eatSour',
+          label: 'ท่านเติมเครื่องปรุงรสเค็มหรือไม่',
+          type: 'select',
+          options: ['ไม่เติมเครื่องปรุงรสเค็มเลย', 'เติมเครื่องปรุงรสเค็มเป็นบางครั้ง', 'เติมเครื่องปรุงรสเค็มเป็นทุกครั้ง'],
+        },
+        {
+          id: 'eatSweetness',
+          label: 'ท่านดื่มเครื่องดื่มรสหวานหรือไม่',
+          type: 'select',
+          options: ['ไม่ดื่มเลย', 'ดื่ม 1-3 วันต่อสัปดาห์', 'ดื่ม 4-6 วันต่อสัปดาห์', 'ดื่มทุกวัน'],
+        },
+      ],
+    },
+    {
+      title: 'Activities',
+      fields: [
+        {
+          id: 'activitiesTried',
+          label: 'ท่านมีกิจกรรมทางกายหรือเคลื่อนไหวหรือไม่อย่างไร',
+          type: 'select',
+          options: ['ไม่มีกิจกรรมเลย', 'มีกิจกรรมทางกายน้อยกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน', 'มีกิจกรรมทางกายมากกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน'],
+        },
+      ],
+    },
+  ];
+
+  const getValue = (id: keyof RegisterFormData): string | string[] | number | null => {
+    return formData[id];
+  };
+
+  const isChecked = (id: keyof RegisterFormData, option: string): boolean => {
+    const value = formData[id];
+    if (Array.isArray(value)) {
+      return value.includes(option);
+    }
+    return value === option;
+  };
+
   return (
     <div className="px-4 py-1 flex flex-col items-center">
-      <form className="w-full max-w-md space-y-4">
-        <div className="border">
-          <label htmlFor="sleepPerHour">ส่วนใหญ่ท่านนอนวันละกี่ชั่วโมง</label>
-          <select name="sleepPerHour" onChange={(e)=> onChange("sleepPerHour", e.target.value)}>
-            <option value="4 ชั่วโมง/วัน">4 ชั่วโมง/วัน</option>
-            <option value="5 ชั่วโมง/วัน">5 ชั่วโมง/วัน</option>
-            <option value="6 ชั่วโมง/วัน">6 ชั่วโมง/วัน</option>
-          </select>
-          <div className="flex flex-col">
-          <label htmlFor="sleeoEnough">ท่านคิดว่าชั่วโมงการนอนเพียงพอหรือไม่</label>
-          <div className="grid grid-cols-2">
-            <label><input type="radio" name="sleepEnough" value="เพียงพอ" onChange={(e)=> onChange("sleepEnough",e.target.value)}/>เพียงพอ</label>
-            <label ><input type="radio" name="sleepEnough" value="ไม่เพียงพอ" onChange={(e)=> onChange("sleepEnough",e.target.value)}/>ไม่เพียงพอ</label>
-          </div>
-          </div>
-        </div>
-        <div className="border">
-          <div className="flex flex-col">
-            <label htmlFor="isSmoke">ท่านสูบบุหรี่หรือไม่ อย่างไร</label>
-            <div className="grid grid-cols-2">
-              <label>
-                <input
-                  type="radio"
-                  name="isSmoke"
-                  value="สูบ"
-                  checked={formData.isSmoke === "สูบ"}
-                  onChange={(e) => onChange("isSmoke", e.target.value)}
-                />
-                สูบ
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="isSmoke"
-                  value="ไม่สูบ"
-                  checked={formData.isSmoke === "ไม่สูบ"}
-                  onChange={(e) => onChange("isSmoke", e.target.value)}
-                />
-                ไม่สูบ
-              </label>
+      <div className="w-full max-w-md space-y-4">
+        {sections.map((section, idx) => (
+          <div
+            key={idx}
+            className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground"
+          >
+            <legend className="font-semibold mb-4 border-b pb-2">
+              {section.title}
+            </legend>
+            <div className="space-y-4">
+              {section.fields.map((field) => (
+                <div key={field.id}>
+                  <label
+                    htmlFor={field.id}
+                    className="block text-sm font-medium text-muted-foreground mb-1"
+                  >
+                    {field.label}
+                  </label>
+                  {field.type === 'select' ? (
+
+                    <select
+                      id={field.id}
+                      value={String(getValue(field.id) || '')}
+                      onChange={(e) =>
+                        onChange(field.id, e.target.value)
+                      }
+                      className={inputClasses}
+                    >
+                      <option value="" disabled>
+                        Select...
+                      </option>
+                      {field.options?.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+
+                  ) : field.type === 'checkbox' ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {field.options?.map((opt) => (
+                        <label
+                          key={opt}
+                          className="flex items-center space-x-2"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`${field.id}-${opt}`}
+                            checked={isChecked(field.id, opt)}
+                            onChange={() => {
+                              const currentVal = formData[field.id];
+                              let newVal: string[];
+                              if (Array.isArray(currentVal)) {
+                                if (currentVal.includes(opt)) {
+                                  newVal = currentVal.filter((item) => item !== opt);
+                                } else {
+                                  newVal = [...currentVal, opt];
+                                }
+                              } else {
+                                // Fallback if it was a string or empty (initialize as array)
+                                newVal = [opt];
+                              }
+                              onChange(field.id, newVal);
+                            }}
+                            className="rounded border"
+                          />
+                          <span>{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      type={field.type}
+                      id={field.id}
+                      value={String(getValue(field.id) || '')}
+                      onChange={(e) =>
+                        onChange(field.id, e.target.value)
+                      }
+                      className={inputClasses}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-          <div className="flex flex-col">
-            <label htmlFor="drinkBeer">
-              ท่านดื่มเบียร์เกิน 4 กระป๋องหรือ 2
-              ขวดใหญ่หรือสุราเกินครึ่งแบนขึ้นไปหรือไม่
-            </label>
-            <div className="grid grid-cols-2">
-              <label>
-                <input
-                  type="radio"
-                  name="drinkBeer"
-                  value="ไม่เคยเลย"
-                  checked={formData.drinkBeer === "ไม่เคยเลย"}
-                  onChange={(e) => onChange("drinkBeer", e.target.value)}
-                />
-                ไม่เคยเลย
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="drinkBeer"
-                  value="เดือนละครั้ง"
-                  checked={formData.drinkBeer === "เดือนละครั้ง"}
-                  onChange={(e) => onChange("drinkBeer", e.target.value)}
-                />
-                เดือนละครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="drinkBeer"
-                  value="สัปดาห์ละครั้ง"
-                  checked={formData.drinkBeer === "สัปดาห์ละครั้ง"}
-                  onChange={(e) => onChange("drinkBeer", e.target.value)}
-                />
-                สัปดาห์ละครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="drinkBeer"
-                  value="ทุกวันหรือเกือบทุกวัน"
-                  checked={formData.drinkBeer === "ทุกวันหรือเกือบทุกวัน"}
-                  onChange={(e) => onChange("drinkBeer", e.target.value)}
-                />
-                ทุกวันหรือเกือบทุกวัน
-              </label>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="drinkWater">
-              ท่านดื่มน้ำสะอาดวันละเท่าไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล.
-              ขวดใหญ่ 1,500 มล.)
-            </label>
-            <div className="flex flex-col">
-              <label>
-                <input
-                  type="radio"
-                  name="drinkWater"
-                  value="ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)"
-                  checked={
-                    formData.drinkWater === "ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)"
-                  }
-                  onChange={(e) => onChange("drinkWater", e.target.value)}
-                />
-                ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="drinkWater"
-                  value="ดื่ม 4-6 แก้ว (มากกว่า 1,000-1,500 มล.)"
-                  checked={
-                    formData.drinkWater ===
-                    "ดื่ม 4-6 แก้ว (มากกว่า 1,000-1,500 มล.)"
-                  }
-                  onChange={(e) => onChange("drinkWater", e.target.value)}
-                />
-                ดื่ม 4-6 แก้ว (มากกว่า 1,000-1,500 มล.)
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="drinkWater"
-                  value="ดื่มมากกว่า 6-8 แก้ว (มากกว่า 1,500-2,000 มล.)"
-                  checked={
-                    formData.drinkWater ===
-                    "ดื่มมากกว่า 6-8 แก้ว (มากกว่า 1,500-2,000 มล.)"
-                  }
-                  onChange={(e) => onChange("drinkWater", e.target.value)}
-                />
-                ดื่มมากกว่า 6-8 แก้ว (มากกว่า 1,500-2,000 มล.)
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="drinkWater"
-                  value="ดื่มมากกว่า 8-10 แก้ว (มากกว่า 2,000-2,500 มล.)"
-                  checked={
-                    formData.drinkWater ===
-                    "ดื่มมากกว่า 8-10 แก้ว (มากกว่า 2,000-2,500 มล.)"
-                  }
-                  onChange={(e) => onChange("drinkWater", e.target.value)}
-                />
-                ดื่มมากกว่า 8-10 แก้ว (มากกว่า 2,000-2,500 มล.)
-              </label>
-            </div>
-          </div>
-        </div>
-        <div className="border">
-          {/* 1. */}
-          <div className="flex flex-col">
-            <label htmlFor="sleepProblem">
-              มีปัญหาการนอน นอนไม่หลับหรือนอนมาก
-            </label>
-            <div className="flex flex-col">
-              <label>
-                <input
-                  type="radio"
-                  name="sleepProblem"
-                  value="น้อยมากหรือแทบไม่มี"
-                  checked={formData.sleepProblem === "น้อยมากหรือแทบไม่มี"}
-                  onChange={(e) => onChange("sleepProblem", e.target.value)}
-                />
-                น้อยมากหรือแทบไม่มี
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sleepProblem"
-                  value="เป็นบางครั้ง"
-                  checked={formData.sleepProblem === "เป็นบางครั้ง"}
-                  onChange={(e) => onChange("sleepProblem", e.target.value)}
-                />
-                เป็นบางครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sleepProblem"
-                  value="เป็นบ่อยครั้ง"
-                  checked={formData.sleepProblem === "เป็นบ่อยครั้ง"}
-                  onChange={(e) => onChange("sleepProblem", e.target.value)}
-                />
-                เป็นบ่อยครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="sleepProblem"
-                  value="เป็นประจำ"
-                  checked={formData.sleepProblem === "เป็นประจำ"}
-                  onChange={(e) => onChange("sleepProblem", e.target.value)}
-                />
-                เป็นประจำ
-              </label>
-            </div>
-          </div>
-          {/* 2. */}
-          <div className="flex flex-col">
-            <label htmlFor="adhd">มีสมาธิน้อยลง</label>
-            <div className="flex flex-col">
-              <label>
-                <input
-                  type="radio"
-                  name="adhd"
-                  value="น้อยมากหรือแทบไม่มี"
-                  checked={formData.adhd === "น้อยมากหรือแทบไม่มี"}
-                  onChange={(e) => onChange("adhd", e.target.value)}
-                />
-                น้อยมากหรือแทบไม่มี
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="adhd"
-                  value="เป็นบางครั้ง"
-                  checked={formData.adhd === "เป็นบางครั้ง"}
-                  onChange={(e) => onChange("adhd", e.target.value)}
-                />
-                เป็นบางครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="adhd"
-                  value="เป็นบ่อยครั้ง"
-                  checked={formData.adhd === "เป็นบ่อยครั้ง"}
-                  onChange={(e) => onChange("adhd", e.target.value)}
-                />
-                เป็นบ่อยครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="adhd"
-                  value="เป็นประจำ"
-                  checked={formData.adhd === "เป็นประจำ"}
-                  onChange={(e) => onChange("adhd", e.target.value)}
-                />
-                เป็นประจำ
-              </label>
-            </div>
-          </div>
-          {/* 3. */}
-          <div className="flex flex-col">
-            <label htmlFor="madness">หงุดหงิด</label>
-            <div className="flex flex-col">
-              <label>
-                <input
-                  type="radio"
-                  name="madness"
-                  value="น้อยมากหรือแทบไม่มี"
-                  checked={formData.madness === "น้อยมากหรือแทบไม่มี"}
-                  onChange={(e) => onChange("madness", e.target.value)}
-                />
-                น้อยมากหรือแทบไม่มี
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="madness"
-                  value="เป็นบางครั้ง"
-                  checked={formData.madness === "เป็นบางครั้ง"}
-                  onChange={(e) => onChange("madness", e.target.value)}
-                />
-                เป็นบางครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="madness"
-                  value="เป็นบ่อยครั้ง"
-                  checked={formData.madness === "เป็นบ่อยครั้ง"}
-                  onChange={(e) => onChange("madness", e.target.value)}
-                />
-                เป็นบ่อยครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="madness"
-                  value="เป็นประจำ"
-                  checked={formData.madness === "เป็นประจำ"}
-                  onChange={(e) => onChange("madness", e.target.value)}
-                />
-                เป็นประจำ
-              </label>
-            </div>
-          </div>
-          {/* 4. */}
-          <div className="flex flex-col">
-            <label htmlFor="bored">รู้สึกเบื่อ เซ็ง</label>
-            <div className="flex flex-col">
-              <label>
-                <input
-                  type="radio"
-                  name="bored"
-                  value="น้อยมากหรือแทบไม่มี"
-                  checked={formData.bored === "น้อยมากหรือแทบไม่มี"}
-                  onChange={(e) => onChange("bored", e.target.value)}
-                />
-                น้อยมากหรือแทบไม่มี
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="bored"
-                  value="เป็นบางครั้ง"
-                  checked={formData.bored === "เป็นบางครั้ง"}
-                  onChange={(e) => onChange("bored", e.target.value)}
-                />
-                เป็นบางครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="bored"
-                  value="เป็นบ่อยครั้ง"
-                  checked={formData.bored === "เป็นบ่อยครั้ง"}
-                  onChange={(e) => onChange("bored", e.target.value)}
-                />
-                เป็นบ่อยครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="bored"
-                  value="เป็นประจำ"
-                  checked={formData.bored === "เป็นประจำ"}
-                  onChange={(e) => onChange("bored", e.target.value)}
-                />
-                เป็นประจำ
-              </label>
-            </div>
-          </div>
-          {/* 5. */}
-          <div className="flex flex-col">
-            <label htmlFor="introvert">ไม่อยากพบปะผู้คน</label>
-            <div className="flex flex-col">
-              <label>
-                <input
-                  type="radio"
-                  name="introvert"
-                  value="น้อยมากหรือแทบไม่มี"
-                  checked={formData.introvert === "น้อยมากหรือแทบไม่มี"}
-                  onChange={(e) => onChange("introvert", e.target.value)}
-                />
-                น้อยมากหรือแทบไม่มี
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="introvert"
-                  value="เป็นบางครั้ง"
-                  checked={formData.introvert === "เป็นบางครั้ง"}
-                  onChange={(e) => onChange("introvert", e.target.value)}
-                />
-                เป็นบางครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="introvert"
-                  value="เป็นบ่อยครั้ง"
-                  checked={formData.introvert === "เป็นบ่อยครั้ง"}
-                  onChange={(e) => onChange("introvert", e.target.value)}
-                />
-                เป็นบ่อยครั้ง
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="introvert"
-                  value="เป็นประจำ"
-                  checked={formData.introvert === "เป็นประจำ"}
-                  onChange={(e) => onChange("introvert", e.target.value)}
-                />
-                เป็นประจำ
-              </label>
-            </div>
-          </div>
-        </div>
-      </form>
+        ))}
+      </div>
     </div>
   );
 }

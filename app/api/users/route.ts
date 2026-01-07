@@ -5,31 +5,31 @@ import { RowDataPacket } from "mysql2";
 // กำหนด TypeScript Interface สำหรับข้อมูลผู้ใช้
 interface UserInfo {
   user_id: string;
-  sname: string;
-  lname: string;
-  tel: string;
-  dob: string | null;
-  gender: string;
-  height: number;
-  weight: number;
-  bmi: number;
-  condentialDisease: string;
-  sleepPerHour: number;
-  sleepEnough: string | null;
-  isSmoke: string;
-  drinkBeer: string;
-  drinkWater: string;
-  sleepProblem: string;
-  adhd: string;
-  madness: string;
-  bored: string;
-  introvert: string;
-  unit: string;
-  eatVegetable: string;
-  eatSour: string;
-  eatSweetness: string;
-  activitiesTried: string;
-  workingLongtime: string;
+  sname?: string;
+  lname?: string;
+  tel?: string;
+  dob?: string;
+  gender?: string;
+  height?: string;
+  weight?: string;
+  bmi?: number;
+  condentialDisease?: string;
+  sleepPerhour?: string;
+  sleepEnough?: string;
+  isSmoke?: string;
+  drinkBeer?: string;
+  drinkWater?: string;
+  sleepProblem?: string;
+  adhd?: string;
+  madness?: string;
+  bored?: string;
+  introvert?: string;
+  unit?: string;
+  eatVegetable?: string;
+  eatSour?: string;
+  eatSweetness?: string;
+  activitiesTried?: string;
+  workingLongtime?: string;
 }
 
 // ✅ GET /api/users?user_id=xxx
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     }
 
     const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT *
+      `SELECT user_id, sname, lname, tel, dob, gender, height, weight, bmi, condentialDisease, sleepPerhour, sleepEnough, isSmoke, drinkBeer, drinkWater, sleepProblem, adhd, madness, bored, introvert, unit, eatVegetable, eatSour, eatSweetness, activitiesTried, workingLongtime 
        FROM user_info 
        WHERE user_id = ? 
        LIMIT 1`,
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
       body.weight ?? null,
       body.bmi ?? null,
       body.condentialDisease ?? null,
-      body.sleepPerHour ?? null,
+      body.sleepPerhour ?? null,
       body.sleepEnough ?? null,
       body.isSmoke ?? null,
       body.drinkBeer ?? null,
@@ -113,8 +113,8 @@ export async function POST(req: Request) {
     // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว
     await db.execute(
       `INSERT INTO user_info 
-        (user_id, sname, lname, tel, dob, gender, height, weight, bmi, condentialDisease, sleepPerHour, sleepEnough, isSmoke, drinkBeer, drinkWater, sleepProblem, adhd, madness,bored,introvert, unit, eatVegetable,eatSour,eatSweetness,activitiesTried,workingLongtime) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)
+        (user_id, sname, lname, tel, dob, gender, height, weight, bmi, condentialDisease, sleepPerhour, sleepEnough, isSmoke, drinkBeer, drinkWater, sleepProblem, adhd, madness, bored, introvert, unit, eatVegetable, eatSour, eatSweetness, activitiesTried, workingLongtime) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
         sname = VALUES(sname),
         lname = VALUES(lname),
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
         weight = VALUES(weight),
         bmi = VALUES(bmi),
         condentialDisease = VALUES(condentialDisease),
-        sleepPerHour = VALUES(sleepPerHour),
+        sleepPerhour = VALUES(sleepPerhour),
         sleepEnough = VALUES(sleepEnough),
         isSmoke = VALUES(isSmoke),
         drinkBeer = VALUES(drinkBeer),
