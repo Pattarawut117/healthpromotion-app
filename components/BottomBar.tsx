@@ -22,14 +22,13 @@ export default function BottomBar() {
   };
 
   return (
-    <div className="absolute bottom-0 w-full left-0 right-0 bg-white shadow-md border-t border-gray-200 flex justify-between py-[16] z-50 px-8">
+    <div className="w-full bg-white shadow-md border-t border-gray-200 flex justify-between py-[16] z-50 px-8">
       {menuItems.map((item) => (
         <button
           key={item.name}
           onClick={() => handleClick(item)}
-          className={`flex flex-col items-center text-xs ${
-            active === item.name ? "text-green-600 font-semibold" : "text-gray-500"
-          }`}
+          className={`flex flex-col items-center text-xs ${active === item.name ? "text-green-600 font-semibold" : "text-gray-500"
+            }`}
         >
           <Image
             src={item.icon}

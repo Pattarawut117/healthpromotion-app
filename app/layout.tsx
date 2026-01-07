@@ -33,9 +33,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-secondary`}
       >
         <div className="flex justify-center items-center min-h-screen">
-          <div className="relative bg-background w-full max-w-sm min-h-screen shadow-lg overflow-y-auto bg-gray-50">
+          <div className="relative bg-background w-full max-w-sm h-screen shadow-lg flex flex-col bg-gray-50 overflow-hidden">
             {/* Topbar */}
-            <div className="bg-orange-400 text-primary-foreground py-4 px-4 font-serif font-bold flex justify-between items-center">
+            <div className="bg-orange-400 text-primary-foreground py-4 px-4 font-serif font-bold flex justify-between items-center shrink-0">
               <nav className="text-xl">Thaihealth</nav>
               <Link href="/landing/level">
                 <div className="bg-primary-foreground text-primary flex gap-2 px-3 rounded-full py-1 items-center">
@@ -51,14 +51,14 @@ export default function RootLayout({
             </div>
 
             {/* Main Content */}
-            <main className="pb-16">
+            <main className="flex-1 overflow-y-auto">
               <LiffProvider>
                 <AuthRedirector>{children}</AuthRedirector>
               </LiffProvider>
             </main>
 
             {/* Bottombar */}
-            <div className="absolute bottom-0 w-full">
+            <div className="w-full shrink-0">
               <ConditionalBottomBar />
             </div>
           </div>
