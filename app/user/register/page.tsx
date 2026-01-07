@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import RegisterForm from '@/components/RegisterForm';
-import TargetForm from '@/components/TargetForm';
-import { useLiff } from '@/contexts/LiffContext';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import RegisterForm from "@/components/RegisterForm";
+import TargetForm from "@/components/TargetForm";
+import { useLiff } from "@/contexts/LiffContext";
+import { useRouter } from "next/navigation";
+import BehaviorForm from "@/components/BehaviorForm";
 
 // Notification component
 const Notification = ({
@@ -13,14 +14,13 @@ const Notification = ({
   onClose,
 }: {
   message: string;
-  type: 'success' | 'error' | '';
+  type: "success" | "error" | "";
   onClose: () => void;
 }) => {
   if (!message || !type) return null;
 
-  const baseClasses = 'p-4 rounded-md text-white';
-  const typeClasses =
-    type === 'success' ? 'bg-green-500' : 'bg-destructive';
+  const baseClasses = "p-4 rounded-md text-white";
+  const typeClasses = type === "success" ? "bg-green-500" : "bg-destructive";
 
   return (
     <div className={`fixed top-5 right-5 ${baseClasses} ${typeClasses}`}>
@@ -32,7 +32,6 @@ const Notification = ({
   );
 };
 
-
 export type RegisterFormData = {
   user_id: string;
   sname: string;
@@ -42,10 +41,24 @@ export type RegisterFormData = {
   gender: string;
   height: number;
   weight: number;
-  level_activity: string;
-  before_pic: string;
-  exercise_target: number;
-  water_target: number;
+  bmi: number;
+  condentialDisease: string;
+  sleepPerHour: number;
+  sleepEnough: string;
+  isSmoke: string;
+  drinkBeer: string;
+  drinkWater: string;
+  sleepProblem: string;
+  adhd: string;
+  madness: string;
+  bored: string;
+  introvert: string;
+  unit: string;
+  eatVegetable: string;
+  eatSour: string;
+  eatSweetness: string;
+  activitiesTried: string;
+  workingLongtime: string;
 };
 
 export default function RegisterPage() {
@@ -53,43 +66,95 @@ export default function RegisterPage() {
   const { profile } = useLiff();
   const router = useRouter();
   const [notification, setNotification] = useState({
-    message: '',
-    type: '' as 'success' | 'error' | '',
+    message: "",
+    type: "" as "success" | "error" | "",
   });
 
-  const showNotification = (message: string, type: 'success' | 'error') => {
+  const showNotification = (message: string, type: "success" | "error") => {
     setNotification({ message, type });
     setTimeout(() => {
-      setNotification({ message: '', type: '' });
+      setNotification({ message: "", type: "" });
     }, 3000);
   };
 
   const [formData, setFormData] = useState<RegisterFormData>({
-    user_id: '',
-    sname: '',
-    lname: '',
-    tel: '',
-    dob: '',
-    gender: '',
+    user_id: "",
+    sname: "",
+    lname: "",
+    tel: "",
+    dob: "",
+    gender: "",
     height: 0,
     weight: 0,
-    level_activity: '',
-    before_pic: '',
-    exercise_target: 0,
-    water_target: 0,
+    bmi: 0,
+    condentialDisease: "",
+    sleepPerHour: 0,
+    sleepEnough: "",
+    isSmoke: "",
+    drinkBeer: "",
+    drinkWater: "",
+    sleepProblem: "",
+    adhd: "",
+    madness: "",
+    bored: "",
+    introvert: "",
+    unit: "",
+    eatVegetable: "",
+    eatSour: "",
+    eatSweetness: "",
+    activitiesTried: "",
+    workingLongtime: "",
   });
+  console.log(formData);
 
   const handleChange = (field: keyof RegisterFormData, value: unknown) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    // Thai character validation function
+    const isThai = (text: string) => {
+      // Regular expression to match only Thai characters, spaces, and common Thai punctuation.
+      // Unicode range for Thai characters: U+0E00-U+0E7F
+      // \u0E00-\u0E7F covers Thai characters.
+      // \s covers whitespace.
+      // \u0E2F is the Thai character for '๏' (Thai Baht symbol), sometimes used as punctuation.
+      // \u0E40-\u0E44 are various Thai vowels/tone marks that might appear.
+      // This regex allows Thai characters, spaces, and a few common punctuation marks that might be used in names.
+      const thaiRegex = /^[\u0E00-\u0E7F\s\u0E2F\u0E3F\u0E40-\u0E44]*$/u;
+      return thaiRegex.test(text);
+    };
+
+    setFormData((prev) => {
+      if ((field === "sname" || field === "lname") && typeof value === 'string') {
+        if (!isThai(value)) {
+          showNotification(`Please use only Thai characters for ${field === "sname" ? "First Name" : "Last Name"}.`, "error");
+          return prev; // Do not update state if invalid
+        }
+      }
+
+      const updatedFormData = {
+        ...prev,
+        [field]: value,
+      };
+
+      if (field === "height" || field === "weight") {
+        const height = field === "height" ? Number(value) : prev.height;
+        const weight = field === "weight" ? Number(value) : prev.weight;
+
+        if (height > 0 && weight > 0) {
+          const heightInMeters = height / 100;
+          const bmi = weight / (heightInMeters * heightInMeters);
+          updatedFormData.bmi = parseFloat(bmi.toFixed(2));
+        } else {
+          updatedFormData.bmi = 0;
+        }
+      }
+
+      return updatedFormData;
+    });
   };
 
   const handleSubmit = async () => {
     try {
       if (!profile) {
-        showNotification('Waiting for LINE user data...', 'error');
+        showNotification("Waiting for LINE user data...", "error");
         return;
       }
 
@@ -100,45 +165,45 @@ export default function RegisterPage() {
 
       const payload = { ...safeData, user_id: profile.userId };
 
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (res.ok) {
-        showNotification('Registration successful! 🎉', 'success');
-        router.push('/');
+        showNotification("Registration successful! 🎉", "success");
+        router.push("/");
       } else {
-        showNotification('Error: ' + data.error, 'error');
+        showNotification("Error: " + data.error, "error");
       }
     } catch (err) {
       console.error(err);
-      showNotification('Server error occurred.', 'error');
+      showNotification("Server error occurred.", "error");
     }
   };
 
   const steps = [
     {
-      title: 'General Info',
+      title: "General Info",
       content: <RegisterForm formData={formData} onChange={handleChange} />,
     },
     {
-      title: 'Daily Goals',
+      title: "Daily Goals",
       content: <TargetForm formData={formData} onChange={handleChange} />,
     },
     {
-      title: 'Finish',
+      title: "Behavior Info",
+      content: <BehaviorForm formData={formData} onChange={handleChange} />,
+    },
+    {
+      title: "Finish",
       content: (
         <div>
           ✅ Review your information and confirm.
           <pre className="bg-secondary text-xs p-2 mt-2 rounded">
-            {JSON.stringify(
-              { ...formData, user_id: profile?.userId },
-              null,
-              2
-            )}
+            {JSON.stringify({ ...formData, user_id: profile?.userId }, null, 2)}
           </pre>
         </div>
       ),
@@ -153,10 +218,8 @@ export default function RegisterPage() {
       <Notification
         message={notification.message}
         type={notification.type}
-        onClose={() => setNotification({ message: '', type: '' })}
+        onClose={() => setNotification({ message: "", type: "" })}
       />
-      
-      
 
       <div className="my-4">{steps[current].content}</div>
 
