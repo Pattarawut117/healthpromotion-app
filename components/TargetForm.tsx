@@ -182,10 +182,10 @@ export default function TargetForm({ formData, onChange }: Props) {
                       onChange={(e) =>
                         onChange(field.id, e.target.value)
                       }
-                      className={inputClasses}
+                      className={`select ${inputClasses}`}
                     >
                       <option value="" disabled>
-                        Select...
+                        โปรดระบุ
                       </option>
                       {field.options?.map((opt) => (
                         <option key={opt} value={opt}>
@@ -220,7 +220,7 @@ export default function TargetForm({ formData, onChange }: Props) {
                               }
                               onChange(field.id, newVal);
                             }}
-                            className="rounded border"
+                            className="checkbox checkbox-xs"
                           />
                           <span>{opt}</span>
                         </label>

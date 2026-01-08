@@ -4,6 +4,8 @@ import React from 'react';
 import UserPicture from './profile/UserPicture';
 import { RegisterFormData } from '@/app/user/register/page';
 import unitData from '@/app/user/data/data';
+import Select from 'react-select';
+
 
 // Props type
 type Props = {
@@ -16,7 +18,12 @@ type Props = {
 export default function RegisterForm({ formData, onChange }: Props) {
 
   const inputClasses =
-    'w-full p-2 border border-input rounded-md focus:ring-primary focus:border-primary bg-background';
+    'input w-full p-2 border border-input rounded-md focus:ring-primary focus:border-primary bg-background';
+
+  const unitOptions = unitData.map((unit) => ({
+    value: unit.value,
+    label: unit.text,
+  }));
 
 
   return (
@@ -96,7 +103,7 @@ export default function RegisterForm({ formData, onChange }: Props) {
               id="gender"
               value={formData.gender}
               onChange={(e) => onChange("gender", e.target.value || "")}
-              className={inputClasses}
+              className={`select ${inputClasses}`}
               required
             >
               <option value="" disabled>ระบุเพศ</option>
@@ -110,20 +117,18 @@ export default function RegisterForm({ formData, onChange }: Props) {
             <label htmlFor="unit" className="block text-sm font-medium text-muted-foreground mb-1">
               หน่วยงาน
             </label>
-            <select
+            <Select
               id="unit"
-              value={formData.unit}
-              onChange={(e) => onChange('unit', e.target.value || '')}
-              className={inputClasses}
+              value={unitOptions.find((opt) => opt.value === formData.unit)}
+              onChange={(option) => onChange("unit", option?.value || "")}
+              options={unitOptions}
+              placeholder="ระบุหน่วยงาน"
+              className="basic-single"
+              classNamePrefix="select"
+              isClearable
+              isSearchable
               required
-            >
-              <option value="" disabled>ระบุหน่วยงาน</option>
-              {unitData.map((unit) => (
-                <option key={unit.id} value={unit.value}>
-                  {unit.text}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div className="mt-4">
@@ -134,7 +139,7 @@ export default function RegisterForm({ formData, onChange }: Props) {
               id="workingLongtime"
               value={formData.workingLongtime}
               onChange={(e) => onChange('workingLongtime', e.target.value || '')}
-              className={inputClasses}
+              className={`select ${inputClasses}`}
             >
               <option value="" disabled>ระบุ</option>
               <option value="น้อยกว่า 2 ชั่วโมง">น้อยกว่า 2 ชั่วโมง</option>
@@ -145,7 +150,7 @@ export default function RegisterForm({ formData, onChange }: Props) {
 
         {/* Health Information */}
         <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
-          <legend className="font-semibold mb-4">Health Information</legend>
+          <legend className="font-semibold mb-4">ข้อมูลสุขภาพ</legend>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="height" className="block text-sm font-medium text-muted-foreground mb-1">
