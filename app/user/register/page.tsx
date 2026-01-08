@@ -5,7 +5,6 @@ import RegisterForm from "@/components/RegisterForm";
 import TargetForm from "@/components/TargetForm";
 import { useLiff } from "@/contexts/LiffContext";
 import { useRouter } from "next/navigation";
-import BehaviorForm from "@/components/BehaviorForm";
 
 // Notification component
 const Notification = ({
@@ -110,13 +109,6 @@ export default function RegisterPage() {
   const handleChange = (field: keyof RegisterFormData, value: unknown) => {
     // Thai character validation function
     const isThai = (text: string) => {
-      // Regular expression to match only Thai characters, spaces, and common Thai punctuation.
-      // Unicode range for Thai characters: U+0E00-U+0E7F
-      // \u0E00-\u0E7F covers Thai characters.
-      // \s covers whitespace.
-      // \u0E2F is the Thai character for '๏' (Thai Baht symbol), sometimes used as punctuation.
-      // \u0E40-\u0E44 are various Thai vowels/tone marks that might appear.
-      // This regex allows Thai characters, spaces, and a few common punctuation marks that might be used in names.
       const thaiRegex = /^[\u0E00-\u0E7F\s\u0E2F\u0E3F\u0E40-\u0E44]*$/u;
       return thaiRegex.test(text);
     };
@@ -135,8 +127,8 @@ export default function RegisterPage() {
       };
 
       if (field === "height" || field === "weight") {
-        const height = field === "height" ? Number(value) : prev.height;
-        const weight = field === "weight" ? Number(value) : prev.weight;
+        const height = field === "height" ? Number(value) : Number(prev.height);
+        const weight = field === "weight" ? Number(value) : Number(prev.weight);
 
         if (height > 0 && weight > 0) {
           const heightInMeters = height / 100;
@@ -192,10 +184,6 @@ export default function RegisterPage() {
     {
       title: 'Health & Lifestyle',
       content: <TargetForm formData={formData} onChange={handleChange} />,
-    },
-    {
-      title: "Behavior Info",
-      content: <BehaviorForm formData={formData} onChange={handleChange} />,
     },
     {
       title: "Finish",

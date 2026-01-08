@@ -28,7 +28,24 @@ const FloatingActionButton = () => {
               💧
             </button>
           </div>
+          <div className="flex items-center gap-2 animate-slideInRight delay-100">
+                <p className="bg-white text-gray-800 px-3 py-2 rounded-lg shadow-md text-sm">
+                  บันทึกการนอน
+                </p>
+                <button className="bg-gradient-to-r from-blue-400 to-blue-600 hover:scale-110 transition transform text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center">
+                  💧
+                </button>
+              </div>
+              <div className="flex items-center gap-2 animate-slideInRight delay-100">
+                <p className="bg-white text-gray-800 px-3 py-2 rounded-lg shadow-md text-sm">
+                  บันทึกการทานอาหาร 2:1:1
+                </p>
+                <button className="bg-gradient-to-r from-blue-400 to-blue-600 hover:scale-110 transition transform text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center">
+                  💧
+                </button>
+              </div>
         </div>
+        
       )}
 
       {/* Main FAB */}
