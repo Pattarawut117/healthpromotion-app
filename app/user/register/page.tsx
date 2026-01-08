@@ -63,6 +63,7 @@ export type RegisterFormData = {
 export default function RegisterPage() {
   const [current, setCurrent] = useState(0);
   const { profile } = useLiff();
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const [notification, setNotification] = useState({
     message: "",
@@ -166,7 +167,10 @@ export default function RegisterPage() {
       const data = await res.json();
       if (res.ok) {
         showNotification("Registration successful! 🎉", "success");
-        router.push("/");
+        setShowModal(true);
+        setTimeout(() => {
+          router.push("/");
+        }, 3000);
       } else {
         showNotification("Error: " + data.error, "error");
       }
@@ -184,18 +188,7 @@ export default function RegisterPage() {
     {
       title: 'Health & Lifestyle',
       content: <TargetForm formData={formData} onChange={handleChange} />,
-    },
-    {
-      title: "Finish",
-      content: (
-        <div>
-          ✅ Review your information and confirm.
-          <pre className="bg-secondary text-xs p-2 mt-2 rounded">
-            {JSON.stringify({ ...formData, user_id: profile?.userId }, null, 2)}
-          </pre>
-        </div>
-      ),
-    },
+    }
   ];
 
   const next = () => setCurrent((prev) => prev + 1);
@@ -209,35 +202,44 @@ export default function RegisterPage() {
         onClose={() => setNotification({ message: "", type: "" })}
       />
 
-
-
       <div className="">{steps[current].content}</div>
 
-      <div className="flex gap-2 justify-around">
+      <div className="flex gap-2 justify-around mt-2">
         {current > 0 && (
           <button
             onClick={prev}
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md"
+            className="px-4 py-2 border border-primary btn btn-primary rounded-md"
           >
-            Back
+            กลับ
           </button>
         )}
         {current === steps.length - 1 ? (
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            className="px-4 py-2 btn btn-success rounded-md"
           >
-            Finish
+            เสร็จสิ้น
           </button>
         ) : (
           <button
             onClick={next}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            className="px-4 py-2 btn btn-primary rounded-md"
           >
-            Next
+            ถัดไป
           </button>
         )}
       </div>
+      {showModal && (
+        <div className="modal modal-open" role="dialog">
+          <div className="modal-box">
+            <h3 className="text-lg font-bold">เสร็จสิ้น</h3>
+            <p className="py-4">ระบบกำลังดำเนินการ</p>
+            <div className="modal-action">
+              <label htmlFor="my_modal_6" className="btn"> <span className="loading loading-spinner loading-md"></span>loading...</label>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

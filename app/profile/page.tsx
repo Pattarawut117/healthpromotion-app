@@ -25,29 +25,29 @@ export default function ProfilePage() {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     if (!profile?.userId) return;
-  //     try {
-  //       const res = await fetch(`/api/users?user_id=${profile.userId}`);
-  //       const data = await res.json();
-  //       if (res.ok) {
-  //         setUser(data);
-  //       } else {
-  //         console.warn("User not found:", data.error);
-  //       }
-  //     } catch (err) {
-  //       console.error("Fetch user error:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchUser();
-  // }, [profile?.userId]);
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!profile?.userId) return;
+      try {
+        const res = await fetch(`/api/users?user_id=${profile.userId}`);
+        const data = await res.json();
+        if (res.ok) {
+          setUser(data);
+        } else {
+          console.warn("User not found:", data.error);
+        }
+      } catch (err) {
+        console.error("Fetch user error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, [profile?.userId]);
 
-  // if (loading) {
-  //   return <div className="p-4 text-center">Loading...</div>;
-  // }
+  if (loading) {
+    return <div className="p-4 text-center">Loading...</div>;
+  }
 
   return (
     <div className="flex flex-col items-center p-4 space-y-4">
