@@ -114,7 +114,10 @@ export default function CampaignContent() {
                 <div className="card-body">
                     <div className="flex justify-between items-center mb-4">
                         <h1 className="card-title">{campaign.activity_name}</h1>
-                        <span className="badge badge-outline">{campaign.activity_type}</span>
+                        <div className="flex items-center gap-2">
+
+                            <span className="badge badge-outline">{campaign.activity_type}</span>
+                        </div>
                     </div>
 
                     <div className="mb-6">
@@ -139,11 +142,16 @@ export default function CampaignContent() {
                         ) : (
                             <button
                                 onClick={handleJoin}
-                                className="btn btn-primary">
+                                className="btn btn-primary"
+                                disabled={campaign.activity_type === "Run"}>
                                 เข้าร่วม
                             </button>
                         )}
+
                     </div>
+                    {campaign.activity_type === "Run" && (
+                        <button className="text-success text-sm font-bold">คุณมีกิจกรรมที่ลงทะเบียนแล้ว</button>
+                    )}
                 </div>
             </div>
         </div>

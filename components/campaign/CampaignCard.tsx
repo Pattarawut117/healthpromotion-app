@@ -6,22 +6,6 @@ import { RightOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import axios from 'axios';
 
-const specialCampaignMenu = [
-  {
-    pictureUrl: '/targetForm/exercise.png',
-    unit: 'TUH',
-    descMain: 'Fit for Fun',
-    path: '/'
-  },
-  {
-    pictureUrl: '/targetForm/exercise.png',
-    unit: '21 Days Challenge',
-    descMain: 'Mental Health',
-    path: '/profile'
-  },
-];
-
-
 interface ICampaign {
   id: number;
   activity_name: string;
@@ -57,48 +41,19 @@ export default function CampaignCard() {
             className="bg-card text-card-foreground rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col"
           >
             <div className="p-4 flex-grow">
-              {/* <Image
-                alt="Campaign Picture"
+              <Image
+                alt={item.activity_name}
                 width={200}
                 height={200}
-                src={item.pictureUrl}
+                src={item.title}
                 className="mx-auto"
-              /> */}
+              />
             </div>
             <div className="p-2 text-center">
               <p className="font-semibold text-lg">{item.activity_name}</p>
               <p className="text-muted-foreground text-sm">{item.activity_type}</p>
             </div>
             <Link href={`/campaign/${item.id}`}>
-              <div className="flex items-center justify-center gap-2 bg-orange-300 text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-primary/90 transition-colors duration-300">
-                <p className="text-sm">เข้าร่วม</p>
-                <RightOutlined />
-              </div>
-            </Link>
-          </div>
-        ))}
-      </div>
-      <div className="divider">Special Campaign</div>
-      <div className="grid grid-cols-2 gap-4">
-        {specialCampaignMenu.map((item) => (
-          <div
-            key={item.unit}
-            className="bg-card text-card-foreground rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col"
-          >
-            <div className="p-4 flex-grow">
-              <Image
-                alt="Campaign Picture"
-                width={200}
-                height={200}
-                src={item.pictureUrl}
-                className="mx-auto"
-              />
-            </div>
-            <div className="p-2 text-center">
-              <p className="font-semibold text-lg">{item.descMain}</p>
-              <p className="text-muted-foreground text-sm">{item.unit}</p>
-            </div>
-            <Link href={item.path}>
               <div className="flex items-center justify-center gap-2 bg-orange-300 text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-primary/90 transition-colors duration-300">
                 <p className="text-sm">เข้าร่วม</p>
                 <RightOutlined />
