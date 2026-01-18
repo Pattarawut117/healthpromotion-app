@@ -3,6 +3,7 @@
 import { useLiff } from "@/contexts/LiffContext";
 import Carousel from "@/components/home/Carousel";
 import FloatingActionButton from "@/components/home/FloatingActionButton";
+import Bingo from "@/components/campaign/bingoBoard/Bingo";
 
 export default function Home() {
   const { isLoggedIn } = useLiff();
@@ -28,6 +29,9 @@ export default function Home() {
 
         {/* Floating Action Button */}
         <FloatingActionButton />
+
+        {/* Bingo */}
+        <Bingo />
       </div>
     </div>
   );
