@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
+import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
 
 interface ICampaign {
     id: number;
@@ -44,15 +45,17 @@ export default function CampaignContent() {
             await axios.post('/api/registerCampaign', payload);
             alert("Registration successful! (ลงทะเบียนสำเร็จ)");
             setIsRegistered(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Registration error:", error);
-            if (error.response?.data?.message) {
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
                 alert(`Error: ${error.response.data.message}`);
             } else {
                 alert("Failed to register. Please try again.");
             }
         }
     };
+
+    const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
     useEffect(() => {
         if (contentId) {
@@ -136,24 +139,64 @@ export default function CampaignContent() {
                         </div>
                     </div>
 
-                    <div className="flex justify-end mt-8">
-                        {isRegistered ? (
-                            <div className="badge badge-outline">คุณลงทะเบียนแล้ว</div>
-                        ) : (
-                            <button
-                                onClick={handleJoin}
-                                className="btn btn-primary"
-                                disabled={campaign.activity_type === "Run"}>
-                                เข้าร่วม
-                            </button>
-                        )}
+                    <div className="flex flex-col gap-4 mt-8">
+                        <div className="flex justify-end">
+                            {isRegistered ? (
+                                <div className="badge badge-success p-3 text-white">ลงทะเบียนแล้ว (Registered)</div>
+                            ) : (
+                                <button
+                                    onClick={handleJoin}
+                                    className="btn btn-primary"
+                                // disabled={campaign.activity_type === "Run"} // Removed disabled logic for Run to allow testing/logic
+                                >
+                                    เข้าร่วม
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Run Submission Button */}
+
+                        {/* Run Submission Button - Only show within campaign period */}
+                        {(() => {
+                            const now = new Date();
+                            const startDate = new Date(campaign.start_date);
+                            const endDate = new Date(campaign.end_date);
+                            // Adjust endDate to end of the day if needed, or keep exact comparison. 
+                            // Usually end_date might be YYYY-MM-DD, so strictly speaking < next day or set hours to 23:59:59.
+                            // Assuming simple comparison for now as per request.
+                            const isActive = now >= startDate && now <= endDate;
+
+                            if (isActive) {
+                                return (
+                                    <div className="mt-4">
+                                        <button
+                                            className="btn btn-outline btn-info w-full"
+                                            onClick={() => setShowSubmissionForm(true)}
+                                        >
+                                            🏃‍♂️ ส่งผลการวิ่ง (Submit Run)
+                                        </button>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
 
                     </div>
-                    {campaign.activity_type === "Run" && (
-                        <button className="text-success text-sm font-bold">คุณมีกิจกรรมที่ลงทะเบียนแล้ว</button>
-                    )}
                 </div>
             </div>
+
+            {/* Run Submission Form Modal */}
+            {showSubmissionForm && campaign && (
+                <RunSubmissionForm
+                    campaignId={campaign.id}
+                    activityType={campaign.activity_type}
+                    onClose={() => setShowSubmissionForm(false)}
+                    onSuccess={() => {
+                        // Optional: Refresh data or show status
+                        console.log("Run submitted");
+                    }}
+                />
+            )}
         </div>
     );
 }

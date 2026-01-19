@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 interface RegisterCampaignRequest {
     user_id: string;
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
                 // 👉 ยังไม่มีทีม → สร้างทีม 1
                 teamName = "Team 1";
 
-                const [result]: any = await db.query(
+                const [result] = await db.query<ResultSetHeader>(
                     `INSERT INTO teams (team_name, leader_user_id, campaign_id)
            VALUES (?, ?, ?)`,
                     [teamName, user_id, campaign_id]
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
 
                     teamName = `Team ${nextNumber}`;
 
-                    const [result]: any = await db.query(
+                    const [result] = await db.query<ResultSetHeader>(
                         `INSERT INTO teams (team_name, leader_user_id, campaign_id)
              VALUES (?, ?, ?)`,
                         [teamName, user_id, campaign_id]
