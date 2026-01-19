@@ -88,9 +88,9 @@ export default function BingoBoardMobile() {
         alert("Upload failed");
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Submission error", error);
-      const msg = error.response?.data?.message || "เกิดข้อผิดพลาดในการส่งข้อมูล";
+      const msg = (axios.isAxiosError(error) && error.response?.data?.message) ? error.response.data.message : "เกิดข้อผิดพลาดในการส่งข้อมูล";
       alert(msg);
     } finally {
       setUploading(false);
@@ -100,8 +100,16 @@ export default function BingoBoardMobile() {
   useEffect(() => {
     const fetchBingoData = async () => {
       try {
-        const response = await axios.get("/api/campaign/bingoTask");
-        const activities: BingoActivity[] = response.data;
+        const [tasksResponse, submissionsResponse] = await Promise.all([
+          axios.get("/api/campaign/bingoTask"),
+          axios.get("/api/campaign/bingoSubmissions")
+        ]);
+
+        const activities: BingoActivity[] = tasksResponse.data;
+        const submissions: { user_id: string; task_id: number; status: string }[] = submissionsResponse.data; // Type as needed
+
+        // Filter submissions for current user
+        const userSubmissions = submissions.filter(sub => sub.user_id === profile?.userId);
 
         // Group by row (Assuming 5 items per row if strictly ordered, or use 'row' property if available)
         // If the API doesn't return 'row', we can chunk it.
@@ -129,11 +137,25 @@ export default function BingoBoardMobile() {
           if (cellData.length > 0) {
             rows.push({
               row: rowNum,
-              cells: cellData.map(c => ({
-                id: c.id,
-                activity_name: c.activity_name,
-                status: "locked" as BingoStatus // Default status from API until user progress is integrated
-              }))
+              cells: cellData.map(c => {
+                const submission = userSubmissions.find(s => s.task_id === c.id);
+                let status: BingoStatus = "locked";
+
+                if (submission) {
+                  if (submission.status === "APPROVED") {
+                    status = "approved";
+                  } else if (submission.status === "PENDING" || !submission.status) {
+                    // API might default to something else or null, usually 'pending' if just submitted
+                    status = "pending";
+                  }
+                }
+
+                return {
+                  id: c.id,
+                  activity_name: c.activity_name,
+                  status: status
+                };
+              })
             });
           }
         }
@@ -141,33 +163,15 @@ export default function BingoBoardMobile() {
         // Temporary: If API returns empty (no data yet), fallback or keep empty.
         // For now, let's keep the logic.
         // Note: We might want to unlock the first row by default or check user progress.
-        const initializedRows = rows.map((r, index) => ({
+        const initializedRows = rows.map((r) => ({
           ...r,
-          cells: r.cells.map(c => ({
-            ...c,
-            // Improve: checking status from another API would be better, 
-            // but for now we default to 'locked' except maybe first row if we want to mimic the mock 
-            // OR just leave it to the 'isRowUnlocked' logic which handles the visualization
-            status: (index === 0 ? "locked" : "locked") as BingoStatus
-            // Wait, original mock had: row 1 all approved.
-            // Since we don't have user progress yet, they will all be locked. 
-            // Let's set the first row to 'pending' or 'locked' but reachable? 
-            // Actually, let's just use 'locked' for all as per real data, 
-            // the isRowUnlocked logic depends on 'approved' status of previous row.
-            // To make it playable for demo, maybe we should default row 1 to 'pending' or unlocked visually?
-            // But strictly speaking, they are locked until done? No, usually row 1 is available.
-            // Let's just mapping title/id for now.
-          }))
+          // Note: Here we are keeping the status we just calculated above.
+          // If we wanted to "unlock" rows sequentially, we would do it here.
+          // For now, we trust the status from DB or default to "locked" (which is visually just normal but maybe clickable?)
+          // Wait, "locked" in previous code seemed to mean "default". 
+          // Let's ensure "locked" hasn't got specific disabling logic unless intended.
+          // In grid rendering: onClick is always set.
         }));
-
-        // AUTO-UNLOCK Logic Simulation for Demo (Optional - can act as if Row 1 is partially done if needed)
-        // For this task, strictly fetching list is the goal.
-
-        // However, to make grid visible properly we need at least dummy data if DB is empty
-        if (initializedRows.length === 0) {
-          // Keep original mock if fetch fails or is empty? 
-          // No, user wants usage of API.
-        }
 
         setBingoData(initializedRows);
       } catch (error) {
@@ -177,8 +181,10 @@ export default function BingoBoardMobile() {
       }
     };
 
-    fetchBingoData();
-  }, []);
+    if (profile?.userId) {
+      fetchBingoData();
+    }
+  }, [profile]);
   console.log(bingoData);
   // Helper: flatten rows to simple array for grid
   const allCells = bingoData.flatMap((row) =>
@@ -211,19 +217,36 @@ export default function BingoBoardMobile() {
             // Status Aesthetics
             let bgClass = "bg-white";
             let borderClass = "border-gray-100";
-            let statusIcon = null;
+            let disabled = false;
+
+            if (cell.status === "approved") {
+              bgClass = "bg-green-100";
+              borderClass = "border-green-300";
+              disabled = true;
+            } else if (cell.status === "pending") {
+              bgClass = "bg-yellow-50";
+              borderClass = "border-yellow-200";
+            }
 
             return (
               <motion.button
                 key={cell.id}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setSelectedCell(cell)}
+                whileTap={cell.status === "approved" ? {} : { scale: 0.9 }}
+                onClick={() => {
+                  if (cell.status !== "approved") {
+                    setSelectedCell(cell);
+                  }
+                }}
+                disabled={disabled}
                 className={`
                   relative aspect-square flex flex-col items-center justify-center p-1 rounded-xl shadow-sm border transition-all
                   ${bgClass} ${borderClass}
-                  hover:shadow-md cursor-pointer
+                  ${cell.status === "approved" ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
                 `}
               >
+                {cell.status === "approved" && (
+                  <div className="absolute top-1 right-1 text-xs text-green-600">✓</div>
+                )}
                 <span className={`text-[0.6rem] font-bold text-center leading-tight line-clamp-2 w-full break-words`}>
                   {cell.activity_name}
                 </span>

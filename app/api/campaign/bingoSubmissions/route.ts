@@ -7,6 +7,22 @@ interface BingoSubmissionRequest {
     team_id: string;
     user_id: string;
     image_url: string;
+    status: string;
+}
+
+export async function GET() {
+    try {
+        const [rows] = await db.query<RowDataPacket[]>(
+            `SELECT * FROM bingo_submissions`
+        );
+        return NextResponse.json(rows);
+    } catch (error) {
+        console.error("Error fetching bingo submissions:", error);
+        return NextResponse.json(
+            { message: "Internal Server Error" },
+            { status: 500 }
+        );
+    }
 }
 
 export async function POST(req: Request) {
