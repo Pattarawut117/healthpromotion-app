@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLiff } from "@/contexts/LiffContext";
+import { LeftOutlined } from '@ant-design/icons';
+import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
 
 interface ICampaign {
     id: number;
@@ -15,14 +18,44 @@ interface ICampaign {
     start_date: string;
     end_date: string;
     is_active: string;
-    created_at: string;
 }
 
 export default function CampaignContent() {
+    const { profile } = useLiff();
     const params = useParams();
     const contentId = params.content;
     const [campaign, setCampaign] = useState<ICampaign | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isRegistered, setIsRegistered] = useState(false);
+
+    const handleJoin = async () => {
+        if (!campaign || !profile?.userId) {
+            alert("Please wait for LINE profile to load or try again.");
+            return;
+        }
+
+        try {
+            const payload = {
+                user_id: profile.userId,
+                campaign_id: campaign.id,
+                activity_name: campaign.activity_name,
+                activity_type: campaign.activity_type,
+            };
+
+            await axios.post('/api/registerCampaign', payload);
+            alert("Registration successful! (ลงทะเบียนสำเร็จ)");
+            setIsRegistered(true);
+        } catch (error: unknown) {
+            console.error("Registration error:", error);
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
+                alert(`Error: ${error.response.data.message}`);
+            } else {
+                alert("Failed to register. Please try again.");
+            }
+        }
+    };
+
+    const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
     useEffect(() => {
         if (contentId) {
@@ -38,6 +71,23 @@ export default function CampaignContent() {
         }
     }, [contentId]);
 
+    useEffect(() => {
+        const checkRegistration = async () => {
+            if (profile?.userId && campaign?.id) {
+                try {
+                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&campaign_id=${campaign.id}`);
+                    if (res.data.isRegistered) {
+                        setIsRegistered(true);
+                    }
+                } catch (error) {
+                    console.error("Error checking registration status:", error);
+                }
+            }
+        };
+
+        checkRegistration();
+    }, [profile, campaign]);
+
     if (loading) {
         return <div className="p-4 text-center">Loading...</div>;
     }
@@ -47,33 +97,34 @@ export default function CampaignContent() {
     }
 
     return (
-        <div className="min-h-screen bg-background p-4">
+        <div className="min-h-screen bg-base-100">
             <Link href="/campaign">
-                <button className="mb-4">
-                    Back to Campaigns
+                <button className="my-2 px-2">
+                    <LeftOutlined /> Back to Campaigns
                 </button>
             </Link>
 
-            <div className="max-w-2xl mx-auto bg-card rounded-lg shadow-lg overflow-hidden">
-                <div className="relative w-full h-64">
+            <div className="max-w-2xl mx-auto card bg-base-100 overflow-hidden">
+                <figure className="relative w-full h-64">
                     <Image
                         src="/targetForm/exercise.png" // Placeholder image as in CampaignCard
                         alt={campaign.activity_name}
                         fill
                         className="object-cover"
                     />
-                </div>
+                </figure>
 
-                <div className="p-6">
+                <div className="card-body">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold text-primary">{campaign.activity_name}</h1>
-                        <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm">
-                            {campaign.activity_type}
-                        </span>
+                        <h1 className="card-title">{campaign.activity_name}</h1>
+                        <div className="flex items-center gap-2">
+
+                            <span className="badge badge-outline">{campaign.activity_type}</span>
+                        </div>
                     </div>
 
                     <div className="mb-6">
-                        <h2 className="text-lg font-semibold mb-2">Description</h2>
+                        <h2 className="text-lg font-semibold mb-2">รายละเอียด</h2>
                         <p className="text-muted-foreground">{campaign.description || "No description available."}</p>
                     </div>
 
@@ -88,13 +139,64 @@ export default function CampaignContent() {
                         </div>
                     </div>
 
-                    <div className="flex justify-center mt-8">
-                        <div className="bg-orange-300 text-primary-foreground rounded-full px-8 py-3 cursor-pointer hover:bg-primary/90 transition-colors duration-300 font-semibold shadow-md">
-                            Join Campaign (เข้าร่วม)
+                    <div className="flex flex-col gap-4 mt-8">
+                        <div className="flex justify-end">
+                            {isRegistered ? (
+                                <div className="badge badge-success p-3 text-white">ลงทะเบียนแล้ว (Registered)</div>
+                            ) : (
+                                <button
+                                    onClick={handleJoin}
+                                    className="btn btn-primary"
+                                // disabled={campaign.activity_type === "Run"} // Removed disabled logic for Run to allow testing/logic
+                                >
+                                    เข้าร่วม
+                                </button>
+                            )}
                         </div>
+
+                        {/* Run Submission Button */}
+
+                        {/* Run Submission Button - Only show within campaign period */}
+                        {(() => {
+                            const now = new Date();
+                            const startDate = new Date(campaign.start_date);
+                            const endDate = new Date(campaign.end_date);
+                            // Adjust endDate to end of the day if needed, or keep exact comparison. 
+                            // Usually end_date might be YYYY-MM-DD, so strictly speaking < next day or set hours to 23:59:59.
+                            // Assuming simple comparison for now as per request.
+                            const isActive = now >= startDate && now <= endDate;
+
+                            if (isActive) {
+                                return (
+                                    <div className="mt-4">
+                                        <button
+                                            className="btn btn-outline btn-info w-full"
+                                            onClick={() => setShowSubmissionForm(true)}
+                                        >
+                                            🏃‍♂️ ส่งผลการวิ่ง (Submit Run)
+                                        </button>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
                     </div>
                 </div>
             </div>
+
+            {/* Run Submission Form Modal */}
+            {showSubmissionForm && campaign && (
+                <RunSubmissionForm
+                    campaignId={campaign.id}
+                    activityType={campaign.activity_type}
+                    onClose={() => setShowSubmissionForm(false)}
+                    onSuccess={() => {
+                        // Optional: Refresh data or show status
+                        console.log("Run submitted");
+                    }}
+                />
+            )}
         </div>
     );
 }

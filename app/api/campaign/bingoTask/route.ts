@@ -4,10 +4,10 @@ import { RowDataPacket } from "mysql2";
 
 export async function GET() {
     try {
-        const [rows] = await db.query<RowDataPacket[]>(
-            `SELECT * FROM activities`
+        const [row] = await db.query<RowDataPacket[]>(
+            "SELECT * FROM bingo_activity"
         );
-        return NextResponse.json(rows);
+        return NextResponse.json(row);
     } catch (error) {
         console.log(error);
     }
