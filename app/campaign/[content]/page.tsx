@@ -7,6 +7,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
+import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
+import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
+import FloatingActionButton from '@/components/home/FloatingActionButton';
+import MentalAssessment from '@/components/campaign/mentalCampaign/MentalAssessment';
 
 interface ICampaign {
     id: number;
@@ -44,15 +48,17 @@ export default function CampaignContent() {
             await axios.post('/api/registerCampaign', payload);
             alert("Registration successful! (ลงทะเบียนสำเร็จ)");
             setIsRegistered(true);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Registration error:", error);
-            if (error.response?.data?.message) {
+            if (axios.isAxiosError(error) && error.response?.data?.message) {
                 alert(`Error: ${error.response.data.message}`);
             } else {
                 alert("Failed to register. Please try again.");
             }
         }
     };
+
+    const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
     useEffect(() => {
         if (contentId) {
@@ -92,6 +98,11 @@ export default function CampaignContent() {
     if (!campaign) {
         return <div className="p-4 text-center">Campaign not found</div>;
     }
+
+    const now = new Date();
+    const startDate = new Date(campaign.start_date);
+    const endDate = new Date(campaign.end_date);
+    const isActive = now >= startDate && now <= endDate;
 
     return (
         <div className="min-h-screen bg-base-100">
@@ -136,24 +147,70 @@ export default function CampaignContent() {
                         </div>
                     </div>
 
-                    <div className="flex justify-end mt-8">
-                        {isRegistered ? (
-                            <div className="badge badge-outline">คุณลงทะเบียนแล้ว</div>
+                    <div className="flex flex-col gap-4 mt-8">
+                        <div className="flex justify-end">
+                            {isRegistered ? (
+                                <div className="badge badge-success p-3 text-white">ลงทะเบียนแล้ว (Registered)</div>
+                            ) : (
+                                <button
+                                    onClick={handleJoin}
+                                    className="btn btn-primary"
+                                // disabled={campaign.activity_type === "Run"} // Removed disabled logic for Run to allow testing/logic
+                                >
+                                    เข้าร่วม
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Activities - Only show if active */}
+                        {isActive ? (
+                            <>
+                                {campaign.activity_type === "Run" && (
+                                    <div className="mt-4">
+                                        <button
+                                            className="btn btn-outline btn-info w-full"
+                                            onClick={() => setShowSubmissionForm(true)}
+                                        >
+                                            🏃‍♂️ ส่งผลการวิ่ง (Submit Run)
+                                        </button>
+                                    </div>
+                                )}
+
+                                {campaign.activity_type === "BINGO" && (
+                                    <div className="mb-6">
+                                        <BingoBoard />
+                                        <FloatingActionButton />
+                                    </div>
+                                )}
+
+                                {campaign.activity_type === "MENTAL" && (
+                                    <div className="mb-6">
+                                        <MentalAssessment />
+                                    </div>
+                                )}
+                            </>
                         ) : (
-                            <button
-                                onClick={handleJoin}
-                                className="btn btn-primary"
-                                disabled={campaign.activity_type === "Run"}>
-                                เข้าร่วม
-                            </button>
+                            <div className="alert alert-warning mt-4">
+                                此 Campaign ไม่อยู่ในช่วงเวลาที่กำหนด (This campaign is not active)
+                            </div>
                         )}
 
                     </div>
-                    {campaign.activity_type === "Run" && (
-                        <button className="text-success text-sm font-bold">คุณมีกิจกรรมที่ลงทะเบียนแล้ว</button>
-                    )}
                 </div>
             </div>
+
+            {/* Run Submission Form Modal */}
+            {showSubmissionForm && campaign && (
+                <RunSubmissionForm
+                    campaignId={campaign.id}
+                    activityType={campaign.activity_type}
+                    onClose={() => setShowSubmissionForm(false)}
+                    onSuccess={() => {
+                        // Optional: Refresh data or show status
+                        console.log("Run submitted");
+                    }}
+                />
+            )}
         </div>
     );
 }

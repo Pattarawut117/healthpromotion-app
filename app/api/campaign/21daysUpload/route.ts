@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { mkdir } from 'fs/promises';
+
+export async function POST(request: NextRequest) {
+    const data = await request.formData();
+    const file: File | null = data.get('file') as unknown as File;
+
+    if (!file) {
+        return NextResponse.json({ success: false, error: 'No file found' });
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Ensure directory exists
+    const uploadDir = join(process.cwd(), 'public/21daysSubmit');
+    try {
+        await mkdir(uploadDir, { recursive: true });
+    } catch (err) {
+        // Ignore error if directory already exists
+        console.log('Directory might already exist or error creating it:', err);
+    }
+
+    const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+    const path = join(uploadDir, filename);
+
+    try {
+        await writeFile(path, buffer);
+        console.log(`File saved to ${path}`);
+
+        // Return the path to be stored in the database
+        const publicPath = `/21daysSubmit/${filename}`;
+        return NextResponse.json({ success: true, path: publicPath });
+    } catch (error) {
+        console.error('Error saving file:', error);
+        return NextResponse.json({ success: false, error: 'Error saving file' });
+    }
+}

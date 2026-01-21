@@ -50,9 +50,9 @@ export default function UserPicture() {
         <p className="text-gray-500">กำลังโหลดรูปโปรไฟล์...</p>
       )}
 
-      <p className="text-lg font-bold">
+      {/* <p className="text-lg font-bold">
         {userData ? `${userData.sname} ${userData.lname}` : profile?.displayName}
-      </p>
+      </p> */}
     </div>
   );
 }
