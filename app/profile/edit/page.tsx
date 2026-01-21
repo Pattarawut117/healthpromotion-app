@@ -269,109 +269,83 @@ export default function EditProfilePage() {
         <div className="flex flex-col gap-3">
           <fieldset className="border rounded-lg flex">
             <legend className="px-2">ส่วนสูง</legend>
-              <input
-                type="number"
-                name="height"
-                value={formData.height ?? ""}
-                onChange={handleChange}
-                placeholder="ส่วนสูง (ซม.)"
-                className="border-none w-full pl-[2px] pr-[16px]"
-                min={0}
-              />
-              <p className="text-xl bg-gray-200 px-2 text-gray-600 rounded-br-lg">ซม.</p>
-            
+            <input
+              type="number"
+              name="height"
+              value={formData.height ?? ""}
+              onChange={handleChange}
+              placeholder="ส่วนสูง (ซม.)"
+              className="border-none w-full pl-[2px] pr-[16px]"
+              min={0}
+            />
+            <p className="text-xl bg-gray-200 px-2 text-gray-600 rounded-br-lg">ซม.</p>
+
           </fieldset>
           <fieldset className="border rounded-lg flex">
             <legend className="px-3">น้ำหนัก</legend>
-          <input
-            type="number"
-            name="weight"
-            value={formData.weight ?? ""}
-            onChange={handleChange}
-            placeholder="น้ำหนัก (กก.)"
-            className="rounded-lg px-2 w-full"
-            min={0}
-          />
-          <p>kg</p>
+            <input
+              type="number"
+              name="weight"
+              value={formData.weight ?? ""}
+              onChange={handleChange}
+              placeholder="น้ำหนัก (กก.)"
+              className="rounded-lg px-2 w-full"
+              min={0}
+            />
+            <p>kg</p>
           </fieldset>
           <fieldset className="border rounded-lg flex">
-          <legend>รอบเอว</legend>
-          <input
-            type="number"
-            name="waist"
-            value={formData.waist || ""}
-            onChange={handleChange}
-            placeholder="รอบเอว"
-            className="border-none rounded-lg p-2"
-            min={0}
-          />
+            <legend>รอบเอว</legend>
+            <input
+              type="number"
+              name="waist"
+              value={formData.waist || ""}
+              onChange={handleChange}
+              placeholder="รอบเอว"
+              className="border-none rounded-lg p-2"
+              min={0}
+            />
           </fieldset>
           <div className="flex gap-2">
-          <fieldset className="border rounded-lg flex">
-            <legend>% ไขมัน</legend>
-          <input
-            type="number"
-            name="fat"
-            value={formData.fat}
-            onChange={handleChange}
-            placeholder="ไขมัน %"
-            className="border-none rounded-lg p-2"
-            min={0}
-            max={100}
-          />
-          </fieldset>
-          <fieldset className="border rounded-lg flex">
-            <legend>กล้ามเนื้อ</legend>
-          <input
-            type="number"
-            name="muscle"
-            value={formData.muscle}
-            onChange={handleChange}
-            placeholder="กล้ามเนื้อ"
-            className="border-none rounded-lg p-2"
-            min={0}
-            max={100}
-          />
-          </fieldset >
+            <fieldset className="border rounded-lg flex">
+              <legend>% ไขมัน</legend>
+              <input
+                type="number"
+                name="fat"
+                value={formData.fat}
+                onChange={handleChange}
+                placeholder="ไขมัน %"
+                className="border-none rounded-lg p-2"
+                min={0}
+                max={100}
+              />
+            </fieldset>
+            <fieldset className="border rounded-lg flex">
+              <legend>กล้ามเนื้อ</legend>
+              <input
+                type="number"
+                name="muscle"
+                value={formData.muscle}
+                onChange={handleChange}
+                placeholder="กล้ามเนื้อ"
+                className="border-none rounded-lg p-2"
+                min={0}
+                max={100}
+              />
+            </fieldset >
           </div>
-          <fieldset className="border rounded-lg flex">
-            <legend>ความดันโลหิตค่าบน</legend>
-          <input
-            type="number"
-            name="bp_up"
-            value={formData.bp_up}
-            onChange={handleChange}
-            placeholder="ความดันโลหิต (บน)"
-            className="border-none rounded-lg p-2"
-            min={0}
-            max={100}
-          />
-          </fieldset>
-          <fieldset className="border rounded-lg flex">
-            <legend>ความดันโลหิตค่าล่าง</legend>
-          <input
-            type="number"
-            name="bp_down"
-            value={formData.bp_down}
-            onChange={handleChange}
-            placeholder="ความดันโลหิต (ล่าง)"
-            className="border rounded-lg p-2"
-            min={0}
-            max={100}
-          />
-          </fieldset>
           <div className="p-3 border rounded border-black relative">
-          <h2 className="absolute -top-1/2 translate-y-1/2 bg-white">ระดับไขมันช่องท้อง</h2>
-          <input
-            type="number"
-            name="fat_abnominal"
-            value={formData.fat_abnominal}
-            onChange={handleChange}
-            placeholder="ไขมันช่องท้อง"
-            className="border-none rounded-lg w-full"
-            min={0}
-            max={100}
-          />
+            <h2 className="absolute -top-1/2 translate-y-1/2 bg-white">ระดับไขมันช่องท้อง</h2>
+            <input
+              type="number"
+              name="fat_abnominal"
+              value={formData.fat_abnominal}
+              onChange={handleChange}
+              placeholder="ไขมันช่องท้อง"
+              className="border-none rounded-lg w-full"
+              min={0}
+              max={100}
+            />
           </div>
         </div>
 

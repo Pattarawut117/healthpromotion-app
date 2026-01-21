@@ -41,7 +41,7 @@ export default function CampaignCard() {
             className="bg-card text-card-foreground rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col"
           >
             <div className="p-4 flex-grow">
-              <Image
+              <img
                 alt={item.activity_name}
                 width={200}
                 height={200}

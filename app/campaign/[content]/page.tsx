@@ -8,6 +8,9 @@ import Link from 'next/link';
 import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
 import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
+import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
+import FloatingActionButton from '@/components/home/FloatingActionButton';
+import MentalAssessment from '@/components/campaign/mentalCampaign/MentalAssessment';
 
 interface ICampaign {
     id: number;
@@ -96,6 +99,11 @@ export default function CampaignContent() {
         return <div className="p-4 text-center">Campaign not found</div>;
     }
 
+    const now = new Date();
+    const startDate = new Date(campaign.start_date);
+    const endDate = new Date(campaign.end_date);
+    const isActive = now >= startDate && now <= endDate;
+
     return (
         <div className="min-h-screen bg-base-100">
             <Link href="/campaign">
@@ -154,20 +162,10 @@ export default function CampaignContent() {
                             )}
                         </div>
 
-                        {/* Run Submission Button */}
-
-                        {/* Run Submission Button - Only show within campaign period */}
-                        {(() => {
-                            const now = new Date();
-                            const startDate = new Date(campaign.start_date);
-                            const endDate = new Date(campaign.end_date);
-                            // Adjust endDate to end of the day if needed, or keep exact comparison. 
-                            // Usually end_date might be YYYY-MM-DD, so strictly speaking < next day or set hours to 23:59:59.
-                            // Assuming simple comparison for now as per request.
-                            const isActive = now >= startDate && now <= endDate;
-
-                            if (isActive) {
-                                return (
+                        {/* Activities - Only show if active */}
+                        {isActive ? (
+                            <>
+                                {campaign.activity_type === "Run" && (
                                     <div className="mt-4">
                                         <button
                                             className="btn btn-outline btn-info w-full"
@@ -176,10 +174,26 @@ export default function CampaignContent() {
                                             🏃‍♂️ ส่งผลการวิ่ง (Submit Run)
                                         </button>
                                     </div>
-                                );
-                            }
-                            return null;
-                        })()}
+                                )}
+
+                                {campaign.activity_type === "BINGO" && (
+                                    <div className="mb-6">
+                                        <BingoBoard />
+                                        <FloatingActionButton />
+                                    </div>
+                                )}
+
+                                {campaign.activity_type === "MENTAL" && (
+                                    <div className="mb-6">
+                                        <MentalAssessment />
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="alert alert-warning mt-4">
+                                此 Campaign ไม่อยู่ในช่วงเวลาที่กำหนด (This campaign is not active)
+                            </div>
+                        )}
 
                     </div>
                 </div>
