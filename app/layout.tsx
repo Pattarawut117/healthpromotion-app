@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalBottomBar from "@/components/ConditionalBottomBar";
 import { LiffProvider } from "@/contexts/LiffContext";
-import Link from "next/link";
+import UserPicture from "@/components/profile/UserPicture";
 import AuthRedirector from "@/components/AuthRedirector"; // Added import for AuthRedirector
 
 const geistSans = Geist({
@@ -34,13 +34,8 @@ export default function RootLayout({
         <div className="flex bg-gray-50 justify-center items-center min-h-screen">
           <div className="relative bg-background w-full max-w-sm h-screen shadow-lg flex flex-col bg-gray-100 overflow-hidden">
             {/* Topbar */}
-            <div className="bg-orange-400 text-primary-foreground py-4 px-4 font-serif font-bold flex justify-between items-center shrink-0">
-              <nav className="text-xl">Thaihealth</nav>
-              <Link href="/landing/level">
-                <div className="bg-primary-foreground text-primary flex gap-2 px-3 rounded-full py-1 items-center">
-
-                </div>
-              </Link>
+            <div className="bg-[#9337E8] text-primary-foreground py-4 px-4 font-serif font-bold flex items-center shrink-0">
+              <nav className="text-xl text-gray-100">TUH Health Promotion</nav>
             </div>
 
             {/* Main Content */}
