@@ -4,139 +4,44 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useLiff } from "@/contexts/LiffContext";
-import Image from "next/image";
+import unitData, { Unit } from '@/app/user/data/data';
 
-interface UserProfile {
-  sname: string;
-  lname: string;
-  tel: string;
-  dob: string;
-  gender: string;
-  height: number;
-  weight: number;
-  level_activity: string;
-  waist: number;
-  exercise_target: number;
-  water_target: number;
-  fat: number;
-  muscle: number;
-  bp_up: number;
-  bp_down: number;
-  fat_abnominal: number;
-  before_pic?: string;
-  after_pic?: string;
+// Interface matching app/api/users/route.ts
+interface UserInfo {
+  user_id: string;
+  sname?: string;
+  lname?: string;
+  tel?: string;
+  dob?: string;
+  gender?: string;
+  height?: string; // API uses string
+  weight?: string; // API uses string
+  bmi?: number;
+  condentialDisease?: string;
+  sleepPerhour?: string;
+  sleepEnough?: string;
+  isSmoke?: string;
+  drinkBeer?: string;
+  drinkWater?: string;
+  sleepProblem?: string;
+  adhd?: string;
+  madness?: string;
+  bored?: string;
+  introvert?: string;
+  unit?: string;
+  eatVegetable?: string;
+  eatSour?: string;
+  eatSweetness?: string;
+  activitiesTried?: string;
+  workingLongtime?: string;
 }
-
-type FileUploaderProps = {
-  onChange: (field: keyof UserProfile, value: string) => void;
-  field: keyof UserProfile;
-  currentImage?: string;
-};
-
-const FileUploader: React.FC<FileUploaderProps> = ({
-  onChange,
-  field,
-  currentImage,
-}) => {
-  const [preview, setPreview] = useState<string | null>(currentImage || null);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const result = await response.json();
-        if (response.ok && result.success) {
-          onChange(field, result.path || "");
-        } else {
-          console.error("Upload failed:", result.error);
-        }
-      } catch (error) {
-        console.error("Upload error:", error);
-      }
-    }
-  };
-
-  return (
-    <div className="border-2 border-dashed border-input rounded-lg p-4 text-center">
-      <input
-        type="file"
-        id={`file-upload-${field}`}
-        className="hidden"
-        onChange={handleFileChange}
-        accept=".png,.jpg,.jpeg"
-      />
-      <label htmlFor={`file-upload-${field}`} className="cursor-pointer">
-        {preview ? (
-          <Image
-            src={preview}
-            alt="Preview"
-            width={96}
-            height={96}
-            className="mx-auto h-24 w-24 object-cover rounded-lg"
-          />
-        ) : (
-          <div className="flex flex-col items-center">
-            <svg
-              className="w-12 h-12 text-muted-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M7 16a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v5a4 4 0 01-4 4H7z"
-              ></path>
-            </svg>
-            <p className="mt-2 text-sm text-muted-foreground">+ Upload Image</p>
-          </div>
-        )}
-      </label>
-    </div>
-  );
-};
 
 export default function EditProfilePage() {
   const { profile } = useLiff();
   const userId = profile?.userId;
   const [loading, setLoading] = useState(true);
 
-  const [formData, setFormData] = useState<UserProfile>({
-    sname: "",
-    lname: "",
-    tel: "",
-    dob: "",
-    gender: "",
-    height: 0,
-    weight: 0,
-    level_activity: "",
-    waist: 0,
-    exercise_target: 0,
-    water_target: 0,
-    fat: 0,
-    muscle: 0,
-    bp_up: 0,
-    bp_down: 0,
-    fat_abnominal: 0,
-    before_pic: "",
-    after_pic: "",
-  });
-
+  const [formData, setFormData] = useState<Partial<UserInfo>>({});
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
 
@@ -147,12 +52,14 @@ export default function EditProfilePage() {
       const res = await fetch(`/api/users?user_id=${userId}`);
       if (res.ok) {
         const data = await res.json();
-
-        // ✅ แปลง dob ให้เป็น YYYY-MM-DD
+        // Format DOB safely
         if (data.dob) {
-          data.dob = new Date(data.dob).toISOString().split("T")[0];
+          try {
+            data.dob = new Date(data.dob).toISOString().split("T")[0];
+          } catch (e) {
+            console.error("Error formatting date", e);
+          }
         }
-
         setFormData(data);
       }
     } catch (err) {
@@ -172,11 +79,20 @@ export default function EditProfilePage() {
     >
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
 
-  const handleFileChange = (field: keyof UserProfile, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+      // Auto-calculate BMI if height or weight changes
+      if (name === "height" || name === "weight") {
+        const h = parseFloat(updated.height || "0");
+        const w = parseFloat(updated.weight || "0");
+        if (h > 0 && w > 0) {
+          const hM = h / 100;
+          updated.bmi = parseFloat((w / (hM * hM)).toFixed(2));
+        }
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = useCallback(async () => {
@@ -190,7 +106,7 @@ export default function EditProfilePage() {
 
       const data = await res.json();
       setModalMessage(
-        res.ok ? "อัพเดตข้อมูลสำเร็จ!" : "ข้อผิดพลาด: " + data.error
+        res.ok ? "อัพเดตข้อมูลสำเร็จ! (Update Successful)" : "ข้อผิดพลาด: " + data.error
       );
       setShowModal(true);
       if (res.ok) {
@@ -206,213 +122,174 @@ export default function EditProfilePage() {
   if (loading) return <p className="p-4">กำลังโหลดข้อมูล...</p>;
 
   return (
-    <div className="max-w-lg mx-auto p-4 space-y-6">
+    <div className="max-w-lg mx-auto p-4 space-y-6 pb-20">
       <div className="flex items-center gap-4">
         <Link href="/profile">
           <ArrowLeftOutlined className="text-xl cursor-pointer" />
         </Link>
-        <h1 className="text-xl font-bold">แก้ไขโปรไฟล์</h1>
+        <h1 className="text-xl font-bold">แก้ไขโปรไฟล์ (Edit Profile)</h1>
       </div>
 
-      {/* ข้อมูลส่วนบุคคล */}
-      <div className="bg-white shadow-md rounded-xl p-4 space-y-3">
-        <h2 className="font-semibold text-lg text-gray-700">ข้อมูลส่วนบุคคล</h2>
+      {/* 1. Personal Info */}
+      <section className="bg-white shadow-md rounded-xl p-4 space-y-3">
+        <h2 className="font-semibold text-lg text-gray-700">ข้อมูลส่วนบุคคล (Personal Info)</h2>
         <div className="grid grid-cols-2 gap-3">
-          <input
-            type="text"
-            name="sname"
-            value={formData.sname || ""}
-            onChange={handleChange}
-            placeholder="ชื่อ"
-            className="border rounded-lg p-2"
-          />
-          <input
-            type="text"
-            name="lname"
-            value={formData.lname || ""}
-            onChange={handleChange}
-            placeholder="นามสกุล"
-            className="border rounded-lg p-2"
-          />
+          <input type="text" name="sname" value={formData.sname || ""} onChange={handleChange} placeholder="ชื่อ (First Name)" className="border rounded-lg p-2" />
+          <input type="text" name="lname" value={formData.lname || ""} onChange={handleChange} placeholder="นามสกุล (Last Name)" className="border rounded-lg p-2" />
         </div>
-        <input
-          type="text"
-          name="tel"
-          value={formData.tel || ""}
-          onChange={handleChange}
-          placeholder="เบอร์โทร"
-          className="border rounded-lg p-2 w-full"
-        />
-        <input
-          type="date"
-          name="dob"
-          value={formData.dob || ""}
-          onChange={handleChange}
-          className="border rounded-lg p-2 w-full"
-        />
-        <select
-          name="gender"
-          value={formData.gender || ""}
-          onChange={handleChange}
-          className="border rounded-lg p-2 w-full"
-        >
-          <option value="">-- เลือกเพศ --</option>
-          <option value="ชาย">ชาย</option>
-          <option value="หญิง">หญิง</option>
-          <option value="อื่นๆ">อื่นๆ</option>
+        <input type="text" name="tel" value={formData.tel || ""} onChange={handleChange} placeholder="เบอร์โทร (Tel)" className="border rounded-lg p-2 w-full" />
+        <div className="grid grid-cols-2 gap-3">
+          <input type="date" name="dob" value={formData.dob || ""} onChange={handleChange} className="border rounded-lg p-2 w-full" />
+          <select name="gender" value={formData.gender || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">-- เพศ (Gender) --</option>
+            <option value="ชาย">ชาย (Male)</option>
+            <option value="หญิง">หญิง (Female)</option>
+            <option value="อื่นๆ">อื่นๆ (Other)</option>
+          </select>
+        </div>
+        <select name="unit" value={formData.unit || ""} onChange={handleChange}>
+          {unitData.map((unit: Unit) => (
+            <option key={unit.id} value={unit.value}>
+              {unit.text}
+            </option>
+          ))}
         </select>
-      </div>
+        <input type="text" name="workingLongtime" value={formData.workingLongtime || ""} onChange={handleChange} placeholder="อายุงาน (Working Duration)" className="border rounded-lg p-2 w-full" />
+      </section>
 
-      {/* ข้อมูลสุขภาพ */}
-      <div className="bg-white shadow-md rounded-xl p-4 space-y-3">
-        <h2 className="font-semibold text-lg text-gray-700">ข้อมูลสุขภาพ</h2>
-        <div className="flex flex-col gap-3">
-          <fieldset className="border rounded-lg flex">
-            <legend className="px-2">ส่วนสูง</legend>
-            <input
-              type="number"
-              name="height"
-              value={formData.height ?? ""}
-              onChange={handleChange}
-              placeholder="ส่วนสูง (ซม.)"
-              className="border-none w-full pl-[2px] pr-[16px]"
-              min={0}
-            />
-            <p className="text-xl bg-gray-200 px-2 text-gray-600 rounded-br-lg">ซม.</p>
-
-          </fieldset>
-          <fieldset className="border rounded-lg flex">
-            <legend className="px-3">น้ำหนัก</legend>
-            <input
-              type="number"
-              name="weight"
-              value={formData.weight ?? ""}
-              onChange={handleChange}
-              placeholder="น้ำหนัก (กก.)"
-              className="rounded-lg px-2 w-full"
-              min={0}
-            />
-            <p>kg</p>
-          </fieldset>
-          <fieldset className="border rounded-lg flex">
-            <legend>รอบเอว</legend>
-            <input
-              type="number"
-              name="waist"
-              value={formData.waist || ""}
-              onChange={handleChange}
-              placeholder="รอบเอว"
-              className="border-none rounded-lg p-2"
-              min={0}
-            />
-          </fieldset>
-          <div className="flex gap-2">
-            <fieldset className="border rounded-lg flex">
-              <legend>% ไขมัน</legend>
-              <input
-                type="number"
-                name="fat"
-                value={formData.fat}
-                onChange={handleChange}
-                placeholder="ไขมัน %"
-                className="border-none rounded-lg p-2"
-                min={0}
-                max={100}
-              />
-            </fieldset>
-            <fieldset className="border rounded-lg flex">
-              <legend>กล้ามเนื้อ</legend>
-              <input
-                type="number"
-                name="muscle"
-                value={formData.muscle}
-                onChange={handleChange}
-                placeholder="กล้ามเนื้อ"
-                className="border-none rounded-lg p-2"
-                min={0}
-                max={100}
-              />
-            </fieldset >
+      {/* 2. Body Composition */}
+      <section className="bg-white shadow-md rounded-xl p-4 space-y-3">
+        <h2 className="font-semibold text-lg text-gray-700">ข้อมูลร่างกาย (Body)</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="relative">
+            <input type="number" name="height" value={formData.height || ""} onChange={handleChange} placeholder="ส่วนสูง (cm)" className="border rounded-lg p-2 w-full pr-10" />
+            <span className="absolute right-3 top-2 text-gray-400">cm</span>
           </div>
-          <div className="p-3 border rounded border-black relative">
-            <h2 className="absolute -top-1/2 translate-y-1/2 bg-white">ระดับไขมันช่องท้อง</h2>
-            <input
-              type="number"
-              name="fat_abnominal"
-              value={formData.fat_abnominal}
-              onChange={handleChange}
-              placeholder="ไขมันช่องท้อง"
-              className="border-none rounded-lg w-full"
-              min={0}
-              max={100}
-            />
+          <div className="relative">
+            <input type="number" name="weight" value={formData.weight || ""} onChange={handleChange} placeholder="น้ำหนัก (kg)" className="border rounded-lg p-2 w-full pr-10" />
+            <span className="absolute right-3 top-2 text-gray-400">kg</span>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="font-bold">BMI:</span>
+          <span className="text-blue-600">{formData.bmi || "-"}</span>
+        </div>
+        <textarea name="condentialDisease" value={formData.condentialDisease || ""} onChange={handleChange} placeholder="โรคประจำตัว (Congenital Disease)" className="border rounded-lg p-2 w-full" rows={2} />
+      </section>
 
-        <select
-          name="level_activity"
-          value={formData.level_activity || ""}
-          onChange={handleChange}
-          className="border rounded-lg p-2 w-full"
-        >
-          <option value="">-- เลือกระดับการออกกำลังกาย --</option>
-          <option value="นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย">
-            นั่งทำงานอยู่กับที่ ไม่ออกกำลังกายเลย
-          </option>
-          <option value="ออกกำลังกาย 1-2 ครั้ง/สัปดาห์">
-            ออกกำลังกาย 1-2 ครั้ง/สัปดาห์
-          </option>
-          <option value="ออกกำลังกาย 3-5 ครั้ง/สัปดาห์">
-            ออกกำลังกาย 3-5 ครั้ง/สัปดาห์
-          </option>
-          <option value="ออกกำลังกาย 6-7 ครั้ง/สัปดาห์">
-            ออกกำลังกาย 6-7 ครั้ง/สัปดาห์
-          </option>
-          <option value="เป็นนักกีฬา/นักวิ่ง ออกกำลังกายทุกวัน วันละ 2 ครั้งขึ้นไป">
-            เป็นนักกีฬา/นักวิ่ง
-          </option>
+      {/* 3. Sleep & Lifestyle */}
+      <section className="bg-white shadow-md rounded-xl p-4 space-y-3">
+        <h2 className="font-semibold text-lg text-gray-700">การนอนและพฤติกรรม (Sleep & Habits)</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <input type="number" name="sleepPerhour" value={formData.sleepPerhour || ""} onChange={handleChange} placeholder="ชั่วโมงนอน/วัน" className="border rounded-lg p-2 w-full" />
+          <select name="sleepEnough" value={formData.sleepEnough || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">นอนพอไหม?</option>
+            <option value="พอ">พอ</option>
+            <option value="ไม่พอ">ไม่พอ</option>
+          </select>
+        </div>
+        <select name="sleepProblem" value={formData.sleepProblem || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+          <option value="">มีปัญหาการนอนหลับ?</option>
+          <option value="ไม่มี">ไม่มี</option>
+          <option value="หลับยาก">หลับยาก</option>
+          <option value="ตื่นกลางดึก">ตื่นกลางดึก</option>
         </select>
-      </div>
 
-      {/* อัพโหลดรูปภาพ */}
-      <div className="bg-white shadow-md rounded-xl p-4 space-y-3">
-        <h2 className="font-semibold text-lg text-gray-700">รูปภาพ Before</h2>
-        <div>
-          <FileUploader
-            onChange={handleFileChange}
-            field="before_pic"
-            currentImage={formData.before_pic}
-          />
+        <div className="grid grid-cols-3 gap-2">
+          <select name="isSmoke" value={formData.isSmoke || ""} onChange={handleChange} className="border rounded-lg p-2 w-full text-sm">
+            <option value="">สูบบุหรี่?</option>
+            <option value="ไม่สูบ">ไม่สูบ</option>
+            <option value="สูบ">สูบ</option>
+          </select>
+          <select name="drinkBeer" value={formData.drinkBeer || ""} onChange={handleChange} className="border rounded-lg p-2 w-full text-sm">
+            <option value="">ดื่มแอลกอฮอล์?</option>
+            <option value="ไม่ดื่ม">ไม่ดื่ม</option>
+            <option value="ดื่ม">ดื่ม</option>
+          </select>
+          <select name="drinkWater" value={formData.drinkWater || ""} onChange={handleChange} className="border rounded-lg p-2 w-full text-sm">
+            <option value="">ดื่มน้ำวันละ?</option>
+            <option value="<8 แก้ว">{"<8 แก้ว"}</option>
+            <option value="8-10 แก้ว">8-10 แก้ว</option>
+            <option value=">10 แก้ว">{">10 แก้ว"}</option>
+          </select>
         </div>
-      </div>
-      <div className="bg-white shadow-md rounded-xl p-4 space-y-3">
-        <h2 className="font-semibold text-lg text-gray-700">รูปภาพ After</h2>
+      </section>
 
-        <div>
-          <FileUploader
-            onChange={handleFileChange}
-            field="after_pic"
-            currentImage={formData.after_pic}
-          />
+      {/* 4. Diet */}
+      <section className="bg-white shadow-md rounded-xl p-4 space-y-3">
+        <h2 className="font-semibold text-lg text-gray-700">อาหารการกิน (Diet)</h2>
+        <div className="grid grid-cols-1 gap-3">
+          <select name="eatVegetable" value={formData.eatVegetable || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">ทานผักผลไม้?</option>
+            <option value="ทานประจำ">ทานประจำ</option>
+            <option value="ทานบ้าง">ทานบ้าง</option>
+            <option value="ไม่ทานเลย">ไม่ทานเลย</option>
+          </select>
+          <div className="grid grid-cols-2 gap-3">
+            <select name="eatSour" value={formData.eatSour || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+              <option value="">ทานเปรี้ยว?</option>
+              <option value="ชอบ">ชอบ</option>
+              <option value="เฉยๆ">เฉยๆ</option>
+              <option value="ไม่ชอบ">ไม่ชอบ</option>
+            </select>
+            <select name="eatSweetness" value={formData.eatSweetness || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+              <option value="">ทานหวาน?</option>
+              <option value="ชอบ">ชอบ</option>
+              <option value="เฉยๆ">เฉยๆ</option>
+              <option value="ไม่ชอบ">ไม่ชอบ</option>
+            </select>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* 5. Mental & Other */}
+      <section className="bg-white shadow-md rounded-xl p-4 space-y-3">
+        <h2 className="font-semibold text-lg text-gray-700">สุขภาวะทางจิต (Mental & Other)</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <select name="adhd" value={formData.adhd || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">สมาธิสั้น/วอกแวก?</option>
+            <option value="ใช่">ใช่</option>
+            <option value="ไม่ใช่">ไม่ใช่</option>
+          </select>
+          <select name="madness" value={formData.madness || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">เครียด/หงุดหงิด?</option>
+            <option value="บ่อย">บ่อย</option>
+            <option value="บางครั้ง">บางครั้ง</option>
+            <option value="ไม่ค่อย">ไม่ค่อย</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <select name="bored" value={formData.bored || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">เบื่อหน่าย/หมดไฟ?</option>
+            <option value="ใช่">ใช่</option>
+            <option value="ไม่ใช่">ไม่ใช่</option>
+          </select>
+          <select name="introvert" value={formData.introvert || ""} onChange={handleChange} className="border rounded-lg p-2 w-full">
+            <option value="">Introvert?</option>
+            <option value="ใช่">ใช่</option>
+            <option value="ไม่ใช่">ไม่ใช่</option>
+            <option value="กึ่งๆ">กึ่งๆ</option>
+          </select>
+        </div>
+        <textarea name="activitiesTried" value={formData.activitiesTried || ""} onChange={handleChange} placeholder="กิจกรรมที่เคยลอง (Activities Tried)" className="border rounded-lg p-2 w-full" rows={2} />
+      </section>
 
       <button
         onClick={handleSubmit}
-        className="w-full bg-orange-400 text-white py-2 rounded-xl font-semibold shadow hover:bg-orange-500 transition"
+        className="w-full bg-orange-400 text-white py-3 rounded-xl font-semibold shadow hover:bg-orange-500 transition text-lg"
       >
-        บันทึกข้อมูล
+        บันทึกการเปลี่ยนแปลง (Save Changes)
       </button>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-            <p className="text-lg font-semibold">{modalMessage}</p>
+            <p className="text-lg font-semibold mb-4">{modalMessage}</p>
             <button
               onClick={() => setShowModal(false)}
-              className="mt-4 px-4 py-2 bg-gray-200 rounded-lg w-full"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg w-full"
             >
-              ปิด
+              ปิด (Close)
             </button>
           </div>
         </div>

@@ -155,7 +155,7 @@ export default function CampaignContent() {
                                 <button
                                     onClick={handleJoin}
                                     className="btn btn-primary"
-                                // disabled={campaign.activity_type === "Run"} // Removed disabled logic for Run to allow testing/logic
+                                    disabled={isActive}
                                 >
                                     เข้าร่วม
                                 </button>
@@ -163,9 +163,9 @@ export default function CampaignContent() {
                         </div>
 
                         {/* Activities - Only show if active */}
-                        {isActive ? (
+                        {isActive && isRegistered ? (
                             <>
-                                {campaign.activity_type === "Run" && (
+                                {campaign.activity_type === "RUN" && (
                                     <div className="mt-4">
                                         <button
                                             className="btn btn-outline btn-info w-full"
@@ -179,7 +179,7 @@ export default function CampaignContent() {
                                 {campaign.activity_type === "BINGO" && (
                                     <div className="mb-6">
                                         <BingoBoard />
-                                        <FloatingActionButton />
+                                        {/* <FloatingActionButton /> */}
                                     </div>
                                 )}
 
