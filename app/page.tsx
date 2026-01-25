@@ -1,7 +1,7 @@
 "use client"
 
 import { useLiff } from "@/contexts/LiffContext";
-import FloatingActionButton from "@/components/home/FloatingActionButton";
+
 import UserPicture from "@/components/profile/UserPicture";
 
 export default function Home() {

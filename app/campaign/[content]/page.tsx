@@ -9,7 +9,7 @@ import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
 import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
 import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
-import FloatingActionButton from '@/components/home/FloatingActionButton';
+
 import MentalAssessment from '@/components/campaign/mentalCampaign/MentalAssessment';
 
 interface ICampaign {
