@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { supabase } from "@/utils/supabase";
 
 // กำหนด TypeScript Interface สำหรับข้อมูลผู้ใช้
 interface UserInfo {
@@ -45,19 +44,25 @@ export async function GET(req: Request) {
       );
     }
 
-    const [rows] = await db.query<RowDataPacket[]>(
-      `SELECT user_id, sname, lname, tel, dob, gender, height, weight, bmi, condentialDisease, sleepPerhour, sleepEnough, isSmoke, drinkBeer, drinkWater, sleepProblem, adhd, madness, bored, introvert, unit, eatVegetable, eatSour, eatSweetness, activitiesTried, workingLongtime 
-       FROM user_info 
-       WHERE user_id = ? 
-       LIMIT 1`,
-      [userId]
-    );
+    const { data, error } = await supabase
+      .from('user_info')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
 
-    if (rows.length === 0) {
+    if (error) {
+      // If no rows found, Supabase returns error with code PGRST116 (sometimes) or just error
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+      throw error;
+    }
+
+    if (!data) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(data);
   } catch (error: unknown) {
     console.error("DB Error (GET):", error);
     return NextResponse.json(
@@ -79,70 +84,45 @@ export async function POST(req: Request) {
       );
     }
 
-    const values = [
-      body.user_id,
-      body.sname ?? null,
-      body.lname ?? null,
-      body.tel ?? null,
-      body.dob ?? null,
-      body.gender ?? null,
-      body.height ?? null,
-      body.weight ?? null,
-      body.bmi ?? null,
-      body.condentialDisease ?? null,
-      body.sleepPerhour ?? null,
-      body.sleepEnough ?? null,
-      body.isSmoke ?? null,
-      body.drinkBeer ?? null,
-      body.drinkWater ?? null,
-      body.sleepProblem ?? null,
-      body.adhd ?? null,
-      body.madness ?? null,
-      body.bored ?? null,
-      body.introvert ?? null,
-      body.unit ?? null,
-      body.eatVegetable ?? null,
-      body.eatSour ?? null,
-      body.eatSweetness ?? null,
-      body.activitiesTried ?? null,
-      body.workingLongtime ?? null,
-    ];
+    const userInfo = {
+      user_id: body.user_id,
+      sname: body.sname ?? null,
+      lname: body.lname ?? null,
+      tel: body.tel ?? null,
+      dob: body.dob ?? null,
+      gender: body.gender ?? null,
+      height: body.height ?? null,
+      weight: body.weight ?? null,
+      bmi: body.bmi ?? null,
+      condential_disease: body.condentialDisease ?? null,
+      sleep_per_hour: body.sleepPerhour ?? null,
+      sleep_enough: body.sleepEnough ?? null,
+      is_smoking: body.isSmoke ?? null,
+      drink_beer: body.drinkBeer ?? null,
+      drink_water: body.drinkWater ?? null,
+      sleep_problem: body.sleepProblem ?? null,
+      adhd: body.adhd ?? null,
+      madness: body.madness ?? null,
+      bored: body.bored ?? null,
+      introvert: body.introvert ?? null,
+      unit: body.unit ?? null,
+      eat_vegetable: body.eatVegetable ?? null,
+      eat_sour: body.eatSour ?? null,
+      eat_sweetness: body.eatSweetness ?? null,
+      activities_tried: body.activitiesTried ?? null,
+      working_longtime: body.workingLongtime ?? null,
+    };
 
-    console.log("Values to be inserted/updated:", values);
+    console.log("Values to be inserted/updated:", userInfo);
 
-    // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว
-    await db.execute(
-      `INSERT INTO user_info 
-        (user_id, sname, lname, tel, dob, gender, height, weight, bmi, condentialDisease, sleepPerhour, sleepEnough, isSmoke, drinkBeer, drinkWater, sleepProblem, adhd, madness, bored, introvert, unit, eatVegetable, eatSour, eatSweetness, activitiesTried, workingLongtime) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-        sname = VALUES(sname),
-        lname = VALUES(lname),
-        tel = VALUES(tel),
-        dob = VALUES(dob),
-        gender = VALUES(gender),
-        height = VALUES(height),
-        weight = VALUES(weight),
-        bmi = VALUES(bmi),
-        condentialDisease = VALUES(condentialDisease),
-        sleepPerhour = VALUES(sleepPerhour),
-        sleepEnough = VALUES(sleepEnough),
-        isSmoke = VALUES(isSmoke),
-        drinkBeer = VALUES(drinkBeer),
-        drinkWater = VALUES(drinkWater),
-        sleepProblem = VALUES(sleepProblem),
-        adhd = VALUES(adhd),
-        madness = VALUES(madness),
-        bored = VALUES(bored),
-        introvert = VALUES(introvert),
-        unit = VALUES(unit),
-        eatVegetable = VALUES(eatVegetable),
-        eatSour = VALUES(eatSour),
-        eatSweetness = VALUES(eatSweetness),
-        activitiesTried = VALUES(activitiesTried),
-        workingLongtime = VALUES(workingLongtime)`,
-      values
-    );
+    // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว (Upsert)
+    const { error } = await supabase
+      .from('user_info')
+      .upsert(userInfo, { onConflict: 'user_id' });
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({
       message: "Register success",

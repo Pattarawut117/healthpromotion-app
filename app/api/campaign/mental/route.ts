@@ -1,12 +1,16 @@
-import { db } from "@/lib/db";
+import { supabase } from "@/utils/supabase"
 import { NextResponse, NextRequest } from "next/server";
 
 export async function GET() {
     try {
-        const [row] = await db.query(`SELECT * FROM mental_health_assessments`)
-        return NextResponse.json(row)
+        const { data: rows } = await supabase.from('mental_health_assessments').select('*');
+        return NextResponse.json(rows);
     } catch (error) {
         console.log(error)
+        return NextResponse.json(
+            { message: "Internal Server Error" },
+            { status: 500 }
+        );
     }
 }
 
@@ -14,10 +18,19 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
         const { user_id, score } = body
-        await db.query(`INSERT INTO mental_health_assessments (user_id, score) VALUES (?, ?)`, [user_id, score])
+        await supabase.from('mental_health_assessments').insert([
+            {
+                user_id,
+                score
+            }
+        ])
         return NextResponse.json({ message: "Mental health assessment added successfully" })
     } catch (error) {
         console.log(error)
+        return NextResponse.json(
+            { message: "Internal Server Error" },
+            { status: 500 }
+        );
     }
 }
 
