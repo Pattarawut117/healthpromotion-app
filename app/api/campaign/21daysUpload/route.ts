@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
 
     try {
-        const { data: uploadData, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from('21days_challenge')
             .upload(filename, file);
 
