@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
 
-        const { data: rows } = await supabase.from('team').insert([
+        const { data: rows } = await getSupabase().from('team').insert([
             {
                 team_name: body.team_name,
                 leader_user_id: body.leader_user_id

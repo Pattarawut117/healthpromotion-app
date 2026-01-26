@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 export async function POST(req: NextRequest) {
     try {
@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
 
         // 2. Insert bingo submission
-        await supabase.from('health_logs').insert([
+        await getSupabase().from('health_logs').insert([
             {
                 user_id,
                 campaign_id,

@@ -1,9 +1,9 @@
-import { supabase } from "@/utils/supabase"
+import { getSupabase } from "@/utils/supabase"
 import { NextResponse, NextRequest } from "next/server";
 
 export async function GET() {
     try {
-        const { data: rows } = await supabase.from('mental_health_assessments').select('*');
+        const { data: rows } = await getSupabase().from('mental_health_assessments').select('*');
         return NextResponse.json(rows);
     } catch (error) {
         console.log(error)
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
         const { user_id, score } = body
-        await supabase.from('mental_health_assessments').insert([
+        await getSupabase().from('mental_health_assessments').insert([
             {
                 user_id,
                 score

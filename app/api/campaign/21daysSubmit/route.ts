@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { user_id, category, quantity, duration_minutes, description, image_url } = body;
 
-        // Map fields to health_logs schema
-        // activity_type = category (e.g. 'water', 'food')
-        // value = quantity OR duration_minutes (whichever is non-zero/provided)
-        // pic_url = image_url
-        // Note: 'description' is currently DROPPED as there is no column for it in the inferred schema.
-        // We could append it to activity_type or similar if crucial, but for now we follow schema.
-
-        await supabase.from('challenge_21_days_entries').insert([
+        await getSupabase().from('challenge_21_days_entries').insert([
             {
                 user_id,
                 category,

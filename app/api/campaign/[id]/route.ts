@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 export async function GET(
     request: Request,
@@ -8,7 +8,7 @@ export async function GET(
     const params = await props.params;
     const id = params.id;
     try {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('activities')
             .select('*')
             .eq('id', id)

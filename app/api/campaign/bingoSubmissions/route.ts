@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 interface BingoSubmissionRequest {
     task_id: string;
@@ -11,7 +11,7 @@ interface BingoSubmissionRequest {
 
 export async function GET() {
     try {
-        const { data: rows, error } = await supabase
+        const { data: rows, error } = await getSupabase()
             .from('bingo_submissions')
             .select('*');
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         const { task_id, user_id, image_url } = body;
 
         // 1. Find team_id from user_id
-        const { data: teamData, error: teamError } = await supabase
+        const { data: teamData, error: teamError } = await getSupabase()
             .from('team_members')
             .select('team_id')
             .eq('user_id', user_id)
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
         const team_id = teamData.team_id;
 
         // 2. Insert bingo submission
-        const { error: insertError } = await supabase
+        const { error: insertError } = await getSupabase()
             .from('bingo_submissions')
             .insert([
                 {

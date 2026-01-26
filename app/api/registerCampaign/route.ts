@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 interface RegisterCampaignRequest {
     user_id: string;
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await getSupabase()
             .from('activities_user_register')
             .select('*')
             .eq('user_id', user_id)
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         const { user_id, campaign_id, activity_name, activity_type } = body;
 
         // 1️⃣ เช็คว่าลงทะเบียนแล้วหรือยัง
-        const { data: existing, error: checkError } = await supabase
+        const { data: existing, error: checkError } = await getSupabase()
             .from('activities_user_register')
             .select('*')
             .eq('user_id', user_id)
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
         if (activity_type === "BINGO") {
 
             // หา team ล่าสุด
-            const { data: teams, error: teamError } = await supabase
+            const { data: teams, error: teamError } = await getSupabase()
                 .from('teams')
                 .select('id, team_name')
                 .eq('campaign_id', campaign_id)
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
                 // 👉 ยังไม่มีทีม → สร้างทีม 1
                 teamName = "Team 1";
 
-                const { data: newTeam, error: createTeamError } = await supabase
+                const { data: newTeam, error: createTeamError } = await getSupabase()
                     .from('teams')
                     .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
                     .select('id')
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
                 // 👉 มีทีมแล้ว
                 const lastTeam = teams[0];
 
-                const { count, error: countError } = await supabase
+                const { count, error: countError } = await getSupabase()
                     .from('team_members')
                     .select('*', { count: 'exact', head: true })
                     .eq('team_id', lastTeam.id);
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
 
                     teamName = `Team ${nextNumber}`;
 
-                    const { data: newTeam, error: createTeamError } = await supabase
+                    const { data: newTeam, error: createTeamError } = await getSupabase()
                         .from('teams')
                         .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
                         .select('id')
@@ -122,7 +122,7 @@ export async function POST(req: Request) {
             }
 
             // เพิ่มสมาชิกลงทีม
-            const { error: addMemberError } = await supabase
+            const { error: addMemberError } = await getSupabase()
                 .from('team_members')
                 .insert({ team_id: teamId, user_id: user_id });
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
         // -------------------------
         // 3️⃣ บันทึกการสมัครกิจกรรม
         // -------------------------
-        const { error: registerError } = await supabase
+        const { error: registerError } = await getSupabase()
             .from('activities_user_register')
             .insert({
                 user_id,

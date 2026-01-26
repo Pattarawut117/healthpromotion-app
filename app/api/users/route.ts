@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/utils/supabase";
+import { getSupabase } from "@/utils/supabase";
 
 // กำหนด TypeScript Interface สำหรับข้อมูลผู้ใช้
 interface UserInfo {
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from('user_info')
       .select('*')
       .eq('user_id', userId)
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
     console.log("Values to be inserted/updated:", userInfo);
 
     // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว (Upsert)
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('user_info')
       .upsert(userInfo, { onConflict: 'user_id' });
 
