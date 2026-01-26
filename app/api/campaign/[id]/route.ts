@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { supabase } from "@/utils/supabase";
 
 export async function GET(
     request: Request,
@@ -9,19 +8,24 @@ export async function GET(
     const params = await props.params;
     const id = params.id;
     try {
-        const [rows] = await db.query<RowDataPacket[]>(
-            `SELECT * FROM activities WHERE id = ? `,
-            [id]
-        );
+        const { data, error } = await supabase
+            .from('activities')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-        if (rows.length === 0) {
-            return NextResponse.json(
-                { message: "Campaign not found" },
-                { status: 404 }
-            );
+        if (error) {
+            // Supabase returns 'PGRST116' for no rows found when using .single()
+            if (error.code === 'PGRST116') {
+                return NextResponse.json(
+                    { message: "Campaign not found" },
+                    { status: 404 }
+                );
+            }
+            throw error;
         }
 
-        return NextResponse.json(rows[0]);
+        return NextResponse.json(data);
     } catch (error) {
         console.log(error);
         return NextResponse.json(

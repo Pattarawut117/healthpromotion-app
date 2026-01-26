@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { supabase } from '@/utils/supabase';
 
 export async function POST(request: NextRequest) {
     const data = await request.formData();
@@ -10,20 +9,27 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'No file found' });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
     const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-    const path = join(process.cwd(), 'public/bingoSubmission', filename);
 
     try {
-        await writeFile(path, buffer);
-        console.log(`File saved to ${path}`);
+        const { data: uploadData, error } = await supabase.storage
+            .from('bingo_upload')
+            .upload(filename, file);
 
-        // Return the path to be stored in the database
-        const publicPath = `/bingoSubmission/${filename}`;
-        return NextResponse.json({ success: true, path: publicPath });
+        if (error) {
+            console.error('Supabase upload error:', error);
+            return NextResponse.json({ success: false, error: error.message });
+        }
+
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+            .from('bingo_upload')
+            .getPublicUrl(filename);
+
+        return NextResponse.json({ success: true, path: publicUrlData.publicUrl });
+
     } catch (error) {
-        console.error('Error saving file:', error);
-        return NextResponse.json({ success: false, error: 'Error saving file' });
+        console.error('Error uploading file:', error);
+        return NextResponse.json({ success: false, error: 'Error uploading file' });
     }
 }

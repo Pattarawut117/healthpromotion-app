@@ -3,6 +3,7 @@
 import { useLiff } from "@/contexts/LiffContext";
 
 import UserPicture from "@/components/profile/UserPicture";
+import Image from "next/image";
 
 export default function Home() {
   const { isLoggedIn } = useLiff();
@@ -20,7 +21,7 @@ export default function Home() {
 
         {/* No Data Box */}
         <div className="bg-white text-gray-500 w-full p-6 shadow-md rounded-xl">
-          <img src="/poster/mentalCampaign.png" alt="mentalCampaign" />
+          <Image src="/poster/mentalCampaign.png" alt="mentalCampaign" />
 
         </div>
       </div>

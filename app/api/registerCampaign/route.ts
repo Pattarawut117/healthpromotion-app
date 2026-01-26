@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { supabase } from "@/utils/supabase";
 
 interface RegisterCampaignRequest {
     user_id: string;
@@ -19,12 +18,15 @@ export async function GET(req: Request) {
     }
 
     try {
-        const [rows] = await db.query<RowDataPacket[]>(
-            "SELECT * FROM activities_user_register WHERE user_id = ? AND campaign_id = ?",
-            [user_id, campaign_id]
-        );
+        const { data, error } = await supabase
+            .from('activities_user_register')
+            .select('*')
+            .eq('user_id', user_id)
+            .eq('campaign_id', campaign_id);
 
-        return NextResponse.json({ isRegistered: rows.length > 0 });
+        if (error) throw error;
+
+        return NextResponse.json({ isRegistered: data.length > 0 });
     } catch (error) {
         console.error("Error checking registration:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
@@ -37,12 +39,15 @@ export async function POST(req: Request) {
         const { user_id, campaign_id, activity_name, activity_type } = body;
 
         // 1️⃣ เช็คว่าลงทะเบียนแล้วหรือยัง
-        const [existing] = await db.query<RowDataPacket[]>(
-            "SELECT * FROM activities_user_register WHERE user_id = ? AND campaign_id = ?",
-            [user_id, campaign_id]
-        );
+        const { data: existing, error: checkError } = await supabase
+            .from('activities_user_register')
+            .select('*')
+            .eq('user_id', user_id)
+            .eq('campaign_id', campaign_id);
 
-        if (existing.length > 0) {
+        if (checkError) throw checkError;
+
+        if (existing && existing.length > 0) {
             return NextResponse.json(
                 { message: "User already registered for this campaign" },
                 { status: 400 }
@@ -55,41 +60,46 @@ export async function POST(req: Request) {
         if (activity_type === "BINGO") {
 
             // หา team ล่าสุด
-            const [teams] = await db.query<RowDataPacket[]>(
-                `SELECT id, team_name 
-         FROM teams 
-         WHERE campaign_id = ?
-         ORDER BY id DESC
-         LIMIT 1`,
-                [campaign_id]
-            );
+            const { data: teams, error: teamError } = await supabase
+                .from('teams')
+                .select('id, team_name')
+                .eq('campaign_id', campaign_id)
+                .order('id', { ascending: false })
+                .limit(1);
+
+            if (teamError) throw teamError;
 
             let teamId: number;
             let teamName: string;
 
-            if (teams.length === 0) {
+            if (!teams || teams.length === 0) {
                 // 👉 ยังไม่มีทีม → สร้างทีม 1
                 teamName = "Team 1";
 
-                const [result] = await db.query<ResultSetHeader>(
-                    `INSERT INTO teams (team_name, leader_user_id, campaign_id)
-           VALUES (?, ?, ?)`,
-                    [teamName, user_id, campaign_id]
-                );
+                const { data: newTeam, error: createTeamError } = await supabase
+                    .from('teams')
+                    .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
+                    .select('id')
+                    .single();
 
-                teamId = result.insertId;
+                if (createTeamError) throw createTeamError;
+                teamId = newTeam.id;
+
             } else {
                 // 👉 มีทีมแล้ว
                 const lastTeam = teams[0];
 
-                const [members] = await db.query<RowDataPacket[]>(
-                    `SELECT COUNT(*) AS total
-           FROM team_members
-           WHERE team_id = ?`,
-                    [lastTeam.id]
-                );
+                const { count, error: countError } = await supabase
+                    .from('team_members')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('team_id', lastTeam.id);
 
-                if (members[0].total < 5) {
+                if (countError) throw countError;
+
+                // count is possibly null if error, but here unlikely
+                const memberCount = count || 0;
+
+                if (memberCount < 5) {
                     // ยังไม่ครบ → เข้าทีมเดิม
                     teamId = lastTeam.id;
                     teamName = lastTeam.team_name;
@@ -100,33 +110,38 @@ export async function POST(req: Request) {
 
                     teamName = `Team ${nextNumber}`;
 
-                    const [result] = await db.query<ResultSetHeader>(
-                        `INSERT INTO teams (team_name, leader_user_id, campaign_id)
-             VALUES (?, ?, ?)`,
-                        [teamName, user_id, campaign_id]
-                    );
+                    const { data: newTeam, error: createTeamError } = await supabase
+                        .from('teams')
+                        .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
+                        .select('id')
+                        .single();
 
-                    teamId = result.insertId;
+                    if (createTeamError) throw createTeamError;
+                    teamId = newTeam.id;
                 }
             }
 
             // เพิ่มสมาชิกลงทีม
-            await db.query(
-                `INSERT INTO team_members (team_id, user_id)
-         VALUES (?, ?)`,
-                [teamId, user_id]
-            );
+            const { error: addMemberError } = await supabase
+                .from('team_members')
+                .insert({ team_id: teamId, user_id: user_id });
+
+            if (addMemberError) throw addMemberError;
         }
 
         // -------------------------
         // 3️⃣ บันทึกการสมัครกิจกรรม
         // -------------------------
-        await db.query(
-            `INSERT INTO activities_user_register
-       (user_id, campaign_id, activity_name, activity_type)
-       VALUES (?, ?, ?, ?)`,
-            [user_id, campaign_id, activity_name, activity_type]
-        );
+        const { error: registerError } = await supabase
+            .from('activities_user_register')
+            .insert({
+                user_id,
+                campaign_id,
+                activity_name,
+                activity_type
+            });
+
+        if (registerError) throw registerError;
 
         return NextResponse.json({ message: "Registration successful" });
 

@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ConditionalBottomBar from "@/components/ConditionalBottomBar";
 import { LiffProvider } from "@/contexts/LiffContext";
-import UserPicture from "@/components/profile/UserPicture";
 import AuthRedirector from "@/components/AuthRedirector"; // Added import for AuthRedirector
 
 const geistSans = Geist({

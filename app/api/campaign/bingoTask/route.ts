@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { RowDataPacket } from "mysql2";
+import { supabase } from "@/utils/supabase";
 
 export async function GET() {
     try {
-        const [row] = await db.query<RowDataPacket[]>(
-            "SELECT * FROM bingo_activity"
-        );
-        return NextResponse.json(row);
+        const { data: rows } = await supabase.from('bingo_activity').select('*');
+        return NextResponse.json(rows);
     } catch (error) {
         console.log(error);
+        return NextResponse.json(
+            { message: "Internal Server Error" },
+            { status: 500 }
+        );
     }
 }
