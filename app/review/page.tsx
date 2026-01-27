@@ -1,16 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 
 const users = [
   {
     value: 'user1',
-    label: <Image src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" alt="user1" className="w-8 h-8 rounded-full" width={32} height={32} />,
+    label: (
+      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      </div>
+    ),
   },
   {
     value: 'user2',
-    label: <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">K</div>,
+    label: (
+      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+      </div>
+    ),
   },
   {
     value: 'user3',
@@ -20,7 +27,7 @@ const users = [
       </div>
     ),
   },
-    {
+  {
     value: 'user4',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
@@ -28,7 +35,7 @@ const users = [
       </div>
     ),
   },
-    {
+  {
     value: 'user5',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
@@ -42,7 +49,7 @@ export default function ReviewPage() {
   const [selectedValue, setSelectedValue] = useState('user1');
 
   return (
-    <div className="flex flex-col p-2 justify-center">
+    <div className="flex flex-col p-2 justify-center text-black">
       <div className="flex justify-between px-2 py-2 items-center">
         <p className="text-xl font-bold font-sans">คำแนะนำ</p>
         <select className="flex px-2 py-2 rounded bg-white">
@@ -57,11 +64,10 @@ export default function ReviewPage() {
               <button
                 key={user.value}
                 onClick={() => setSelectedValue(user.value)}
-                className={`p-2 rounded-lg transition-colors duration-300 ${
-                  selectedValue === user.value
-                    ? 'bg-white shadow'
-                    : 'bg-transparent'
-                }`}>
+                className={`p-2 rounded-lg transition-colors duration-300 ${selectedValue === user.value
+                  ? 'bg-white shadow'
+                  : 'bg-transparent'
+                  }`}>
                 {user.label}
               </button>
             ))}

@@ -36,7 +36,7 @@ export default function RankTable({ ranking }: { ranking: IRanking[] }) {
           {ranking.map((row: IRanking, index: number) => (
             <div
               key={index}
-              className="grid grid-cols-3 p-4 items-center">
+              className="grid grid-cols-3 p-4 items-center text-black">
               <div>{index + 1}</div>
               <div>{row.user_info.sname}</div>
               <div>{row.value}</div>

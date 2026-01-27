@@ -31,7 +31,7 @@ export default function CampaignCard() {
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-4 mt-4 text-black">
         {campaigns.map((item) => (
           <div
             key={item.id}
