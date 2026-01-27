@@ -12,17 +12,28 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const user_id = searchParams.get('user_id');
     const campaign_id = searchParams.get('campaign_id');
+    const activity_type = searchParams.get('activity_type');
 
-    if (!user_id || !campaign_id) {
+    if (!user_id || (!campaign_id && !activity_type)) {
         return NextResponse.json({ message: "Missing parameters" }, { status: 400 });
     }
 
     try {
-        const { data, error } = await getSupabase()
+        let query = getSupabase()
             .from('activities_user_register')
             .select('*')
-            .eq('user_id', user_id)
-            .eq('campaign_id', campaign_id);
+            .eq('user_id', user_id);
+
+        if (campaign_id) {
+            query = query.eq('campaign_id', campaign_id);
+        }
+
+        // If activity_type is provided, check if ANY campaign with this activity_type is registered
+        if (activity_type) {
+            query = query.eq('activity_type', activity_type);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 

@@ -27,7 +27,7 @@ export const useLiff = () => useContext(LiffContext);
 export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-  
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -41,7 +41,6 @@ export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoggedIn(true);
         const prof = await liff.getProfile();
         setProfile(prof);
-        console.log(prof);
       } catch (err) {
         console.error("LIFF init error", err);
       }

@@ -3,13 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
 import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
 import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
-
 import MentalAssessment from '@/components/campaign/mentalCampaign/MentalAssessment';
 
 interface ICampaign {
@@ -78,7 +76,7 @@ export default function CampaignContent() {
         const checkRegistration = async () => {
             if (profile?.userId && campaign?.id) {
                 try {
-                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&campaign_id=${campaign.id}`);
+                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&activity_type=${campaign.activity_type}`);
                     if (res.data.isRegistered) {
                         setIsRegistered(true);
                     }
@@ -103,7 +101,6 @@ export default function CampaignContent() {
     const startDate = new Date(campaign.start_date);
     const endDate = new Date(campaign.end_date);
     const isActive = now >= startDate && now <= endDate;
-
     return (
         <div className="min-h-screen bg-base-100">
             <Link href="/campaign">
@@ -114,10 +111,9 @@ export default function CampaignContent() {
 
             <div className="max-w-2xl mx-auto card bg-base-100 overflow-hidden">
                 <figure className="relative w-full h-64">
-                    <Image
-                        src="/targetForm/exercise.png" // Placeholder image as in CampaignCard
+                    <img
+                        src={campaign.title}
                         alt={campaign.activity_name}
-                        fill
                         className="object-cover"
                     />
                 </figure>
