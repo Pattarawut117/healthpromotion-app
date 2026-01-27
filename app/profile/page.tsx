@@ -50,7 +50,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col items-center p-4 space-y-4">
+    <div className="text-black flex flex-col items-center p-4 space-y-4">
       {/* Avatar + ชื่อ */}
       <div className="flex flex-col items-center">
         <UserPicture />
@@ -136,10 +136,6 @@ export default function ProfilePage() {
       <div className="w-full border rounded-xl divide-y shadow-sm">
         {[
           { label: "แก้ไขโปรไฟล์", path: "/profile/edit" },
-          { label: "E-Bib ของฉัน", path: "/profile/ebib" },
-          { label: "แคมเปญของฉัน", path: "/profile/campaigns" },
-          { label: "ประวัติการแลกของรางวัล", path: "/profile/rewards" },
-          { label: "ปรับเป้าหมาย", path: "/profile/goals" },
           { label: "นโยบายความเป็นส่วนตัว", path: "/profile/privacy-policy" },
         ].map((item, idx) => (
           <Link

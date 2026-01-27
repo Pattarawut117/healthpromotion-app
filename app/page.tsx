@@ -20,8 +20,8 @@ export default function Home() {
         <p className="bg-white text-gray-500 p-6 shadow-md rounded-xl text-gray-700">ข่าวสาร</p>
 
         {/* No Data Box */}
-        <div className="bg-white text-gray-500 w-full p-6 shadow-md rounded-xl">
-          <Image src="/poster/mentalCampaign.png" alt="mentalCampaign" />
+        <div className="bg-white text-gray-500 w-full p-4 shadow-md rounded-xl">
+          <Image src="/poster/mentalCampaign.png" alt="mentalCampaign" width={400} height={400} />
 
         </div>
       </div>

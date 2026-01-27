@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { RightOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import axios from 'axios';
-import Image from 'next/image';
 
 interface ICampaign {
   id: number;
@@ -32,14 +31,14 @@ export default function CampaignCard() {
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 mt-4">
         {campaigns.map((item) => (
           <div
             key={item.id}
             className="bg-card text-card-foreground rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col"
           >
-            <div className="p-4 flex-grow">
-              <Image
+            <div className="flex-grow">
+              <img
                 alt={item.activity_name}
                 width={200}
                 height={200}
@@ -52,7 +51,7 @@ export default function CampaignCard() {
               <p className="text-muted-foreground text-sm">{item.activity_type}</p>
             </div>
             <Link href={`/campaign/${item.id}`}>
-              <div className="flex items-center justify-center gap-2 bg-orange-300 text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-primary/90 transition-colors duration-300">
+              <div className="flex items-center justify-center gap-2 bg-orange-300 text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-orange-400 transition-colors duration-300">
                 <p className="text-sm">เข้าร่วม</p>
                 <RightOutlined />
               </div>
