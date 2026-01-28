@@ -130,22 +130,6 @@ export default function RegisterForm({ formData, onChange }: Props) {
               required
             />
           </div>
-
-          <div className="mt-4">
-            <label htmlFor="workingLongtime" className="block text-sm font-medium text-muted-foreground mb-1">
-              ท่านนั่ง หรืเอนกายเฉยๆติดต่อกันนาน เกิน 2 ชั่วโมงหรือไม่
-            </label>
-            <select
-              id="workingLongtime"
-              value={formData.workingLongtime}
-              onChange={(e) => onChange('workingLongtime', e.target.value || '')}
-              className={`select ${inputClasses}`}
-            >
-              <option value="" disabled>ระบุ</option>
-              <option value="น้อยกว่า 2 ชั่วโมง">น้อยกว่า 2 ชั่วโมง</option>
-              <option value="มากกว่า 2 ชั่วโมง">มากกว่า 2 ชั่วโมง</option>
-            </select>
-          </div>
         </div>
 
         {/* Health Information */}

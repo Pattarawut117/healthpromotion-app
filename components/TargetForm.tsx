@@ -48,10 +48,10 @@ export default function TargetForm({ formData, onChange }: Props) {
         },
         {
           id: 'drinkWater',
-          label: 'ท่านดื่มวันละไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล. ขวดใหญ่ 1500 มล.)',
+          label: 'ท่านดื่มน้ำวันละไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล. ขวดใหญ่ 1500 มล.)',
           type: 'select',
           options: ['ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)', '4-6 แก้ว (1,000-1,500 มล.)', 'มากกว่า 6-8 แก้ว (1,500-2,000 มล.)', 'มากกว่า 8-10 แก้ว (2,000-2,500 มล.)'],
-        },
+        }
       ],
     },
     {
@@ -138,6 +138,12 @@ export default function TargetForm({ formData, onChange }: Props) {
           type: 'select',
           options: ['ไม่มีกิจกรรมเลย', 'มีกิจกรรมทางกายน้อยกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน', 'มีกิจกรรมทางกายมากกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน'],
         },
+        {
+          id: 'workingLongtime',
+          label: 'ท่านนั่งหรือเอนกายเฉยๆติดต่อกันนาน เกิน 2 ชั่วโมงหรือไม่',
+          type: 'select',
+          options: ['น้อยกว่า 2 ชั่วโมง', 'มากกว่า 2 ชั่วโมง'],
+        }
       ],
     },
   ];
@@ -183,6 +189,7 @@ export default function TargetForm({ formData, onChange }: Props) {
                         onChange(field.id, e.target.value)
                       }
                       className={`select ${inputClasses}`}
+                      required
                     >
                       <option value="" disabled>
                         โปรดระบุ
@@ -234,6 +241,7 @@ export default function TargetForm({ formData, onChange }: Props) {
                       onChange={(e) =>
                         onChange(field.id, e.target.value)
                       }
+                      required
                       className={inputClasses}
                     />
                   )}

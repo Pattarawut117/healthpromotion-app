@@ -5,6 +5,7 @@ import RegisterForm from "@/components/RegisterForm";
 import TargetForm from "@/components/TargetForm";
 import { useLiff } from "@/contexts/LiffContext";
 import { useRouter } from "next/navigation";
+import Policy from "@/components/Policy";
 
 // Notification component
 const Notification = ({
@@ -65,6 +66,7 @@ export default function RegisterPage() {
   const { profile } = useLiff();
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
+  const [isdisabled, setIsdisabled] = useState(true);
   const [notification, setNotification] = useState({
     message: "",
     type: "" as "success" | "error" | "",
@@ -188,6 +190,10 @@ export default function RegisterPage() {
     {
       title: 'Health & Lifestyle',
       content: <TargetForm formData={formData} onChange={handleChange} />,
+    },
+    {
+      title: 'Policy',
+      content: <Policy isdisabled={isdisabled} onChange={setIsdisabled} />,
     }
   ];
 
@@ -217,6 +223,7 @@ export default function RegisterPage() {
           <button
             onClick={handleSubmit}
             className="px-4 py-2 btn btn-success rounded-md"
+            disabled={isdisabled}
           >
             เสร็จสิ้น
           </button>
