@@ -159,26 +159,26 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
 
                         {category === 'water' && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">จำนวน (มิลลิลิตร)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">จำนวน (แก้ว)</label>
                                 <input
                                     type="number"
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                                    placeholder="เช่น 250"
+                                    placeholder="ดื่มน้ำอย่างน้อย 6-8 แก้ว/วัน"
                                 />
                             </div>
                         )}
 
                         {category === 'sleep' && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">ระยะเวลา (นาที)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">ระยะเวลา (ชั่วโมง)</label>
                                 <input
                                     type="number"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
-                                    placeholder="เช่น 480 (8 ชั่วโมง)"
+                                    placeholder="นอนหลับอย่างน้อย 7-8 ชั่วโมง/วัน"
                                 />
                             </div>
                         )}
@@ -191,7 +191,8 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 outline-none"
-                                    placeholder="เช่น 30"
+                                    placeholder="ออกกำลังกายอย่างน้อย 30 นาที/วัน"
+                                    min="30"
                                 />
                             </div>
                         )}
@@ -204,7 +205,7 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                                 onChange={(e) => setDescription(e.target.value)}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 outline-none text-sm"
                                 rows={2}
-                                placeholder="บันทึกช่วยจำ..."
+                                placeholder="บรรยายกิจกรรม"
                             />
                         </div>
 
@@ -228,7 +229,7 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                                         <>
                                             <span className="text-2xl mb-1">📸</span>
                                             <span className="text-xs font-medium text-gray-600">
-                                                {category === 'food' ? "ถ่ายรูปอาหาร (บังคับ/แนะนำ)" : "แนบรูป (ถ้ามี)"}
+                                                {category === 'food' ? "ทานอาหารแบบ 2:1:1" : "แนบรูป (ถ้ามี)"}
                                             </span>
                                         </>
                                     )}
