@@ -34,7 +34,7 @@ export default function RootLayout({
           <div className="relative bg-background w-full max-w-sm h-screen shadow-lg flex flex-col bg-gray-100 overflow-hidden">
             {/* Topbar */}
             <div className="bg-[#9337E8] text-primary-foreground py-4 px-4 font-serif font-bold flex items-center shrink-0">
-              <nav className="text-xl text-gray-100">TUH Health Promotion</nav>
+              <nav className="text-xl text-gray-100">TUH Health-D</nav>
             </div>
 
             {/* Main Content */}

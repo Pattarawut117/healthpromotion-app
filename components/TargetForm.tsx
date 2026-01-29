@@ -32,11 +32,11 @@ export default function TargetForm({ formData, onChange }: Props) {
           id: 'condentialDisease',
           label: 'Congenital Disease (โรคประจำตัว)',
           type: 'checkbox',
-          options: ['ความดันโลหิตสูง', 'ไขมันในเลือดสูง', 'โรคเบาหวาน', 'โรคหัวใจ', 'โรคไต', 'โรคปอดอุดกั้นเรื้อรัง', 'มะเร็ง', 'โรคอื่นๆ'],
+          options: ['ความดันโลหิตสูง', 'ไขมันในเลือดสูง', 'โรคเบาหวาน', 'โรคหัวใจ', 'โรคไต', 'โรคปอดอุดกั้นเรื้อรัง', 'มะเร็ง', 'โรคอื่นๆ', 'ไม่มี'],
         },
         {
           id: 'isSmoke',
-          label: 'Do you smoke? (การสูบบุหรี่)',
+          label: 'ท่านสูบบุหรี่หรือไม่',
           type: 'select',
           options: ['ไม่สูบ', 'สูบ', 'เคยสูบแต่เลิกแล้ว'],
         },
@@ -48,7 +48,7 @@ export default function TargetForm({ formData, onChange }: Props) {
         },
         {
           id: 'drinkWater',
-          label: 'ท่านดื่มน้ำวันละไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล. ขวดใหญ่ 1500 มล.)',
+          label: 'ท่านดื่มน้ำวันละเท่าไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล. ขวดใหญ่ 1500 มล.)',
           type: 'select',
           options: ['ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)', '4-6 แก้ว (1,000-1,500 มล.)', 'มากกว่า 6-8 แก้ว (1,500-2,000 มล.)', 'มากกว่า 8-10 แก้ว (2,000-2,500 มล.)'],
         }
@@ -69,17 +69,17 @@ export default function TargetForm({ formData, onChange }: Props) {
           type: 'select',
           options: ['เพียงพอ', 'ไม่เพียงพอ'],
         },
+      ],
+    },
+    {
+      title: 'Mental Health Check',
+      fields: [
         {
           id: 'sleepProblem',
           label: 'ท่านมีปัญหาการนอนไม่หลับหรือนอนมาก',
           type: 'select',
           options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
         },
-      ],
-    },
-    {
-      title: 'Mental Health Check',
-      fields: [
         {
           id: 'adhd',
           label: 'มีสมาธิน้อยลง',
@@ -104,6 +104,7 @@ export default function TargetForm({ formData, onChange }: Props) {
           type: 'select',
           options: ['น้อยมากหรือแทบไม่มี', 'เป็นบางครั้ง', 'เป็นบ่อยครั้ง', 'เป็นทุกครั้ง'],
         },
+
       ],
     },
     {
@@ -134,9 +135,9 @@ export default function TargetForm({ formData, onChange }: Props) {
       fields: [
         {
           id: 'activitiesTried',
-          label: 'ท่านมีกิจกรรมทางกายหรือเคลื่อนไหวหรือไม่อย่างไร',
+          label: 'ท่านมีการออกกำลังกายหรือไม่',
           type: 'select',
-          options: ['ไม่มีกิจกรรมเลย', 'มีกิจกรรมทางกายน้อยกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน', 'มีกิจกรรมทางกายมากกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน'],
+          options: ['ไม่มีการออกกำลังกาย', 'มีการออกกำลังกายน้อยกว่า 150 นาที/สัปดาห์', 'มีการออกกำลังกายมากกว่า 150 นาที/สัปดาห์'],
         },
         {
           id: 'workingLongtime',

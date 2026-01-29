@@ -184,20 +184,65 @@ export default function RegisterPage() {
 
   const steps = [
     {
+      title: 'Policy',
+      content: <Policy isdisabled={isdisabled} onChange={setIsdisabled} />,
+    },
+    {
       title: "General Info",
       content: <RegisterForm formData={formData} onChange={handleChange} />,
     },
     {
       title: 'Health & Lifestyle',
       content: <TargetForm formData={formData} onChange={handleChange} />,
-    },
-    {
-      title: 'Policy',
-      content: <Policy isdisabled={isdisabled} onChange={setIsdisabled} />,
     }
   ];
 
-  const next = () => setCurrent((prev) => prev + 1);
+  const validateStep = (stepIndex: number): boolean => {
+    if (stepIndex === 1) { // General Info
+      const requiredFields: (keyof RegisterFormData)[] = ['sname', 'lname', 'tel', 'dob', 'gender', 'unit', 'height', 'weight'];
+      const missingFields = requiredFields.filter(key => !formData[key]);
+      if (missingFields.length > 0) {
+        showNotification("Please fill in all general information fields.", "error");
+        return false;
+      }
+    } else if (stepIndex === 2) { // Health & Lifestyle
+      // List of all keys for TargetForm
+      const targetFields: (keyof RegisterFormData)[] = [
+        'condentialDisease', 'isSmoke', 'drinkBeer', 'drinkWater',
+        'sleepPerhour', 'sleepEnough', 'sleepProblem', 'adhd', 'madness', 'bored', 'introvert',
+        'eatVegetable', 'eatSour', 'eatSweetness',
+        'activitiesTried', 'workingLongtime'
+      ];
+
+      for (const key of targetFields) {
+        const val = formData[key];
+        if (key === 'condentialDisease') {
+          // Check array or string
+          if (Array.isArray(val)) {
+            if (val.length === 0) {
+              showNotification("Please select at least one Congenital Disease (or 'None').", "error");
+              return false;
+            }
+          } else if (!val) {
+            showNotification("Please select Congenital Disease.", "error");
+            return false;
+          }
+        } else {
+          if (!val) {
+            showNotification(`Please select an option for all fields. (Missing: ${key})`, "error");
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  };
+
+  const next = () => {
+    if (validateStep(current)) {
+      setCurrent((prev) => prev + 1);
+    }
+  };
   const prev = () => setCurrent((prev) => prev - 1);
 
   return (
@@ -231,6 +276,7 @@ export default function RegisterPage() {
           <button
             onClick={next}
             className="px-4 py-2 btn btn-primary rounded-md"
+            disabled={isdisabled}
           >
             ถัดไป
           </button>
