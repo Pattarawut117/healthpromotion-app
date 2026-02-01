@@ -17,16 +17,24 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
-        const { user_id, score } = body
-        await getSupabase().from('mental_health_assessments').insert([
+        const { user_id, depress, anxiety, stress } = body
+        const { error } = await getSupabase().from('mental_health_assessments').insert([
             {
                 user_id,
-                score
+                depress,
+                anxiety,
+                stress
             }
-        ])
+        ]);
+
+        if (error) {
+            console.error("Supabase Insert Error:", error);
+            return NextResponse.json({ message: error.message, details: error }, { status: 500 });
+        }
+
         return NextResponse.json({ message: "Mental health assessment added successfully" })
     } catch (error) {
-        console.log(error)
+        console.error("API Error:", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }
