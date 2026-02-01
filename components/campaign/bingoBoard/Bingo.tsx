@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useLiff } from "@/contexts/LiffContext";
 
-export type BingoStatus = "approved" | "pending" | "locked";
+export type BingoStatus = "APPROVED" | "PENDING" | "LOCKED";
 
 export interface BingoActivity {
   id: number;
@@ -17,6 +17,8 @@ export interface BingoCell {
   id: number;
   activity_name: string;
   status: BingoStatus;
+  approved_count?: number;
+  total_count?: number;
 }
 
 export interface BingoRow {
@@ -24,10 +26,16 @@ export interface BingoRow {
   cells: BingoCell[];
 }
 
+interface BingoProgress {
+  bingo_task_id: number;
+  approved_count: number;
+}
+
 export default function BingoBoardMobile() {
   const { profile } = useLiff();
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null);
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
+  const [teamName, setTeamName] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   // File Upload State
@@ -80,7 +88,7 @@ export default function BingoBoardMobile() {
         setBingoData(prevDocs => prevDocs.map(row => ({
           ...row,
           cells: row.cells.map(cell =>
-            cell.id === selectedCell.id ? { ...cell, status: 'pending' } : cell
+            cell.id === selectedCell.id ? { ...cell, status: 'PENDING' } : cell
           )
         })));
 
@@ -100,82 +108,51 @@ export default function BingoBoardMobile() {
   useEffect(() => {
     const fetchBingoData = async () => {
       try {
-        const [tasksResponse, submissionsResponse] = await Promise.all([
+        const [tasksRes, boardRes] = await Promise.all([
           axios.get("/api/campaign/bingoTask"),
-          axios.get("/api/campaign/bingoSubmissions")
+          axios.get("/api/campaign/teamMembers?user_id=" + profile?.userId),
         ]);
 
-        const activities: BingoActivity[] = tasksResponse.data;
-        const submissions: { user_id: string; task_id: number; status: string }[] = submissionsResponse.data; // Type as needed
+        const activities: BingoActivity[] = tasksRes.data;
+        const { progress, team_size, team_name } = boardRes.data;
 
-        // Filter submissions for current user
-        const userSubmissions = submissions.filter(sub => sub.user_id === profile?.userId);
-
-        // Group by row (Assuming 5 items per row if strictly ordered, or use 'row' property if available)
-        // If the API doesn't return 'row', we can chunk it.
-        // Let's assume the API returns a flat list and we want to structure it into 5 rows of 5.
+        setTeamName(team_name);
 
         const rows: BingoRow[] = [];
         const itemsPerRow = 5;
 
-        // Sort by ID to ensure order if needed, or trust API order
-        // activities.sort((a, b) => a.id - b.id);
-
-        for (let i = 0; i < 6; i++) { // Assuming 6 rows as per original mock
+        for (let i = 0; i < 6; i++) {
           const rowNum = i + 1;
-          // If data has 'row' property, filter by it. Else, slice.
-          // Strategy: If 'row' exists in first item, use it. Else slice.
+          const cellData = activities.slice(i * itemsPerRow, (i + 1) * itemsPerRow);
 
-          let cellData: BingoActivity[] = [];
+          rows.push({
+            row: rowNum,
+            cells: cellData.map((c) => {
+              const p = progress.find((x: BingoProgress) => x.bingo_task_id === c.id);
 
-          if (activities.length > 0 && 'row' in activities[0]) {
-            cellData = activities.filter(act => act.row === rowNum);
-          } else {
-            cellData = activities.slice(i * itemsPerRow, (i + 1) * itemsPerRow);
-          }
+              let status: BingoStatus = "LOCKED";
 
-          if (cellData.length > 0) {
-            rows.push({
-              row: rowNum,
-              cells: cellData.map(c => {
-                const submission = userSubmissions.find(s => s.task_id === c.id);
-                let status: BingoStatus = "locked";
+              if (p) {
+                if (p.approved_count === team_size) status = "APPROVED";
+                else if (p.approved_count > 0) status = "PENDING";
+              }
 
-                if (submission) {
-                  if (submission.status === "APPROVED") {
-                    status = "approved";
-                  } else if (submission.status === "PENDING" || !submission.status) {
-                    // API might default to something else or null, usually 'pending' if just submitted
-                    status = "pending";
-                  }
-                }
+              console.log(team_size);
 
-                return {
-                  id: c.id,
-                  activity_name: c.activity_name,
-                  status: status
-                };
-              })
-            });
-          }
+              return {
+                id: c.id,
+                activity_name: c.activity_name,
+                status,
+                approved_count: p ? p.approved_count : 0,
+                total_count: team_size,
+              };
+            }),
+          });
         }
 
-        // Temporary: If API returns empty (no data yet), fallback or keep empty.
-        // For now, let's keep the logic.
-        // Note: We might want to unlock the first row by default or check user progress.
-        const initializedRows = rows.map((r) => ({
-          ...r,
-          // Note: Here we are keeping the status we just calculated above.
-          // If we wanted to "unlock" rows sequentially, we would do it here.
-          // For now, we trust the status from DB or default to "locked" (which is visually just normal but maybe clickable?)
-          // Wait, "locked" in previous code seemed to mean "default". 
-          // Let's ensure "locked" hasn't got specific disabling logic unless intended.
-          // In grid rendering: onClick is always set.
-        }));
-
-        setBingoData(initializedRows);
+        setBingoData(rows);
       } catch (error) {
-        console.error("Failed to fetch bingo tasks", error);
+        console.error("Failed to fetch team bingo", error);
       } finally {
         setLoading(false);
       }
@@ -205,6 +182,11 @@ export default function BingoBoardMobile() {
         <h1 className="text-2xl font-extrabold text-orange-600 drop-shadow-sm">
           🏆 Health Bingo
         </h1>
+        {teamName && (
+          <h2 className="text-lg font-bold text-gray-700 mt-2">
+            {teamName}
+          </h2>
+        )}
         <p className="text-xs text-gray-600 mt-1">
           ทำภารกิจให้ครบทุกแถว!
         </p>
@@ -219,11 +201,11 @@ export default function BingoBoardMobile() {
             let borderClass = "border-gray-100";
             let disabled = false;
 
-            if (cell.status === "approved") {
+            if (cell.status === "APPROVED") {
               bgClass = "bg-green-100";
               borderClass = "border-green-300";
               disabled = true;
-            } else if (cell.status === "pending") {
+            } else if (cell.status === "PENDING") {
               bgClass = "bg-yellow-50";
               borderClass = "border-yellow-200";
             }
@@ -231,9 +213,9 @@ export default function BingoBoardMobile() {
             return (
               <motion.button
                 key={cell.id}
-                whileTap={cell.status === "approved" ? {} : { scale: 0.9 }}
+                whileTap={cell.status === "APPROVED" ? {} : { scale: 0.9 }}
                 onClick={() => {
-                  if (cell.status !== "approved") {
+                  if (cell.status !== "APPROVED") {
                     setSelectedCell(cell);
                   }
                 }}
@@ -241,11 +223,16 @@ export default function BingoBoardMobile() {
                 className={`
                   relative aspect-square flex flex-col items-center justify-center p-1 rounded-xl shadow-sm border transition-all
                   ${bgClass} ${borderClass}
-                  ${cell.status === "approved" ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
+                  ${cell.status === "APPROVED" ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
                 `}
               >
-                {cell.status === "approved" && (
+                {cell.status === "APPROVED" && (
                   <div className="absolute top-1 right-1 text-xs text-green-600">✓</div>
+                )}
+                {cell.approved_count !== undefined && cell.approved_count > 0 && (
+                  <div className="absolute top-1 left-1 text-[0.6rem] font-bold text-gray-500 bg-white/80 px-1 rounded-md shadow-sm">
+                    {cell.approved_count}/{cell.total_count}
+                  </div>
                 )}
                 <span className={`text-[0.6rem] font-bold text-center leading-tight line-clamp-2 w-full break-words`}>
                   {cell.activity_name}
@@ -285,7 +272,12 @@ export default function BingoBoardMobile() {
                   <h3 className="text-xl font-bold text-gray-800">
                     {selectedCell.activity_name}
                   </h3>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <span className="text-sm font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                      Team Progress: {selectedCell.approved_count || 0}/{selectedCell.total_count || 0}
+                    </span>
+                  </div>
+                  <p className="text-gray-500 text-sm mt-2">
                     ส่งรูปถ่ายของคุณเพื่อยืนยันภารกิจนี้
                   </p>
                 </div>

@@ -39,11 +39,24 @@ export default function MentalAssessment() {
 
         setSubmitting(true);
         try {
-            const totalScore = Object.values(answers).reduce((acc, curr) => acc + curr, 0);
+            const scores = mentalAssessment.reduce((acc, item) => {
+                const score = answers[item.id] || 0;
+                if (item.type === 'anxiety') acc.anxiety += score;
+                else if (item.type === 'depress') acc.depress += score;
+                else if (item.type === 'stress') acc.stress += score;
+                return acc;
+            }, { anxiety: 0, depress: 0, stress: 0 });
+
+            console.log("Calculated Scores:", scores);
+            console.log("Depress Score:", scores.depress);
+            console.log("Anxiety Score:", scores.anxiety);
+            console.log("Stress Score:", scores.stress);
 
             await axios.post('/api/campaign/mental', {
-                user_id: profile.userId,
-                score: totalScore
+                user_id: profile?.userId,
+                depress: scores.depress,
+                anxiety: scores.anxiety,
+                stress: scores.stress
             });
 
             setSubmitted(true);
