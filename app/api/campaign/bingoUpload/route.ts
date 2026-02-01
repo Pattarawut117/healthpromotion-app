@@ -9,7 +9,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'No file found' });
     }
 
-    const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+    const fileExt = file.name.split('.').pop();
+    const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
 
     try {
         const { error } = await getSupabase().storage
