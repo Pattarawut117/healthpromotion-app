@@ -241,9 +241,9 @@ export default function RankingPage() {
   }
 
   return (
-    <div className="p-4 flex flex-col gap-4">
+    <div className="p-4 flex flex-col gap-4 text-black">
       <div className="flex justify-between items-center flex-wrap gap-2">
-        <h1 className="text-2xl font-bold">Ranking</h1>
+        <h1 className="text-2xl font-bold">จัดอันดับ</h1>
 
         {/* Scrollable Tabs if needed, or flex wrap */}
         <div className="flex items-center gap-2 overflow-x-scroll max-w-full pb-2">

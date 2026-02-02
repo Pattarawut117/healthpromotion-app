@@ -134,10 +134,10 @@ export default function EditProfilePage() {
   if (loading) return <p className="p-4">กำลังโหลดข้อมูล...</p>;
 
   return (
-    <div className="max-w-lg mx-auto p-4 space-y-6 pb-20">
+    <div className="max-w-lg mx-auto p-4 space-y-6 pb-6 text-black">
       <div className="flex items-center gap-4">
         <Link href="/profile">
-          <ArrowLeftOutlined className="text-xl cursor-pointer" />
+          <ArrowLeftOutlined className="text-xl" />
         </Link>
         <h1 className="text-xl font-bold">แก้ไขโปรไฟล์ (Edit Profile)</h1>
       </div>

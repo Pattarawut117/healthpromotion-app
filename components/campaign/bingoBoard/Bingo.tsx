@@ -199,7 +199,7 @@ export default function BingoBoardMobile() {
   }
 
   return (
-    <div className=" bg-gradient-to-br from-orange-50 to-amber-100 p-2">
+    <div className=" bg-gradient-to-br from-orange-50 to-amber-100 p-2 text-black">
       {/* Header */}
       <header className="mb-4 text-center">
         <h1 className="text-2xl font-extrabold text-orange-600 drop-shadow-sm">
