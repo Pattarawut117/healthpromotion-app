@@ -4,6 +4,7 @@ import React from 'react';
 import UserPicture from './profile/UserPicture';
 import { RegisterFormData } from '@/app/user/register/page';
 import unitData from '@/app/user/data/data';
+import { divisionData } from '@/app/user/data/data';
 import Select from 'react-select';
 
 
@@ -25,6 +26,10 @@ export default function RegisterForm({ formData, onChange }: Props) {
     label: unit.text,
   }));
 
+  const divisionOptions = divisionData.map((division) => ({
+    value: division.value,
+    label: division.text,
+  }));
 
   return (
     <div className="px-4 flex flex-col items-center">
@@ -123,6 +128,24 @@ export default function RegisterForm({ formData, onChange }: Props) {
               onChange={(option) => onChange("unit", option?.value || "")}
               options={unitOptions}
               placeholder="ระบุหน่วยงาน"
+              className="basic-single"
+              classNamePrefix="select"
+              isClearable
+              isSearchable
+              required
+            />
+          </div>
+
+          <div className="mt-4">
+            <label htmlFor="division" className="block text-sm font-medium text-muted-foreground mb-1">
+              สาขา
+            </label>
+            <Select
+              id="division"
+              value={divisionOptions.find((opt) => opt.value === formData.division)}
+              onChange={(option) => onChange("division", option?.value || "")}
+              options={divisionOptions}
+              placeholder="ระบุสาขา"
               className="basic-single"
               classNamePrefix="select"
               isClearable
