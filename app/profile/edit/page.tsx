@@ -4,7 +4,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useLiff } from "@/contexts/LiffContext";
-import unitData, { Unit } from '@/app/user/data/data';
+import unitData, { divisionData } from '@/app/user/data/data';
+import Select from 'react-select';
 
 // Interface matching app/api/users/route.ts
 interface UserInfo {
@@ -47,6 +48,11 @@ export default function EditProfilePage() {
   const [formData, setFormData] = useState<Partial<UserInfo>>({});
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+
+  const divisionOptions = divisionData.map((division) => ({
+    value: division.value,
+    label: division.text,
+  }));
 
   const fetchUser = useCallback(async () => {
     if (!userId) return;
@@ -218,36 +224,39 @@ export default function EditProfilePage() {
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               หน่วยงาน (Unit)
             </label>
-            <select
+            <Select
               name="unit"
-              value={formData.unit || ""}
-              onChange={handleChange}
-              className={`select ${inputClasses}`}
-            >
-              <option value="">-- ระบุหน่วยงาน --</option>
-              {unitData.map((unit: Unit) => (
-                <option key={unit.id} value={unit.value}>
-                  {unit.text}
-                </option>
-              ))}
-            </select>
+              value={unitData
+                .map(u => ({ value: u.value, label: u.text }))
+                .find(opt => opt.value === formData.unit)}
+              onChange={(option) => setFormData(prev => ({ ...prev, unit: option?.value || "" }))}
+              options={unitData.map(u => ({ value: u.value, label: u.text }))}
+              placeholder="ระบุหน่วยงาน"
+              className="basic-single"
+              classNamePrefix="select"
+              isClearable
+              isSearchable
+            />
           </div>
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               สังกัด/แผนก (Division)
             </label>
-            <input
-              type="text"
+            <Select
               name="division"
-              value={formData.division || ""}
-              onChange={handleChange}
+              value={divisionOptions.find((opt) => opt.value === formData.division)}
+              onChange={(option) => setFormData(prev => ({ ...prev, division: option?.value || "" }))}
+              options={divisionOptions}
               placeholder="ระบุสังกัด"
-              className={inputClasses}
+              className="basic-single"
+              classNamePrefix="select"
+              isClearable
+              isSearchable
             />
           </div>
 
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <label className="block text-sm font-medium text-muted-foreground mb-1">
               ท่านนั่งหรือเอนกายเฉยๆติดต่อกันนาน เกิน 2 ชั่วโมงหรือไม่
             </label>
@@ -259,7 +268,7 @@ export default function EditProfilePage() {
               <option value="6-8 ชั่วโมง">6-8 ชั่วโมง</option>
               <option value="8 ชั่วโมงขึ้นไป">8 ชั่วโมงขึ้นไป</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {/* 2. Body Composition */}
@@ -625,6 +634,6 @@ export default function EditProfilePage() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }

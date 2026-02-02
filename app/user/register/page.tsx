@@ -54,6 +54,7 @@ export type RegisterFormData = {
   bored: string;
   introvert: string;
   unit: string;
+  division: string;
   eatVegetable: string;
   eatSour: string;
   eatSweetness: string;
@@ -101,6 +102,7 @@ export default function RegisterPage() {
     bored: '',
     introvert: '',
     unit: '',
+    division: '',
     eatVegetable: '',
     eatSour: '',
     eatSweetness: '',
@@ -210,6 +212,7 @@ export default function RegisterPage() {
       const targetFields: (keyof RegisterFormData)[] = [
         'condentialDisease', 'isSmoke', 'drinkBeer', 'drinkWater',
         'sleepPerhour', 'sleepEnough', 'sleepProblem', 'adhd', 'madness', 'bored', 'introvert',
+        'unit', 'division',
         'eatVegetable', 'eatSour', 'eatSweetness',
         'activitiesTried', 'workingLongtime'
       ];
