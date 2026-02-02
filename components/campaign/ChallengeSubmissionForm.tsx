@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLiff } from "@/contexts/LiffContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { use21DaysUploader } from "@/hooks/use21DaysUploader";
 
 interface ChallengeSubmissionFormProps {
     category: 'water' | 'food' | 'sleep' | 'exercise';
@@ -13,34 +14,20 @@ interface ChallengeSubmissionFormProps {
 
 export default function ChallengeSubmissionForm({ category, onClose, onSuccess }: ChallengeSubmissionFormProps) {
     const { profile } = useLiff();
-    const [file, setFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [quantity, setQuantity] = useState<string>('');
     const [duration, setDuration] = useState<string>('');
     const [description, setDescription] = useState<string>('');
-    const [uploading, setUploading] = useState(false);
     const [campaignId, setCampaignId] = useState<number | null>(null);
+    const { file, previewUrl, uploading, setUploading, fileInputRef, onSelectFile, uploadImage, reset } = use21DaysUploader();
 
-    // Fetch Campaign ID for "21 Days" or similar
-    // For now, we might need to assume or fetch. simpler to fetch all and find one.
     useEffect(() => {
         const fetchCampaign = async () => {
             try {
-                // Fetch active campaigns and find one with type matching specific criteria if possible
-                // OR simple assume a specific ID if known, but better to be dynamic.
-                // Let's assume there is an API to get all campaigns.
                 const res = await axios.get('/api/campaign');
                 const campaigns = res.data;
-                // Heuristic: Find first active campaign that looks like "21 Days" or has specific type?
-                // The user request implies "21daysSubmit", maybe 'activity_type' is "21Days"?
-                // Let's look for one. If not found, warn user.
                 const target = campaigns.find((c: { activity_type: string; activity_name?: string; id: number }) => c.activity_type === '21Days' || c.activity_name?.includes('21 Days'));
                 if (target) {
                     setCampaignId(target.id);
-                } else {
-                    // Fallback: If only one campaign exists? or maybe just pick ID 8 which was seen in logs?
-                    // To be safe, rely on logs: "GET /api/registerCampaign?user_id=...&campaign_id=8"
-                    // Let's try to find it first.
                 }
             } catch (err) {
                 console.error("Failed to fetch campaign info", err);
@@ -48,15 +35,6 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
         };
         fetchCampaign();
     }, []);
-
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0];
-            setFile(selectedFile);
-            setPreviewUrl(URL.createObjectURL(selectedFile));
-        }
-    };
 
     const getTitle = () => {
         switch (category) {
@@ -85,12 +63,8 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
             // Upload Image if exists (Mandatory for Food?)
             if (file) {
                 const formData = new FormData();
+                imageUrl = await uploadImage();
                 formData.append('file', file);
-                // Re-use runUpload or create generic. Let's use runUpload for now as it's generic enough or creates /runSubmission
-                // Or better, use existing generic upload?
-                // We'll use /api/campaign/runUpload for convenience OR create a new one?
-                // Let's stick to /api/campaign/runUpload to save time as it just puts file in a folder.
-                // Use custom upload for 21 days challenge
                 const uploadRes = await axios.post('/api/campaign/21daysUpload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -101,9 +75,6 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                 }
             }
 
-            // Fallback Campaign ID if not found automatically (User needs to ensure campaign exists)
-            // If campaignId is null, we might send 0 or let backend handle?
-            // The API expects campaign_id.
             const finalCampaignId = campaignId || 0;
 
             const payload = {
@@ -119,6 +90,7 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
             await axios.post('/api/campaign/21daysSubmit', payload);
 
             alert("บันทึกข้อมูลเรียบร้อย! (Saved Successfully)");
+            reset();
             onSuccess();
             onClose();
 
@@ -213,11 +185,12 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                         {(category !== 'sleep') && (
                             <div className="p-3 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer text-center">
                                 <input
+                                    ref={fileInputRef}
                                     type="file"
                                     className="hidden"
                                     id="challenge-file-upload"
                                     accept="image/*"
-                                    onChange={handleFileChange}
+                                    onChange={onSelectFile}
                                 />
                                 <label htmlFor="challenge-file-upload" className="cursor-pointer w-full flex flex-col items-center">
                                     {previewUrl ? (
