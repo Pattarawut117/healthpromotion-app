@@ -29,6 +29,9 @@ interface UserInfo {
   eatSweetness?: string;
   activitiesTried?: string;
   workingLongtime?: string;
+  division?: string;
+  waist?: string;
+  body_fat_percentage?: number;
 }
 
 // ✅ GET /api/users?user_id=xxx
@@ -111,9 +114,10 @@ export async function POST(req: Request) {
       eat_sweetness: body.eatSweetness ?? null,
       activities_tried: body.activitiesTried ?? null,
       working_longtime: body.workingLongtime ?? null,
+      division: body.division ?? null,
+      waist: body.waist ?? null,
+      body_fat_percentage: body.body_fat_percentage ?? null,
     };
-
-    console.log("Values to be inserted/updated:", userInfo);
 
     // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว (Upsert)
     const { error } = await getSupabase()
