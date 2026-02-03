@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/utils/supabase";
+import { verifyLineToken } from "@/utils/auth";
 
 interface BingoSubmissionRequest {
     task_id: string;
@@ -31,8 +32,23 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        // 0. Verify ID Token
+        const authHeader = req.headers.get('authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ message: "Missing or invalid token" }, { status: 401 });
+        }
+        const token = authHeader.split(' ')[1];
+        const verifiedUserId = await verifyLineToken(token);
+
+        if (!verifiedUserId) {
+            return NextResponse.json({ message: "Invalid or expired token" }, { status: 401 });
+        }
+
         const body: BingoSubmissionRequest = await req.json();
-        const { task_id, user_id, image_url } = body;
+        const { task_id, image_url } = body; // removed user_id from body destructuring to avoid confusion
+
+        // Use verifiedUserId instead of body.user_id
+        const user_id = verifiedUserId;
 
         // 1. Find team_id from user_id
         const { data: teamData, error: teamError } = await getSupabase()

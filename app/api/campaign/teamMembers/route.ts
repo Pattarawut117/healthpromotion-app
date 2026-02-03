@@ -36,10 +36,28 @@ export async function GET(req: NextRequest) {
         p_team_id: team_id,
     });
 
+    // 5. Get Team Members with sname
+    const { data: membersData } = await getSupabase()
+        .from("team_members")
+        .select(`
+            user_id,
+            users_info (
+                sname
+            )
+        `)
+        .eq("team_id", team_id);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const members = membersData?.map((m: any) => ({
+        user_id: m.user_id,
+        sname: m.users_info?.sname || "Unknown"
+    })) || [];
+
     return NextResponse.json({
         team_id,
         team_name: teamData?.team_name || "Unknown Team",
         team_size: teamSize,
+        members,
         progress,
     });
 }
