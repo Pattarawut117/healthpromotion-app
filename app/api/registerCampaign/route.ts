@@ -68,7 +68,7 @@ export async function POST(req: Request) {
         // -------------------------
         // 2️⃣ ถ้าเป็น BINGO
         // -------------------------
-        if (activity_type === "BINGO") {
+        if (activity_type === "HEALTH MISSION") {
 
             // หา team ล่าสุด
             const { data: teams, error: teamError } = await getSupabase()
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
                 // count is possibly null if error, but here unlikely
                 const memberCount = count || 0;
 
-                if (memberCount < 5) {
+                if (memberCount < 10) {
                     // ยังไม่ครบ → เข้าทีมเดิม
                     teamId = lastTeam.id;
                     teamName = lastTeam.team_name;
