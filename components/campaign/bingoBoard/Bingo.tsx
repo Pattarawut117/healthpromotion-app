@@ -24,12 +24,26 @@ export interface BingoRow {
   cells: BingoCell[];
 }
 
+export interface TeamMember {
+  user_id: string;
+  sname: string;
+}
+
+export interface TeamInfo {
+  team_id: string;
+  team_name: string;
+  team_size: number;
+  members: TeamMember[];
+  progress: { task_id: number; submission_count: number }[];
+}
+
 export default function BingoBoardMobile() {
-  const { profile } = useLiff();
+  const { profile, idToken } = useLiff();
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null);
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
+  const [allSubmissions, setAllSubmissions] = useState<{ user_id: string; task_id: number | string; status: string }[]>([]);
   // File Upload State
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -58,7 +72,10 @@ export default function BingoBoardMobile() {
       formData.append('file', file);
 
       const uploadRes = await axios.post('/api/campaign/bingoUpload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${idToken}`
+        }
       });
 
       if (uploadRes.data.success) {
@@ -69,6 +86,10 @@ export default function BingoBoardMobile() {
           task_id: selectedCell.id,
           user_id: profile.userId,
           image_url: imageUrl
+        }, {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
         });
 
         alert("ส่งภารกิจเรียบร้อย!");
@@ -98,34 +119,49 @@ export default function BingoBoardMobile() {
   };
 
   useEffect(() => {
-    const fetchBingoData = async () => {
+    const initData = async () => {
+      if (!profile?.userId) return;
+
       try {
-        const [tasksResponse, submissionsResponse] = await Promise.all([
-          axios.get("/api/campaign/bingoTask"),
-          axios.get("/api/campaign/bingoSubmissions")
-        ]);
+        setLoading(true);
 
-        const activities: BingoActivity[] = tasksResponse.data;
-        const submissions: { user_id: string; task_id: number; status: string }[] = submissionsResponse.data; // Type as needed
+        // 1. Fetch Bingo Tasks (Parallel)
+        const tasksPromise = axios.get<BingoActivity[]>("/api/campaign/bingoTask");
 
-        // Filter submissions for current user
-        const userSubmissions = submissions.filter(sub => sub.user_id === profile?.userId);
+        // 2. Fetch Team Info (Parallel start, but needed for submissions)
+        // We need team info to know which team to filter submissions for
+        let currentTeamId: string | null = null;
+        try {
+          const teamRes = await axios.get<TeamInfo>(`/api/campaign/teamMembers?user_id=${profile.userId}`);
+          setTeamInfo(teamRes.data);
+          currentTeamId = teamRes.data.team_id;
+        } catch (err) {
+          console.error("Failed to fetch team data", err);
+        }
 
-        // Group by row (Assuming 5 items per row if strictly ordered, or use 'row' property if available)
-        // If the API doesn't return 'row', we can chunk it.
-        // Let's assume the API returns a flat list and we want to structure it into 5 rows of 5.
+        // 3. Fetch Submissions (Filtered)
+        // If we have a team ID, filter by it. Otherwise, fallback to user_id or empty.
+        let submissionsPromise;
+        if (currentTeamId) {
+          submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?team_id=${currentTeamId}`);
+        } else {
+          submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?user_id=${profile.userId}`);
+        }
+
+        const [tasksResponse, submissionsResponse] = await Promise.all([tasksPromise, submissionsPromise]);
+
+        const activities = tasksResponse.data;
+        const submissions: { user_id: string; task_id: number | string; status: string }[] = submissionsResponse.data;
+        setAllSubmissions(submissions);
+
+        // Filter submissions for current user for the BOARD STATUS
+        const userSubmissions = submissions.filter(sub => sub.user_id === profile.userId);
 
         const rows: BingoRow[] = [];
         const itemsPerRow = 5;
 
-        // Sort by ID to ensure order if needed, or trust API order
-        // activities.sort((a, b) => a.id - b.id);
-
-        for (let i = 0; i < 6; i++) { // Assuming 6 rows as per original mock
+        for (let i = 0; i < 6; i++) {
           const rowNum = i + 1;
-          // If data has 'row' property, filter by it. Else, slice.
-          // Strategy: If 'row' exists in first item, use it. Else slice.
-
           let cellData: BingoActivity[] = [];
 
           if (activities.length > 0 && 'row' in activities[0]) {
@@ -138,14 +174,14 @@ export default function BingoBoardMobile() {
             rows.push({
               row: rowNum,
               cells: cellData.map(c => {
-                const submission = userSubmissions.find(s => s.task_id === c.id);
+                // Ensure ID comparison is type-safe
+                const submission = userSubmissions.find(s => String(s.task_id) === String(c.id));
                 let status: BingoStatus = "LOCKED";
 
                 if (submission) {
                   if (submission.status === "APPROVED") {
                     status = "APPROVED";
                   } else if (submission.status === "PENDING" || !submission.status) {
-                    // API might default to something else or null, usually 'PENDING' if just submitted
                     status = "PENDING";
                   }
                 }
@@ -159,33 +195,17 @@ export default function BingoBoardMobile() {
             });
           }
         }
+        setBingoData(rows);
 
-        // Temporary: If API returns empty (no data yet), fallback or keep empty.
-        // For now, let's keep the logic.
-        // Note: We might want to unlock the first row by default or check user progress.
-        const initializedRows = rows.map((r) => ({
-          ...r,
-          // Note: Here we are keeping the status we just calculated above.
-          // If we wanted to "unlock" rows sequentially, we would do it here.
-          // For now, we trust the status from DB or default to "LOCKED" (which is visually just normal but maybe clickable?)
-          // Wait, "LOCKED" in previous code seemed to mean "default". 
-          // Let's ensure "LOCKED" hasn't got specific disabling logic unless intended.
-          // In grid rendering: onClick is always set.
-        }));
-
-        setBingoData(initializedRows);
       } catch (error) {
-        console.error("Failed to fetch bingo tasks", error);
+        console.error("Main fetch error", error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (profile?.userId) {
-      fetchBingoData();
-    }
+    initData();
   }, [profile]);
-  console.log(bingoData);
   // Helper: flatten rows to simple array for grid
   const allCells = bingoData.flatMap((row) =>
     row.cells.map((cell) => ({
@@ -209,6 +229,30 @@ export default function BingoBoardMobile() {
           ทำภารกิจให้ครบทุกแถว!
         </p>
       </header>
+
+      {/* Team Info */}
+      {teamInfo && (
+        <div className="mb-6 mx-4 p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-orange-100">
+          <div className="flex flex-col items-center">
+            <h2 className="text-lg font-bold text-orange-800 mb-2">
+              Team: {teamInfo.team_name}
+            </h2>
+            <div className="flex flex-wrap justify-center gap-2">
+              {teamInfo.members.map((member) => (
+                <span
+                  key={member.user_id}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border ${member.user_id === profile?.userId
+                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                    : "bg-white text-gray-600 border-gray-200"
+                    }`}
+                >
+                  {member.sname}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Grid Board - 5 Columns */}
       <div className="max-w-md mx-auto bg-white/40 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/50">
@@ -250,6 +294,30 @@ export default function BingoBoardMobile() {
                 <span className={`text-[0.6rem] font-bold text-center leading-tight line-clamp-2 w-full break-words`}>
                   {cell.activity_name}
                 </span>
+
+                {/* Team Progress Count */}
+                {teamInfo && (
+                  <div className="absolute bottom-1 right-1 bg-black/10 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                    <span className="text-[0.6rem] font-medium text-gray-700">
+                      {(() => {
+                        // Client-side calculation: count unique users from team who submitted this task
+                        // Submissions are already filtered by team_id from the API (if teamInfo exists)
+                        // Just need to ensure safety
+                        const teamTaskSubmissions = allSubmissions.filter(s =>
+                          String(s.task_id) === String(cell.id)
+                          // member check is technically redundant if API filters by team, but safe to keep
+                          // && teamInfo.members.some(m => m.user_id === s.user_id) 
+                        );
+
+                        // Count unique user_ids
+                        const uniqueSubmitters = new Set(teamTaskSubmissions.map(s => s.user_id)).size;
+                        return uniqueSubmitters;
+                      })()}
+                      /
+                      {teamInfo.team_size}
+                    </span>
+                  </div>
+                )}
               </motion.button>
             );
           })}

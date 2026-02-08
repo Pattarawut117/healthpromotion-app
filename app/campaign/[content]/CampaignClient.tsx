@@ -147,10 +147,10 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                                 <button
                                     onClick={handleJoin}
                                     className="btn btn-primary"
-                                    disabled={!isActive}
+                                    disabled={isActive}
                                 >
                                     เข้าร่วม
-                                    {!isActive && " (Not Active)"}
+                                    {isActive && " (อยู่ในช่วงเวลาดำเนินกิจกรรม)"}
                                 </button>
                             )}
                         </div>
@@ -172,8 +172,8 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                                 {campaign.activity_type === "HEALTH MISSION" && (
                                     <div className="mb-6">
                                         {/* <BingoBoard /> */}
-                                        {/*<FloatingActionButton />*/}
-                                    </div>
+                                       <FloatingActionButton />
+                       </div>
                                 )}
 
                                 {campaign.activity_type === "MENTAL" && (

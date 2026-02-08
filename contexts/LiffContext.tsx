@@ -14,12 +14,14 @@ type LiffContextType = {
   isLoggedIn: boolean;
   profile: Profile | null;
   liffObject: typeof liff | null;
+  idToken: string | null;
 };
 
 const LiffContext = createContext<LiffContextType>({
   isLoggedIn: false,
   profile: null,
   liffObject: null,
+  idToken: null,
 });
 
 export const useLiff = () => useContext(LiffContext);
@@ -27,6 +29,7 @@ export const useLiff = () => useContext(LiffContext);
 export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [idToken, setIdToken] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -41,6 +44,8 @@ export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoggedIn(true);
         const prof = await liff.getProfile();
         setProfile(prof);
+        const token = liff.getIDToken();
+        setIdToken(token);
       } catch (err) {
         console.error("LIFF init error", err);
       }
@@ -50,7 +55,7 @@ export const LiffProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <LiffContext.Provider value={{ isLoggedIn, profile, liffObject: liff }}>
+    <LiffContext.Provider value={{ isLoggedIn, profile, liffObject: liff, idToken }}>
       {children}
     </LiffContext.Provider>
   );
