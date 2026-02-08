@@ -10,11 +10,25 @@ interface BingoSubmissionRequest {
     status: string;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        const { data: rows, error } = await getSupabase()
+        const { searchParams } = new URL(req.url);
+        const team_id = searchParams.get('team_id');
+        const user_id = searchParams.get('user_id');
+
+        let query = getSupabase()
             .from('bingo_submissions')
             .select('*');
+
+        if (team_id) {
+            query = query.eq('team_id', team_id);
+        }
+
+        if (user_id) {
+            query = query.eq('user_id', user_id);
+        }
+
+        const { data: rows, error } = await query;
 
         if (error) {
             throw error;

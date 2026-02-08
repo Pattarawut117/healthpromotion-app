@@ -43,7 +43,7 @@ export default function BingoBoardMobile() {
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
-  const [allSubmissions, setAllSubmissions] = useState<{ user_id: string; task_id: number; status: string }[]>([]);
+  const [allSubmissions, setAllSubmissions] = useState<{ user_id: string; task_id: number | string; status: string }[]>([]);
   // File Upload State
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -119,35 +119,49 @@ export default function BingoBoardMobile() {
   };
 
   useEffect(() => {
-    const fetchBingoData = async () => {
-      try {
-        const [tasksResponse, submissionsResponse] = await Promise.all([
-          axios.get("/api/campaign/bingoTask"),
-          axios.get("/api/campaign/bingoSubmissions")
-        ]);
+    const initData = async () => {
+      if (!profile?.userId) return;
 
-        const activities: BingoActivity[] = tasksResponse.data;
-        const submissions: { user_id: string; task_id: number; status: string }[] = submissionsResponse.data; // Type as needed
+      try {
+        setLoading(true);
+
+        // 1. Fetch Bingo Tasks (Parallel)
+        const tasksPromise = axios.get<BingoActivity[]>("/api/campaign/bingoTask");
+
+        // 2. Fetch Team Info (Parallel start, but needed for submissions)
+        // We need team info to know which team to filter submissions for
+        let currentTeamId: string | null = null;
+        try {
+          const teamRes = await axios.get<TeamInfo>(`/api/campaign/teamMembers?user_id=${profile.userId}`);
+          setTeamInfo(teamRes.data);
+          currentTeamId = teamRes.data.team_id;
+        } catch (err) {
+          console.error("Failed to fetch team data", err);
+        }
+
+        // 3. Fetch Submissions (Filtered)
+        // If we have a team ID, filter by it. Otherwise, fallback to user_id or empty.
+        let submissionsPromise;
+        if (currentTeamId) {
+          submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?team_id=${currentTeamId}`);
+        } else {
+          submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?user_id=${profile.userId}`);
+        }
+
+        const [tasksResponse, submissionsResponse] = await Promise.all([tasksPromise, submissionsPromise]);
+
+        const activities = tasksResponse.data;
+        const submissions: { user_id: string; task_id: number | string; status: string }[] = submissionsResponse.data;
         setAllSubmissions(submissions);
 
-        // Filter submissions for current user
-        const userSubmissions = submissions.filter(sub => sub.user_id === profile?.userId);
-
-        // Group by row (Assuming 5 items per row if strictly ordered, or use 'row' property if available)
-        // If the API doesn't return 'row', we can chunk it.
-        // Let's assume the API returns a flat list and we want to structure it into 5 rows of 5.
+        // Filter submissions for current user for the BOARD STATUS
+        const userSubmissions = submissions.filter(sub => sub.user_id === profile.userId);
 
         const rows: BingoRow[] = [];
         const itemsPerRow = 5;
 
-        // Sort by ID to ensure order if needed, or trust API order
-        // activities.sort((a, b) => a.id - b.id);
-
-        for (let i = 0; i < 6; i++) { // Assuming 6 rows as per original mock
+        for (let i = 0; i < 6; i++) {
           const rowNum = i + 1;
-          // If data has 'row' property, filter by it. Else, slice.
-          // Strategy: If 'row' exists in first item, use it. Else slice.
-
           let cellData: BingoActivity[] = [];
 
           if (activities.length > 0 && 'row' in activities[0]) {
@@ -160,14 +174,14 @@ export default function BingoBoardMobile() {
             rows.push({
               row: rowNum,
               cells: cellData.map(c => {
-                const submission = userSubmissions.find(s => s.task_id === c.id);
+                // Ensure ID comparison is type-safe
+                const submission = userSubmissions.find(s => String(s.task_id) === String(c.id));
                 let status: BingoStatus = "LOCKED";
 
                 if (submission) {
                   if (submission.status === "APPROVED") {
                     status = "APPROVED";
                   } else if (submission.status === "PENDING" || !submission.status) {
-                    // API might default to something else or null, usually 'PENDING' if just submitted
                     status = "PENDING";
                   }
                 }
@@ -181,44 +195,16 @@ export default function BingoBoardMobile() {
             });
           }
         }
+        setBingoData(rows);
 
-        // Temporary: If API returns empty (no data yet), fallback or keep empty.
-        // For now, let's keep the logic.
-        // Note: We might want to unlock the first row by default or check user progress.
-        const initializedRows = rows.map((r) => ({
-          ...r,
-          // Note: Here we are keeping the status we just calculated above.
-          // If we wanted to "unlock" rows sequentially, we would do it here.
-          // For now, we trust the status from DB or default to "LOCKED" (which is visually just normal but maybe clickable?)
-          // Wait, "LOCKED" in previous code seemed to mean "default". 
-          // Let's ensure "LOCKED" hasn't got specific disabling logic unless intended.
-          // In grid rendering: onClick is always set.
-        }));
-
-        setBingoData(initializedRows);
       } catch (error) {
-        console.error("Failed to fetch bingo tasks", error);
+        console.error("Main fetch error", error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (profile?.userId) {
-      fetchBingoData();
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    const fetchTeamData = async () => {
-      if (!profile?.userId) return;
-      try {
-        const res = await axios.get(`/api/campaign/teamMembers?user_id=${profile.userId}`);
-        setTeamInfo(res.data);
-      } catch (err) {
-        console.error("Failed to fetch team data", err);
-      }
-    };
-    fetchTeamData();
+    initData();
   }, [profile]);
   // Helper: flatten rows to simple array for grid
   const allCells = bingoData.flatMap((row) =>
@@ -315,12 +301,15 @@ export default function BingoBoardMobile() {
                     <span className="text-[0.6rem] font-medium text-gray-700">
                       {(() => {
                         // Client-side calculation: count unique users from team who submitted this task
-                        const memberIds = teamInfo.members.map(m => m.user_id);
+                        // Submissions are already filtered by team_id from the API (if teamInfo exists)
+                        // Just need to ensure safety
                         const teamTaskSubmissions = allSubmissions.filter(s =>
-                          s.task_id === cell.id && memberIds.includes(s.user_id)
+                          String(s.task_id) === String(cell.id)
+                          // member check is technically redundant if API filters by team, but safe to keep
+                          // && teamInfo.members.some(m => m.user_id === s.user_id) 
                         );
-                        // Ensure unique users per task (if multiple submissions allowed per task?)
-                        // Usually 1 per task per user.
+
+                        // Count unique user_ids
                         const uniqueSubmitters = new Set(teamTaskSubmissions.map(s => s.user_id)).size;
                         return uniqueSubmitters;
                       })()}
