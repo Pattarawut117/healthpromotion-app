@@ -119,33 +119,15 @@ export default function RegisterForm({ formData, onChange }: Props) {
           </div>
 
           <div className="mt-4">
-            <label htmlFor="unit" className="block text-sm font-medium text-muted-foreground mb-1">
-              หน่วยงาน
-            </label>
-            <Select
-              id="unit"
-              value={unitOptions.find((opt) => opt.value === formData.unit)}
-              onChange={(option) => onChange("unit", option?.value || "")}
-              options={unitOptions}
-              placeholder="ระบุหน่วยงาน"
-              className="basic-single"
-              classNamePrefix="select"
-              isClearable
-              isSearchable
-              required
-            />
-          </div>
-
-          <div className="mt-4">
             <label htmlFor="division" className="block text-sm font-medium text-muted-foreground mb-1">
-              สาขา
+              ฝ่าย
             </label>
             <Select
               id="division"
               value={divisionOptions.find((opt) => opt.value === formData.division)}
               onChange={(option) => onChange("division", option?.value || "")}
               options={divisionOptions}
-              placeholder="ระบุสาขา"
+              placeholder="ระบุฝ่าย"
               className="basic-single"
               classNamePrefix="select"
               isClearable
@@ -154,7 +136,23 @@ export default function RegisterForm({ formData, onChange }: Props) {
             />
           </div>
         </div>
-
+        <div className="mt-4">
+          <label htmlFor="unit" className="block text-sm font-medium text-muted-foreground mb-1">
+            หน่วยงาน
+          </label>
+          <Select
+            id="unit"
+            value={unitOptions.find((opt) => opt.value === formData.unit)}
+            onChange={(option) => onChange("unit", option?.value || "")}
+            options={unitOptions}
+            placeholder="ระบุหน่วยงาน"
+            className="basic-single"
+            classNamePrefix="select"
+            isClearable
+            isSearchable
+            required
+          />
+        </div>
         {/* Health Information */}
         <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
           <legend className="font-semibold mb-4">ข้อมูลสุขภาพ</legend>

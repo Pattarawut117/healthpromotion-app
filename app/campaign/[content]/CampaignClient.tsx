@@ -171,9 +171,9 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
 
                                 {campaign.activity_type === "HEALTH MISSION" && (
                                     <div className="mb-6">
-                                        <BingoBoard />
-                                        {/* <FloatingActionButton /> */}
-                                    </div>
+                                        {/* <BingoBoard /> */}
+                                       <FloatingActionButton />
+                       </div>
                                 )}
 
                                 {campaign.activity_type === "MENTAL" && (
