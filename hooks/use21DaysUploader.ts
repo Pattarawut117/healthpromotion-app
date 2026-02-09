@@ -8,11 +8,21 @@ export function use21DaysUploader() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
 
+    const [error, setError] = useState<string>("");
+
     // เมื่อ user เลือกรูป
     const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0];
         if (!f) return;
 
+        // Validate file size (5MB)
+        if (f.size > 5 * 1024 * 1024) {
+            setError("ขนาดไฟล์ต้องไม่เกิน 5 MB");
+            e.target.value = ""; // Reset input
+            return;
+        }
+
+        setError("");
         setFile(f);
         setPreviewUrl(URL.createObjectURL(f));
     };
@@ -52,6 +62,7 @@ export function use21DaysUploader() {
         fileInputRef,
         onSelectFile,
         uploadImage,
-        reset
+        reset,
+        error
     };
 }

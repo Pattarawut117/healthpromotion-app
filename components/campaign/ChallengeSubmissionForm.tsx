@@ -18,7 +18,7 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
     const [duration, setDuration] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [campaignId, setCampaignId] = useState<number | null>(null);
-    const { file, previewUrl, uploading, setUploading, fileInputRef, onSelectFile, uploadImage, reset } = use21DaysUploader();
+    const { file, previewUrl, uploading, setUploading, fileInputRef, onSelectFile, uploadImage, reset, error: fileError } = use21DaysUploader();
 
     useEffect(() => {
         const fetchCampaign = async () => {
@@ -60,19 +60,9 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
         try {
             let imageUrl = "";
 
-            // Upload Image if exists (Mandatory for Food?)
+            // Upload Image if exists
             if (file) {
-                const formData = new FormData();
                 imageUrl = await uploadImage();
-                formData.append('file', file);
-                const uploadRes = await axios.post('/api/campaign/21daysUpload', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
-                if (uploadRes.data.success) {
-                    imageUrl = uploadRes.data.path;
-                } else {
-                    throw new Error("Upload failed");
-                }
             }
 
             const finalCampaignId = campaignId || 0;
@@ -134,10 +124,11 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                                 <label className="block text-sm font-medium text-gray-700 mb-1">จำนวน (แก้ว)</label>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                                    placeholder="ดื่มน้ำอย่างน้อย 6-8 แก้ว/วัน"
+                                    placeholder="โปรดใส่เฉพาะตัวเลข ex. 2"
                                 />
                             </div>
                         )}
@@ -147,10 +138,11 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                                 <label className="block text-sm font-medium text-gray-700 mb-1">ระยะเวลา (ชั่วโมง)</label>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
-                                    placeholder="นอนหลับอย่างน้อย 7-8 ชั่วโมง/วัน"
+                                    placeholder="โปรดใส่เฉพาะตัวเลข ex. 8"
                                 />
                             </div>
                         )}
@@ -158,12 +150,14 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                         {category === 'exercise' && (
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">ระยะเวลา (นาที)</label>
+                                <p className="text-sm text-red">*ออกกำลังกายอย่างน้อย 30 นาที</p>
                                 <input
                                     type="number"
+                                    inputMode="numeric"
                                     value={duration}
                                     onChange={(e) => setDuration(e.target.value)}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 outline-none"
-                                    placeholder="ออกกำลังกายอย่างน้อย 30 นาที/วัน"
+                                    placeholder="โปรดใส่เฉพาะตัวเลข ex. 30"
                                     min="30"
                                 />
                             </div>
@@ -172,43 +166,48 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                         {/* Description - Common for all except water maybe? but good to have */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเพิ่มเติม (Optional)</label>
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 outline-none text-sm"
-                                rows={2}
-                                placeholder="บรรยายกิจกรรม"
-                            />
+                            <div className='relative'>
+                                <textarea
+                                    value={description}
+                                    maxLength={30}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 outline-none text-sm"
+                                    rows={2}
+                                    placeholder="บรรยายกิจกรรม (สูงสุด 30 ตัวอักษร)"
+                                />
+                                <div className="text-right text-xs text-black mt-1">
+                                    {description.length}/30
+                                </div>
+                            </div>
                         </div>
 
                         {/* Image Upload - Focus for Food, optional for others */}
-                        {(category !== 'sleep') && (
-                            <div className="p-3 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer text-center">
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    className="hidden"
-                                    id="challenge-file-upload"
-                                    accept="image/*"
-                                    onChange={onSelectFile}
-                                />
-                                <label htmlFor="challenge-file-upload" className="cursor-pointer w-full flex flex-col items-center">
-                                    {previewUrl ? (
-                                        <div className="relative w-full h-32 rounded-lg overflow-hidden">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <span className="text-2xl mb-1">📸</span>
-                                            <span className="text-xs font-medium text-gray-600">
-                                                {category === 'food' ? "ทานอาหารแบบ 2:1:1" : "แนบรูป (ถ้ามี)"}
-                                            </span>
-                                        </>
-                                    )}
-                                </label>
-                            </div>
-                        )}
+                        <div className="p-3 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer text-center">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                id="challenge-file-upload"
+                                accept="image/*"
+                                onChange={onSelectFile}
+                            />
+                            <label htmlFor="challenge-file-upload" className="cursor-pointer w-full flex flex-col items-center">
+                                {previewUrl ? (
+                                    <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span className="text-2xl mb-1">📸</span>
+                                        <span className="text-xs font-medium text-gray-600">
+                                            {category === 'food' ? "ทานอาหารแบบ 2:1:1" : "แนบรูป (ถ้ามี)"}
+                                        </span>
+                                    </>
+                                )}
+                            </label>
+                        </div>
+                        {fileError && <p className="text-red-500 text-xs mt-1 text-center">{fileError}</p>}
 
                         {/* Buttons */}
                         <div className="grid grid-cols-2 gap-3 pt-2">
