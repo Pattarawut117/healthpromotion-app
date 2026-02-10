@@ -32,8 +32,8 @@ export function use21DaysUploader() {
         }
 
         // Validate file size (5MB)
-        if (f.size > 5 * 1024 * 1024) {
-            setError("ขนาดไฟล์ต้องไม่เกิน 5 MB");
+        if (f.size > 10 * 1024 * 1024) {
+            setError("ขนาดไฟล์ต้องไม่เกิน 10 MB");
             e.target.value = ""; // Reset input
             return;
         }
