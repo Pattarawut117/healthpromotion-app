@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/utils/supabase";
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const { data: rows } = await getSupabase().from('teams').select('*');
         return NextResponse.json(rows);

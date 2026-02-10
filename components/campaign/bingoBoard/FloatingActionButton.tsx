@@ -3,7 +3,11 @@
 import { useState } from "react";
 import ChallengeSubmissionForm from "@/components/campaign/ChallengeSubmissionForm";
 
-const FloatingActionButton = () => {
+interface FloatingActionButtonProps {
+  campaignId: number;
+}
+
+const FloatingActionButton = ({ campaignId }: FloatingActionButtonProps) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'water' | 'food' | 'sleep' | 'exercise' | null>(null);
 
@@ -88,6 +92,7 @@ const FloatingActionButton = () => {
       {showModal && selectedCategory && (
         <ChallengeSubmissionForm
           category={selectedCategory}
+          campaignId={campaignId}
           onClose={() => setShowModal(false)}
           onSuccess={() => console.log("Success")}
         />

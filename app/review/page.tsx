@@ -1,10 +1,23 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useState } from 'react';
 
-const users = [
+type CampaignType = 'fitness' | 'food' | 'mental' | 'run';
+
+interface UserOption {
+  value: CampaignType;
+  label: React.ReactNode;
+}
+
+interface Campaign {
+  id: number;
+  image: string;
+}
+
+const users: UserOption[] = [
   {
-    value: 'user1',
+    value: 'fitness',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -12,7 +25,7 @@ const users = [
     ),
   },
   {
-    value: 'user2',
+    value: 'food',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -20,7 +33,7 @@ const users = [
     ),
   },
   {
-    value: 'user3',
+    value: 'mental',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -28,15 +41,7 @@ const users = [
     ),
   },
   {
-    value: 'user4',
-    label: (
-      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-      </div>
-    ),
-  },
-  {
-    value: 'user5',
+    value: 'run',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -45,17 +50,20 @@ const users = [
   },
 ];
 
+const campaignData: Record<CampaignType, Campaign[]> = {
+  fitness: [{ id: 1, image: "/poster/fitness1.jpg" }, { id: 2, image: "/poster/fitness2.png" }, { id: 3, image: "/poster/fitness3.png" }],
+  food: [{ id: 1, image: "/poster/food1.jpg" }],
+  mental: [],
+  run: []
+}
+
 export default function ReviewPage() {
-  const [selectedValue, setSelectedValue] = useState('user1');
+  const [selectedValue, setSelectedValue] = useState<CampaignType>('fitness');
 
   return (
     <div className="flex flex-col p-2 justify-center text-black">
       <div className="flex justify-between px-2 py-2 items-center">
         <p className="text-xl font-bold font-sans">คำแนะนำ</p>
-        <select className="flex px-2 py-2 rounded bg-white">
-          <option value="กิจกรรมทั้งหมด">กิจกรรมทั้งหมด</option>
-          <option value="กิจกรรมแคมเปญ">กิจกรรมแคมเปญ</option>
-        </select>
       </div>
       <div className="flex justify-around">
         <div className="flex items-end gap-2">
@@ -73,6 +81,14 @@ export default function ReviewPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {campaignData[selectedValue].map((campaign) => (
+          <div key={campaign.id} className="w-full h-full bg-gray-200 rounded-lg flex justify-center items-center">
+            <Image src={campaign.image} alt={campaign.id.toString()} width={256} height={256} />
+          </div>
+        ))}
       </div>
     </div>
   );

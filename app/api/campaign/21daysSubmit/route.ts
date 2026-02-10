@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/utils/supabase";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const { data, error } = await getSupabase()
             .from('challenge_21_days_entries')

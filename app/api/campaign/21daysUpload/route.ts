@@ -9,7 +9,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'No file found' });
     }
 
-    const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+
+    // Sanitize filename: ASCII only, remove special chars
+    const sanitizedOriginalName = file.name.replace(/[^\x00-\x7F]/g, '').replace(/\s/g, '_');
+    const filename = `${Date.now()}-${sanitizedOriginalName || 'file'}`;
 
     try {
         const { error } = await getSupabase().storage

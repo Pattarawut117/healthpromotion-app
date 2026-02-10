@@ -1,40 +1,26 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useLiff } from "@/contexts/LiffContext";
+import React from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { use21DaysUploader } from "@/hooks/use21DaysUploader";
+import { useChallengeSubmission } from "@/hooks/useChallengeSubmission";
 
 interface ChallengeSubmissionFormProps {
     category: 'water' | 'food' | 'sleep' | 'exercise';
+    campaignId: number;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function ChallengeSubmissionForm({ category, onClose, onSuccess }: ChallengeSubmissionFormProps) {
-    const { profile } = useLiff();
-    const [quantity, setQuantity] = useState<string>('');
-    const [duration, setDuration] = useState<string>('');
-    const [description, setDescription] = useState<string>('');
-    const [campaignId, setCampaignId] = useState<number | null>(null);
-    const { file, previewUrl, uploading, setUploading, fileInputRef, onSelectFile, uploadImage, reset, error: fileError } = use21DaysUploader();
-
-    useEffect(() => {
-        const fetchCampaign = async () => {
-            try {
-                const res = await axios.get('/api/campaign');
-                const campaigns = res.data;
-                const target = campaigns.find((c: { activity_type: string; activity_name?: string; id: number }) => c.activity_type === '21Days' || c.activity_name?.includes('21 Days'));
-                if (target) {
-                    setCampaignId(target.id);
-                }
-            } catch (err) {
-                console.error("Failed to fetch campaign info", err);
-            }
-        };
-        fetchCampaign();
-    }, []);
+export default function ChallengeSubmissionForm({ category, campaignId, onClose, onSuccess }: ChallengeSubmissionFormProps) {
+    const {
+        quantity, setQuantity,
+        duration, setDuration,
+        description, setDescription,
+        previewUrl, uploading,
+        fileInputRef, onSelectFile, fileError,
+        handleSubmit,
+        isProfileLoaded
+    } = useChallengeSubmission(campaignId, category, onSuccess, onClose);
 
     const getTitle = () => {
         switch (category) {
@@ -43,53 +29,6 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
             case 'sleep': return '😴 บันทึกการนอน';
             case 'exercise': return '💪 บันทึกการออกกำลังกาย';
             default: return 'บันทึกข้อมูล';
-        }
-    };
-
-    const handleSubmit = async () => {
-        if (!profile?.userId) {
-            alert("กรุณารอสักครู่ (Loading User Profile)");
-            return;
-        }
-
-        // Basic validation
-        if (category === 'water' && !quantity) return alert("Please enter quantity");
-        if (category === 'sleep' && !duration) return alert("Please enter duration");
-
-        setUploading(true);
-        try {
-            let imageUrl = "";
-
-            // Upload Image if exists
-            if (file) {
-                imageUrl = await uploadImage();
-            }
-
-            const finalCampaignId = campaignId || 0;
-
-            const payload = {
-                user_id: profile.userId,
-                campaign_id: finalCampaignId,
-                category,
-                quantity: quantity ? parseFloat(quantity) : 0,
-                duration_minutes: duration ? parseInt(duration) : 0,
-                description,
-                image_url: imageUrl
-            };
-
-            await axios.post('/api/campaign/21daysSubmit', payload);
-
-            alert("บันทึกข้อมูลเรียบร้อย! (Saved Successfully)");
-            reset();
-            onSuccess();
-            onClose();
-
-        } catch (error: unknown) {
-            console.error("Submission error", error);
-            const msg = (axios.isAxiosError(error) && error.response?.data?.message) ? error.response.data.message : "เกิดข้อผิดพลาดในการส่งข้อมูล";
-            alert(msg);
-        } finally {
-            setUploading(false);
         }
     };
 
@@ -221,15 +160,13 @@ export default function ChallengeSubmissionForm({ category, onClose, onSuccess }
                             <button
                                 className="w-full py-2.5 rounded-xl text-white font-semibold bg-green-500 hover:bg-green-600 shadow-lg shadow-green-200 transition-colors disabled:opacity-50"
                                 onClick={handleSubmit}
-                                disabled={uploading || (category === 'water' && !quantity) || (category === 'sleep' && !duration)}
+                                disabled={uploading || !isProfileLoaded || (category === 'water' && !quantity) || (category === 'sleep' && !duration)}
                             >
-                                {uploading ? "กำลังบันทึก..." : "ยืนยัน"}
+                                {uploading ? "กำลังบันทึก..." : (!isProfileLoaded ? "Loading Profile..." : "ยืนยัน")}
                             </button>
                         </div>
 
                     </div>
-                    {/* Warn if campaign not found? */}
-                    {!campaignId && <p className="text-[10px] text-red-400 text-center mt-2">Warning: Campaign &apos;21 Days&apos; not found automatically.</p>}
                 </motion.div>
             </motion.div>
         </AnimatePresence>
