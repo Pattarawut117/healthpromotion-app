@@ -129,6 +129,7 @@ export default function ChallengeSubmissionForm({ category, campaignId, onClose,
                                 id="challenge-file-upload"
                                 accept="image/*"
                                 onChange={onSelectFile}
+                                required
                             />
                             <label htmlFor="challenge-file-upload" className="cursor-pointer w-full flex flex-col items-center">
                                 {previewUrl ? (
@@ -160,7 +161,7 @@ export default function ChallengeSubmissionForm({ category, campaignId, onClose,
                             <button
                                 className="w-full py-2.5 rounded-xl text-white font-semibold bg-green-500 hover:bg-green-600 shadow-lg shadow-green-200 transition-colors disabled:opacity-50"
                                 onClick={handleSubmit}
-                                disabled={uploading || !isProfileLoaded || (category === 'water' && !quantity) || (category === 'sleep' && !duration)}
+                                disabled={uploading || !isProfileLoaded || !previewUrl || (category === 'water' && !quantity) || (category === 'sleep' && !duration)}
                             >
                                 {uploading ? "กำลังบันทึก..." : (!isProfileLoaded ? "Loading Profile..." : "ยืนยัน")}
                             </button>
