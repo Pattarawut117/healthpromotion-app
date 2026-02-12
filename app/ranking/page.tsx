@@ -89,8 +89,17 @@ const users = [
 ];
 
 export default function RankingPage() {
+  // Helper to get yesterday's date string YYYY-MM-DD
+  const getYesterday = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    return date.toISOString().split('T')[0];
+  };
+
   const [selectedValue, setSelectedValue] = useState('1');
   const [ranking, setRanking] = useState<IRanking[]>([]);
+  // Default to yesterday
+  const [filterDate, setFilterDate] = useState(getYesterday());
 
   useEffect(() => {
     const load = async () => {
@@ -144,6 +153,9 @@ export default function RankingPage() {
 
           // Extract Date YYYY-MM-DD
           const dateStr = log.created_at ? log.created_at.substring(0, 10) : '';
+
+          // Filter: If log date is AFTER filterDate, skip it
+          if (!dateStr || (filterDate && dateStr > filterDate)) continue;
           if (!dateStr) continue;
 
           // Add to unique date sets
@@ -166,6 +178,11 @@ export default function RankingPage() {
         // 2) Process Run Logs
         for (const log of logsRun) {
           const uid = log.user_id;
+
+          const logDateStr = log.created_at ? log.created_at.substring(0, 10) : '';
+
+          // Filter: If log date is AFTER filterDate, skip it
+          if (filterDate && logDateStr > filterDate) continue;
 
           if (!map[uid]) {
             map[uid] = {
@@ -196,7 +213,7 @@ export default function RankingPage() {
     };
 
     load();
-  }, []);
+  }, [filterDate]); // Re-run when filterDate changes
 
   // Filter and Sort based on Tab
   const getFilteredRanking = () => {
@@ -244,6 +261,18 @@ export default function RankingPage() {
     <div className="p-4 flex flex-col gap-4 text-black">
       <div className="flex justify-between items-center flex-wrap gap-2">
         <h1 className="text-2xl font-bold">จัดอันดับ</h1>
+
+        {/* Date Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">ข้อมูล ณ วันที่:</span>
+          <input
+            type="date"
+            value={filterDate}
+            max={getYesterday()}
+            onChange={(e) => setFilterDate(e.target.value)}
+            className="border rounded p-1"
+          />
+        </div>
 
         {/* Scrollable Tabs if needed, or flex wrap */}
         <div className="flex items-center gap-2 overflow-x-scroll max-w-full pb-2">

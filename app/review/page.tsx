@@ -20,7 +20,7 @@ const users: UserOption[] = [
     value: 'fitness',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <Image src="/review/heart-rate.png" alt="heart-rate" width={24} height={24} />
       </div>
     ),
   },
@@ -28,7 +28,7 @@ const users: UserOption[] = [
     value: 'food',
     label: (
       <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <Image src="/review/diet.png" alt="diet" width={24} height={24} />
       </div>
     ),
   },
@@ -52,7 +52,7 @@ const users: UserOption[] = [
 
 const campaignData: Record<CampaignType, Campaign[]> = {
   fitness: [{ id: 1, image: "/poster/fitness1.jpg" }, { id: 2, image: "/poster/fitness2.png" }, { id: 3, image: "/poster/fitness3.png" }],
-  food: [{ id: 1, image: "/poster/food1.jpg" }],
+  food: [{ id: 1, image: "/poster/food1.jpg" }, { id: 2, image: "/poster/food2.jpg" }],
   mental: [],
   run: []
 }
