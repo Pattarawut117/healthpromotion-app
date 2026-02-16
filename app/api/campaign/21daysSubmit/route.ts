@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/utils/supabase";
 
+interface Challenge21DaysEntry {
+    id: number;
+    user_id: string;
+    category: string;
+    quantity: number;
+    duration_minutes: number;
+    description: string;
+    image_url: string;
+    created_at: string;
+}
+
 export async function GET() {
     try {
-        let allData: any[] = [];
+        let allData: Challenge21DaysEntry[] = [];
         let start = 0;
         const limit = 1000;
         const maxRecords = 10000;
