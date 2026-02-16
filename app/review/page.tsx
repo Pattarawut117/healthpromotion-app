@@ -52,8 +52,8 @@ const users: UserOption[] = [
 
 const campaignData: Record<CampaignType, Campaign[]> = {
   fitness: [{ id: 1, image: "/poster/fitness1.jpg" }, { id: 2, image: "/poster/fitness2.png" }, { id: 3, image: "/poster/fitness3.png" }],
-  food: [{ id: 1, image: "/poster/food1.jpg" }, { id: 2, image: "/poster/food2.jpg" }],
-  mental: [],
+  food: [{ id: 1, image: "/poster/food1.jpg" }, { id: 2, image: "/poster/food2.jpg" }, { id: 3, image: "/poster/food3.jpg" }, { id: 4, image: "/poster/food4.jpg" }],
+  mental: [{ id: 1, image: "/poster/mental1.jpg" }],
   run: []
 }
 
@@ -83,7 +83,7 @@ export default function ReviewPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 mt-2">
         {campaignData[selectedValue].map((campaign) => (
           <div key={campaign.id} className="w-full h-full bg-gray-200 rounded-lg flex justify-center items-center">
             <Image src={campaign.image} alt={campaign.id.toString()} width={256} height={256} />
