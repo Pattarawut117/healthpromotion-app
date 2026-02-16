@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useLiff } from "@/contexts/LiffContext";
+import { useBingoSubmission } from "@/hooks/useBingoSubmission";
 
 export type BingoStatus = "APPROVED" | "PENDING" | "LOCKED";
 
@@ -38,85 +39,45 @@ export interface TeamInfo {
 }
 
 export default function BingoBoardMobile() {
-  const { profile, idToken } = useLiff();
+  const { profile } = useLiff();
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null);
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
   const [allSubmissions, setAllSubmissions] = useState<{ user_id: string; task_id: number | string; status: string }[]>([]);
-  // File Upload State
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-    }
+  // Callback for successful submission (Optimistic Update)
+  const handleSuccess = () => {
+    if (!selectedCell) return;
+
+    setBingoData(prevDocs => prevDocs.map(row => ({
+      ...row,
+      cells: row.cells.map(cell =>
+        cell.id === selectedCell.id ? { ...cell, status: 'PENDING' } : cell
+      )
+    })));
   };
 
-  const handleSubmit = async () => {
-    if (!file || !selectedCell) return;
-
-    if (!profile?.userId) {
-      alert("ไม่ข้อมูลผู้ใช้งาน (User ID not found). กรุณารอกรสักครู่หรือรีโหลดหน้านี้");
-      return;
+  // Custom Hook
+  const {
+    file,
+    previewUrl,
+    uploading,
+    fileInputRef,
+    onSelectFile,
+    handleSubmit,
+    reset
+  } = useBingoSubmission(
+    selectedCell?.id || null,
+    handleSuccess,
+    () => {
+      setSelectedCell(null);
+      // Ensure reset is called when closing if needed, though hook handles it on success.
+      // If user manually closes without submitting, we might want to reset explicitly?
+      // The hook exposes reset, we can call it here if we want to clear file when just closing modal.
+      reset();
     }
-
-    setUploading(true);
-    try {
-      // 1. Upload Image
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const uploadRes = await axios.post('/api/campaign/bingoUpload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${idToken}`
-        }
-      });
-
-      if (uploadRes.data.success) {
-        const imageUrl = uploadRes.data.path;
-
-        // 2. Submit Task
-        await axios.post('/api/campaign/bingoSubmissions', {
-          task_id: selectedCell.id,
-          user_id: profile.userId,
-          image_url: imageUrl
-        }, {
-          headers: {
-            'Authorization': `Bearer ${idToken}`
-          }
-        });
-
-        alert("ส่งภารกิจเรียบร้อย!");
-        setSelectedCell(null);
-        setFile(null);
-        setPreviewUrl(null);
-
-        // Optimistically update UI status to 'PENDING' or 'APPROVED'
-        setBingoData(prevDocs => prevDocs.map(row => ({
-          ...row,
-          cells: row.cells.map(cell =>
-            cell.id === selectedCell.id ? { ...cell, status: 'PENDING' } : cell
-          )
-        })));
-
-      } else {
-        alert("Upload failed");
-      }
-
-    } catch (error: unknown) {
-      console.error("Submission error", error);
-      const msg = (axios.isAxiosError(error) && error.response?.data?.message) ? error.response.data.message : "เกิดข้อผิดพลาดในการส่งข้อมูล";
-      alert(msg);
-    } finally {
-      setUploading(false);
-    }
-  };
+  );
 
   useEffect(() => {
     const initData = async () => {
@@ -279,6 +240,9 @@ export default function BingoBoardMobile() {
                 onClick={() => {
                   if (cell.status !== "APPROVED") {
                     setSelectedCell(cell);
+                    // Reset file state when opening new cell if needed, 
+                    // though hook should be clean or we can call reset()
+                    reset();
                   }
                 }}
                 disabled={disabled}
@@ -332,7 +296,10 @@ export default function BingoBoardMobile() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedCell(null)}
+            onClick={() => {
+              setSelectedCell(null);
+              reset();
+            }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -364,7 +331,9 @@ export default function BingoBoardMobile() {
                     className="hidden"
                     id="file-upload"
                     accept="image/*"
-                    onChange={handleFileChange}
+                    // Bind the ref from the hook
+                    ref={fileInputRef}
+                    onChange={onSelectFile}
                   />
                   <label htmlFor="file-upload" className="flex flex-col items-center gap-2 cursor-pointer w-full">
                     {previewUrl ? (
@@ -386,8 +355,7 @@ export default function BingoBoardMobile() {
                     className="w-full py-3 rounded-xl text-gray-600 font-semibold bg-gray-100 hover:bg-gray-200 transition-colors"
                     onClick={() => {
                       setSelectedCell(null);
-                      setFile(null);
-                      setPreviewUrl(null);
+                      reset();
                     }}
                     disabled={uploading}
                   >

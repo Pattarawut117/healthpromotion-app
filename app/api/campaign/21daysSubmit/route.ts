@@ -3,13 +3,30 @@ import { getSupabase } from "@/utils/supabase";
 
 export async function GET() {
     try {
-        const { data, error } = await getSupabase()
-            .from('challenge_21_days_entries')
-            .select('*, user_info(sname)');
+        let allData: any[] = [];
+        let start = 0;
+        const limit = 1000;
+        const maxRecords = 10000;
 
-        if (error) throw error;
+        while (allData.length < maxRecords) {
+            const { data, error } = await getSupabase()
+                .from('challenge_21_days_entries')
+                .select('*, user_info(sname)')
+                .range(start, start + limit - 1)
+                .order('created_at', { ascending: false });
 
-        return NextResponse.json(data);
+            if (error) throw error;
+
+            if (!data || data.length === 0) break;
+
+            allData = allData.concat(data);
+
+            if (data.length < limit) break;
+
+            start += limit;
+        }
+
+        return NextResponse.json(allData);
     } catch (error) {
         console.error("Error fetching 21days:", error);
         return NextResponse.json(

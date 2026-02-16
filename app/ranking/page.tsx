@@ -271,6 +271,7 @@ export default function RankingPage() {
             max={getYesterday()}
             onChange={(e) => setFilterDate(e.target.value)}
             className="border rounded p-1"
+            disabled
           />
         </div>
 
