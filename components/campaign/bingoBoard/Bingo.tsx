@@ -30,7 +30,6 @@ export default function BingoBoardMobile() {
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null);
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [allSubmissions, setAllSubmissions] = useState<{ user_id: string; task_id: number | string; status: string }[]>([]);
 
   // Callback for successful submission (Optimistic Update)
   const handleSuccess = () => {
@@ -84,7 +83,6 @@ export default function BingoBoardMobile() {
 
         const activities = tasksResponse.data;
         const submissions: { user_id: string; task_id: number | string; status: string }[] = submissionsResponse.data;
-        setAllSubmissions(submissions);
 
         // Filter submissions for current user for the BOARD STATUS
         const userSubmissions = submissions.filter(sub => sub.user_id === profile.userId);
