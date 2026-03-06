@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         }
 
         const clean = file.name.replace(/[^\w.-]/g, "_");
-        const filename = `${Date.now()}-${clean || "image.jpg"}}`
+        const filename = `${Date.now()}-${clean || "image.jpg"}`;
 
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);

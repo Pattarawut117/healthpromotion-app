@@ -25,25 +25,11 @@ export interface BingoRow {
   cells: BingoCell[];
 }
 
-export interface TeamMember {
-  user_id: string;
-  sname: string;
-}
-
-export interface TeamInfo {
-  team_id: string;
-  team_name: string;
-  team_size: number;
-  members: TeamMember[];
-  progress: { task_id: number; submission_count: number }[];
-}
-
 export default function BingoBoardMobile() {
   const { profile } = useLiff();
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null);
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
   const [allSubmissions, setAllSubmissions] = useState<{ user_id: string; task_id: number | string; status: string }[]>([]);
 
   // Callback for successful submission (Optimistic Update)
@@ -66,7 +52,9 @@ export default function BingoBoardMobile() {
     fileInputRef,
     onSelectFile,
     handleSubmit,
-    reset
+    reset,
+    isCompressing,
+    compressionProgress
   } = useBingoSubmission(
     selectedCell?.id || null,
     handleSuccess,
@@ -89,25 +77,8 @@ export default function BingoBoardMobile() {
         // 1. Fetch Bingo Tasks (Parallel)
         const tasksPromise = axios.get<BingoActivity[]>("/api/campaign/bingoTask");
 
-        // 2. Fetch Team Info (Parallel start, but needed for submissions)
-        // We need team info to know which team to filter submissions for
-        let currentTeamId: string | null = null;
-        try {
-          const teamRes = await axios.get<TeamInfo>(`/api/campaign/teamMembers?user_id=${profile.userId}`);
-          setTeamInfo(teamRes.data);
-          currentTeamId = teamRes.data.team_id;
-        } catch (err) {
-          console.error("Failed to fetch team data", err);
-        }
-
-        // 3. Fetch Submissions (Filtered)
-        // If we have a team ID, filter by it. Otherwise, fallback to user_id or empty.
-        let submissionsPromise;
-        if (currentTeamId) {
-          submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?team_id=${currentTeamId}`);
-        } else {
-          submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?user_id=${profile.userId}`);
-        }
+        // 2. Fetch Submissions
+        const submissionsPromise = axios.get(`/api/campaign/bingoSubmissions?user_id=${profile.userId}`);
 
         const [tasksResponse, submissionsResponse] = await Promise.all([tasksPromise, submissionsPromise]);
 
@@ -191,30 +162,6 @@ export default function BingoBoardMobile() {
         </p>
       </header>
 
-      {/* Team Info */}
-      {teamInfo && (
-        <div className="mb-6 mx-4 p-4 bg-white/60 backdrop-blur-sm rounded-2xl shadow-sm border border-orange-100">
-          <div className="flex flex-col items-center">
-            <h2 className="text-lg font-bold text-orange-800 mb-2">
-              Team: {teamInfo.team_name}
-            </h2>
-            <div className="flex flex-wrap justify-center gap-2">
-              {teamInfo.members.map((member) => (
-                <span
-                  key={member.user_id}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${member.user_id === profile?.userId
-                    ? "bg-orange-100 text-orange-700 border-orange-200"
-                    : "bg-white text-gray-600 border-gray-200"
-                    }`}
-                >
-                  {member.sname}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Grid Board - 5 Columns */}
       <div className="max-w-md mx-auto bg-white/40 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-white/50">
         <div className="grid grid-cols-5 gap-2">
@@ -258,30 +205,6 @@ export default function BingoBoardMobile() {
                 <span className={`text-[0.6rem] font-bold text-center leading-tight line-clamp-2 w-full break-words`}>
                   {cell.activity_name}
                 </span>
-
-                {/* Team Progress Count */}
-                {teamInfo && (
-                  <div className="absolute bottom-1 right-1 bg-black/10 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
-                    <span className="text-[0.6rem] font-medium text-gray-700">
-                      {(() => {
-                        // Client-side calculation: count unique users from team who submitted this task
-                        // Submissions are already filtered by team_id from the API (if teamInfo exists)
-                        // Just need to ensure safety
-                        const teamTaskSubmissions = allSubmissions.filter(s =>
-                          String(s.task_id) === String(cell.id)
-                          // member check is technically redundant if API filters by team, but safe to keep
-                          // && teamInfo.members.some(m => m.user_id === s.user_id) 
-                        );
-
-                        // Count unique user_ids
-                        const uniqueSubmitters = new Set(teamTaskSubmissions.map(s => s.user_id)).size;
-                        return uniqueSubmitters;
-                      })()}
-                      /
-                      {teamInfo.team_size}
-                    </span>
-                  </div>
-                )}
               </motion.button>
             );
           })}
@@ -330,21 +253,28 @@ export default function BingoBoardMobile() {
                     type="file"
                     className="hidden"
                     id="file-upload"
-                    accept="image/*"
+                    accept="video/*"
                     // Bind the ref from the hook
                     ref={fileInputRef}
                     onChange={onSelectFile}
                   />
                   <label htmlFor="file-upload" className="flex flex-col items-center gap-2 cursor-pointer w-full">
                     {previewUrl ? (
-                      <div className="relative w-full aspect-video rounded-lg overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="relative w-full aspect-video rounded-lg overflow-hidden flex items-center justify-center bg-black">
+                        {file?.type.startsWith('video/') ? (
+                          <video src={previewUrl} controls className="w-full h-full object-contain" />
+                        ) : (
+                          <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                          </>
+                        )}
                       </div>
                     ) : (
                       <>
-                        <span className="text-2xl">📸</span>
-                        <span className="text-sm font-medium text-gray-600">แตะเพื่อเลือกรูปภาพ</span>
+                        <span className="text-2xl">📸/🎥</span>
+                        <span className="text-sm font-medium text-gray-600">แตะเพื่อเลือกหรือวิดีโอ</span>
+                        <span className="text-xs font-medium text-gray-600">(วิดีโอต้องมีขนาดไม่เกิน 15MB และไม่เกิน 15 วินาที)</span>
                       </>
                     )}
                   </label>
@@ -364,9 +294,14 @@ export default function BingoBoardMobile() {
                   <button
                     className="w-full py-3 rounded-xl text-white font-semibold bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleSubmit}
-                    disabled={!file || uploading}
+                    disabled={!file || uploading || isCompressing}
                   >
-                    {uploading ? "กำลังส่ง..." : "ส่งภารกิจ"}
+                    {isCompressing
+                      ? `กำลังบีบอัด... ${compressionProgress}%`
+                      : uploading
+                        ? "กำลังส่ง..."
+                        : "ส่งภารกิจ"
+                    }
                   </button>
                 </div>
               </div>

@@ -18,7 +18,9 @@ export function useBingoSubmission(
         onSelectFile,
         uploadImage,
         reset,
-        error: fileError
+        error: fileError,
+        isCompressing,
+        compressionProgress
     } = useBingoUploader();
 
     const isProfileLoaded = !!profile?.userId;
@@ -102,6 +104,8 @@ export function useBingoSubmission(
         onSelectFile,
         fileError,
         reset,
+        isCompressing,
+        compressionProgress,
 
         // Actions
         handleSubmit
