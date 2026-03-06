@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/utils/supabase";
 
+interface Challenge21DaysEntry {
+    id: number;
+    user_id: string;
+    category: string;
+    quantity: number;
+    duration_minutes: number;
+    description: string;
+    image_url: string;
+    created_at: string;
+}
+
 export async function GET() {
     try {
         let allData: Record<string, unknown>[] = [];
