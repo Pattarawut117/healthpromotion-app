@@ -14,7 +14,7 @@ interface Challenge21DaysEntry {
 
 export async function GET() {
     try {
-        let allData: Challenge21DaysEntry[] = [];
+        let allData: Record<string, unknown>[] = [];
         let start = 0;
         const limit = 1000;
         const maxRecords = 10000;

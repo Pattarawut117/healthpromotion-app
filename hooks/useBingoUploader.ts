@@ -3,6 +3,22 @@
 import { useRef, useState } from "react";
 import axios from "axios";
 import { compressImage } from "../utils/imageCompression";
+import { compressVideo } from "../utils/videoCompression";
+
+const checkVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = function () {
+            window.URL.revokeObjectURL(video.src);
+            resolve(video.duration);
+        };
+        video.onerror = function () {
+            reject(new Error("Cannot load video"));
+        };
+        video.src = URL.createObjectURL(file);
+    });
+};
 
 export function useBingoUploader() {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -11,6 +27,8 @@ export function useBingoUploader() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [compressionProgress, setCompressionProgress] = useState<number>(0);
+    const [isCompressing, setIsCompressing] = useState(false);
 
     /* ==============================
        1️⃣ Select file (iOS safe)
@@ -26,15 +44,34 @@ export function useBingoUploader() {
         }
 
         // Validate file type
-        if (!f.type.startsWith("image/")) {
-            setError("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+        if (!f.type.startsWith("image/") && !f.type.startsWith("video/")) {
+            setError("กรุณาเลือกไฟล์รูปภาพหรือวิดีโอเท่านั้น");
             return;
         }
 
-        // Prevent browser crash from massive files (> 30MB)
-        if (f.size > 30 * 1024 * 1024) {
-            setError("ไฟล์ต้นฉบับมีขนาดใหญ่เกินไป (เกิน 30MB) กรุณาลดขนาดไฟล์ก่อนเลือก");
-            return;
+        if (f.type.startsWith("video/")) {
+            // Check video size (15MB max)
+            if (f.size > 15 * 1024 * 1024) {
+                setError("ไฟล์วิดีโอมีขนาดใหญ่เกินไป (เกิน 15MB)");
+                return;
+            }
+
+            try {
+                const duration = await checkVideoDuration(f);
+                if (duration > 15) {
+                    setError("วิดีโอมีความยาวเกิน 15 วินาที กรุณาเลือกวิดีโอที่สั้นกว่านี้");
+                    return;
+                }
+            } catch (err) {
+                setError("ไม่สามารถตรวจสอบความยาวของวิดีโอได้");
+                return;
+            }
+        } else {
+            // Prevent browser crash from massive image files (> 30MB)
+            if (f.size > 30 * 1024 * 1024) {
+                setError("ไฟล์รูปภาพมีขนาดใหญ่เกินไป (เกิน 30MB) กรุณาลดขนาดไฟล์ก่อนเลือก");
+                return;
+            }
         }
 
         setError(null);
@@ -57,12 +94,26 @@ export function useBingoUploader() {
         try {
             setUploading(true);
 
-            // Convert HEIC + resize
-            const safeFile = await compressImage(file);
+            // If image, Compress & Convert HEIC
+            let safeFile = file;
+            if (file.type.startsWith("image/")) {
+                safeFile = await compressImage(file);
+                // Guard size (5MB max after compress)
+                if (safeFile.size > 5 * 1024 * 1024) {
+                    throw new Error("ไฟล์รูปใหญ่เกิน 5MB");
+                }
+            } else if (file.type.startsWith("video/")) {
+                // Compress Video on the client-side
+                setIsCompressing(true);
+                safeFile = await compressVideo(file, (progress) => {
+                    setCompressionProgress(progress);
+                });
+                setIsCompressing(false);
 
-            // Guard size (10MB max after compress)
-            if (safeFile.size > 5 * 1024 * 1024) {
-                throw new Error("ไฟล์รูปใหญ่เกิน 5MB");
+                // Guard size for video after compression (e.g. 15MB)
+                if (safeFile.size > 15 * 1024 * 1024) {
+                    throw new Error("ไฟล์วิดีโอใหญ่เกิน 15MB หลังทำการบีบอัด");
+                }
             }
 
             const formData = new FormData();
@@ -111,6 +162,8 @@ export function useBingoUploader() {
         setFile(null);
         setPreviewUrl(null);
         setError(null);
+        setCompressionProgress(0);
+        setIsCompressing(false);
 
         // Critical for iOS / Android browsers
         if (fileInputRef.current) {
@@ -129,5 +182,7 @@ export function useBingoUploader() {
         uploadImage,
         reset,
         setUploading,
+        compressionProgress,
+        isCompressing,
     };
 }
