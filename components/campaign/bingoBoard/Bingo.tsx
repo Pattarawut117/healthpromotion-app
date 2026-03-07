@@ -18,6 +18,7 @@ export interface BingoCell {
   id: number;
   activity_name: string;
   status: BingoStatus;
+  created_at?: string;
 }
 
 export interface BingoRow {
@@ -30,6 +31,7 @@ export default function BingoBoardMobile() {
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null);
   const [bingoData, setBingoData] = useState<BingoRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
 
   // Callback for successful submission (Optimistic Update)
   const handleSuccess = () => {
@@ -41,8 +43,8 @@ export default function BingoBoardMobile() {
         cell.id === selectedCell.id ? { ...cell, status: 'PENDING' } : cell
       )
     })));
+    setHasSubmittedToday(true);
   };
-
   // Custom Hook
   const {
     file,
@@ -82,10 +84,23 @@ export default function BingoBoardMobile() {
         const [tasksResponse, submissionsResponse] = await Promise.all([tasksPromise, submissionsPromise]);
 
         const activities = tasksResponse.data;
-        const submissions: { user_id: string; task_id: number | string; status: string }[] = submissionsResponse.data;
+        const submissions: { user_id: string; task_id: number | string; status: string; created_at: string }[] = submissionsResponse.data;
+
+
 
         // Filter submissions for current user for the BOARD STATUS
         const userSubmissions = submissions.filter(sub => sub.user_id === profile.userId);
+
+        // Determine if there is a submission today
+        const now = new Date();
+        const todayStr = now.toISOString().slice(0, 10);
+
+        const submittedToday = userSubmissions.some(sub => {
+          if (!sub.created_at) return false;
+          const subDateStr = new Date(sub.created_at).toISOString().slice(0, 10);
+          return subDateStr === todayStr;
+        });
+        setHasSubmittedToday(submittedToday);
 
         const rows: BingoRow[] = [];
         const itemsPerRow = 5;
@@ -119,7 +134,8 @@ export default function BingoBoardMobile() {
                 return {
                   id: c.id,
                   activity_name: c.activity_name,
-                  status: status
+                  status: status,
+                  created_at: submission?.created_at
                 };
               })
             });
@@ -136,6 +152,7 @@ export default function BingoBoardMobile() {
 
     initData();
   }, [profile]);
+
   // Helper: flatten rows to simple array for grid
   const allCells = bingoData.flatMap((row) =>
     row.cells.map((cell) => ({
@@ -158,6 +175,17 @@ export default function BingoBoardMobile() {
         <p className="text-xs text-gray-600 mt-1">
           ทำภารกิจให้ครบทุกแถว!
         </p>
+        <AnimatePresence>
+          {hasSubmittedToday && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-3 mx-4 p-2 bg-yellow-100 border border-yellow-300 rounded-lg text-yellow-800 text-xs font-medium shadow-sm"
+            >
+              คุณได้ส่งภารกิจของวันนี้แล้ว ภารกิจถัดไปจะเปิดให้ส่งในวันพรุ่งนี้
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Grid Board - 5 Columns */}
@@ -176,29 +204,34 @@ export default function BingoBoardMobile() {
             } else if (cell.status === "PENDING") {
               bgClass = "bg-yellow-50";
               borderClass = "border-yellow-200";
+            } else if (hasSubmittedToday) {
+              bgClass = "bg-gray-100";
+              borderClass = "border-gray-200 opacity-60";
+              disabled = true;
             }
 
             return (
               <motion.button
                 key={cell.id}
-                whileTap={cell.status === "APPROVED" ? {} : { scale: 0.9 }}
+                whileTap={cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING") ? {} : { scale: 0.9 }}
                 onClick={() => {
-                  if (cell.status !== "APPROVED") {
-                    setSelectedCell(cell);
-                    // Reset file state when opening new cell if needed, 
-                    // though hook should be clean or we can call reset()
-                    reset();
-                  }
+                  if (cell.status === "APPROVED") return;
+                  if (hasSubmittedToday && cell.status !== "PENDING") return;
+
+                  setSelectedCell(cell);
+                  reset();
                 }}
                 disabled={disabled}
                 className={`
                   relative aspect-square flex flex-col items-center justify-center p-1 rounded-xl shadow-sm border transition-all
                   ${bgClass} ${borderClass}
-                  ${cell.status === "APPROVED" ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
+                  ${cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING") ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
                 `}
               >
-                {cell.status === "APPROVED" && (
-                  <div className="absolute top-1 right-1 text-xs text-green-600">✓</div>
+                {(cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING")) && (
+                  <div className={`absolute top-1 right-1 text-xs ${cell.status === "APPROVED" ? "text-green-600" : "text-gray-500"}`}>
+                    {cell.status === "APPROVED" ? "✓" : "🔒"}
+                  </div>
                 )}
                 <span className={`text-[0.6rem] font-bold text-center leading-tight line-clamp-2 w-full break-words`}>
                   {cell.activity_name}
