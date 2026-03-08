@@ -1,7 +1,7 @@
 import React from 'react';
 import { IRanking } from '@/app/ranking/page';
 
-export default function RankTable({ ranking, unit = 'คะแนน' }: { ranking: IRanking[], unit?: string }) {
+export default function RankTable({ ranking, unit = 'คะแนน', renderValue }: { ranking: IRanking[], unit?: string, renderValue?: (row: IRanking) => React.ReactNode }) {
   return (
     <div className="p-2">
       <div className="bg-card text-card-foreground shadow-md rounded-lg overflow-hidden bg-white">
@@ -19,7 +19,9 @@ export default function RankTable({ ranking, unit = 'คะแนน' }: { ranki
               className="grid grid-cols-3 p-4 items-center text-black border-b last:border-b-0">
               <div>{index + 1}</div>
               <div className="font-medium">{row.sname || row.user_info?.sname || '-'}</div>
-              <div className="font-bold text-lg">{row.value ?? 0}</div>
+              <div className="font-bold text-lg">
+                {renderValue ? renderValue(row) : row.value ?? 0}
+              </div>
             </div>
           ))}
           {ranking.length === 0 && (

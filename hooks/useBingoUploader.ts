@@ -51,15 +51,15 @@ export function useBingoUploader() {
 
         if (f.type.startsWith("video/")) {
             // Check video size (15MB max)
-            if (f.size > 15 * 1024 * 1024) {
-                setError("ไฟล์วิดีโอมีขนาดใหญ่เกินไป (เกิน 15MB)");
+            if (f.size > 50 * 1024 * 1024) {
+                setError("ไฟล์วิดีโอมีขนาดใหญ่เกินไป (เกิน 50MB)");
                 return;
             }
 
             try {
                 const duration = await checkVideoDuration(f);
-                if (duration > 15) {
-                    setError("วิดีโอมีความยาวเกิน 15 วินาที กรุณาเลือกวิดีโอที่สั้นกว่านี้");
+                if (duration > 20) {
+                    setError("วิดีโอมีความยาวเกิน 20 วินาที กรุณาเลือกวิดีโอที่สั้นกว่านี้");
                     return;
                 }
             } catch (err) {
@@ -67,9 +67,9 @@ export function useBingoUploader() {
                 return;
             }
         } else {
-            // Prevent browser crash from massive image files (> 30MB)
-            if (f.size > 30 * 1024 * 1024) {
-                setError("ไฟล์รูปภาพมีขนาดใหญ่เกินไป (เกิน 30MB) กรุณาลดขนาดไฟล์ก่อนเลือก");
+            // Prevent browser crash from massive image files (> 50MB)
+            if (f.size > 50 * 1024 * 1024) {
+                setError("ไฟล์รูปภาพมีขนาดใหญ่เกินไป (เกิน 50MB) กรุณาลดขนาดไฟล์ก่อนเลือก");
                 return;
             }
         }
@@ -110,9 +110,9 @@ export function useBingoUploader() {
                 });
                 setIsCompressing(false);
 
-                // Guard size for video after compression (e.g. 15MB)
-                if (safeFile.size > 15 * 1024 * 1024) {
-                    throw new Error("ไฟล์วิดีโอใหญ่เกิน 15MB หลังทำการบีบอัด");
+                // Guard size for video after compression (e.g. 20MB)
+                if (safeFile.size > 20 * 1024 * 1024) {
+                    throw new Error("ไฟล์วิดีโอใหญ่เกิน 20MB หลังทำการบีบอัด");
                 }
             }
 
