@@ -18,7 +18,7 @@ export async function GET(req: Request) {
 
         let query = getSupabase()
             .from('bingo_submissions')
-            .select('*');
+            .select('*,user_info(sname)');
 
         if (team_id) {
             query = query.eq('team_id', team_id);
