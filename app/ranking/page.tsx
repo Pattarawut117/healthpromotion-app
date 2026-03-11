@@ -213,6 +213,9 @@ export default function RankingPage() {
             };
           }
 
+          // Check status === 'APPROVED' before counting
+          if (log.status !== 'APPROVED') continue;
+
           if (!userBingoTasks[uid]) {
             userBingoTasks[uid] = new Set();
           }
