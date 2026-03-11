@@ -6,7 +6,7 @@ import axios from "axios";
 import { useLiff } from "@/contexts/LiffContext";
 import { useBingoSubmission } from "@/hooks/useBingoSubmission";
 
-export type BingoStatus = "APPROVED" | "PENDING" | "LOCKED";
+export type BingoStatus = "APPROVED" | "PENDING" | "LOCKED" | "REJECTED";
 
 export interface BingoActivity {
   id: number;
@@ -19,6 +19,7 @@ export interface BingoCell {
   activity_name: string;
   status: BingoStatus;
   created_at?: string;
+  admin_comment?: string;
 }
 
 export interface BingoRow {
@@ -84,9 +85,7 @@ export default function BingoBoardMobile() {
         const [tasksResponse, submissionsResponse] = await Promise.all([tasksPromise, submissionsPromise]);
 
         const activities = tasksResponse.data;
-        const submissions: { user_id: string; task_id: number | string; status: string; created_at: string }[] = submissionsResponse.data;
-
-
+        const submissions: { user_id: string; task_id: number | string; status: string; created_at: string; admin_comment?: string }[] = submissionsResponse.data;
 
         // Filter submissions for current user for the BOARD STATUS
         const userSubmissions = submissions.filter(sub => sub.user_id === profile.userId);
@@ -126,6 +125,8 @@ export default function BingoBoardMobile() {
                 if (submission) {
                   if (submission.status === "APPROVED") {
                     status = "APPROVED";
+                  } else if (submission.status === "REJECTED") {
+                    status = "REJECTED";
                   } else if (submission.status === "PENDING" || !submission.status) {
                     status = "PENDING";
                   }
@@ -135,7 +136,8 @@ export default function BingoBoardMobile() {
                   id: c.id,
                   activity_name: c.activity_name,
                   status: status,
-                  created_at: submission?.created_at
+                  created_at: submission?.created_at,
+                  admin_comment: submission?.admin_comment
                 };
               })
             });
@@ -201,6 +203,9 @@ export default function BingoBoardMobile() {
               bgClass = "bg-green-100";
               borderClass = "border-green-300";
               disabled = true;
+            } else if (cell.status === "REJECTED") {
+              bgClass = "bg-red-100";
+              borderClass = "border-red-300";
             } else if (cell.status === "PENDING") {
               bgClass = "bg-yellow-50";
               borderClass = "border-yellow-200";
@@ -216,7 +221,7 @@ export default function BingoBoardMobile() {
                 whileTap={cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING") ? {} : { scale: 0.9 }}
                 onClick={() => {
                   if (cell.status === "APPROVED") return;
-                  if (hasSubmittedToday && cell.status !== "PENDING") return;
+                  if (hasSubmittedToday && cell.status !== "PENDING" && cell.status !== "REJECTED") return;
 
                   setSelectedCell(cell);
                   reset();
@@ -225,12 +230,12 @@ export default function BingoBoardMobile() {
                 className={`
                   relative aspect-square flex flex-col items-center justify-center p-1 rounded-xl shadow-sm border transition-all
                   ${bgClass} ${borderClass}
-                  ${cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING") ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
+                  ${cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING" && cell.status !== "REJECTED") ? "opacity-60 cursor-not-allowed" : "hover:shadow-md cursor-pointer"}
                 `}
               >
-                {(cell.status === "APPROVED" || (hasSubmittedToday && cell.status !== "PENDING")) && (
-                  <div className={`absolute top-1 right-1 text-xs ${cell.status === "APPROVED" ? "text-green-600" : "text-gray-500"}`}>
-                    {cell.status === "APPROVED" ? "✓" : "🔒"}
+                {(cell.status === "APPROVED" || cell.status === "REJECTED" || (hasSubmittedToday && cell.status !== "PENDING")) && (
+                  <div className={`absolute top-1 right-1 text-xs ${cell.status === "APPROVED" ? "text-green-600" : cell.status === "REJECTED" ? "text-red-500" : "text-gray-500"}`}>
+                    {cell.status === "APPROVED" ? "✓" : cell.status === "REJECTED" ? "❌" : "🔒"}
                   </div>
                 )}
                 <span className={`text-[0.6rem] font-bold text-center leading-tight line-clamp-2 w-full break-words`}>
@@ -277,6 +282,12 @@ export default function BingoBoardMobile() {
                   <p className="text-gray-500 text-sm mt-1">
                     ส่งรูปถ่ายของคุณเพื่อยืนยันภารกิจนี้
                   </p>
+                  {selectedCell.status === "REJECTED" && selectedCell.admin_comment && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 text-left">
+                      <strong>หมายเหตุจากแอดมิน:</strong><br />
+                      {selectedCell.admin_comment}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-4 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
@@ -325,7 +336,7 @@ export default function BingoBoardMobile() {
                   <button
                     className="w-full py-3 rounded-xl text-white font-semibold bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleSubmit}
-                    disabled={!file || uploading || isCompressing}
+                    disabled={!file || uploading || isCompressing || (hasSubmittedToday && selectedCell?.status === "REJECTED")}
                   >
                     {isCompressing
                       ? `กำลังบีบอัด... ${compressionProgress}%`
