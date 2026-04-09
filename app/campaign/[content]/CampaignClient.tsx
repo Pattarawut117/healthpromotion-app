@@ -7,7 +7,7 @@ import Swal from 'sweetalert2';
 import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
 import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
-import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
+// import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
 import MentalAssessment from '@/components/campaign/mentalCampaign/MentalAssessment';
 import FloatingActionButton from '@/components/campaign/bingoBoard/FloatingActionButton';
 
@@ -171,8 +171,8 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
 
                                 {campaign.activity_type === "HEALTH MISSION" && (
                                     <div className="mb-6">
-                                        <BingoBoard />
-                                        {/* <FloatingActionButton campaignId={campaign.id} /> */}
+                                        {/* <BingoBoard /> */}
+                                        <FloatingActionButton campaignId={campaign.id} />
                                     </div>
                                 )}
 
@@ -185,7 +185,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                         ) : (
                             !isActive && (
                                 <div className="alert alert-warning mt-4">
-                                    此 Campaign ไม่อยู่ในช่วงเวลาที่กำหนด (This campaign is not active)
+                                    Campaign ไม่อยู่ในช่วงเวลาที่กำหนด (This campaign is not active)
                                 </div>
                             )
                         )}
