@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useLiff } from "@/contexts/LiffContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { compressImage } from "@/utils/imageCompression";
 
 interface RunSubmissionFormProps {
     campaignId: number;
@@ -22,6 +23,13 @@ export default function RunSubmissionForm({ campaignId, activityType, onClose, o
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
+            
+            // Check max file size (e.g., 50MB before compression)
+            if (selectedFile.size > 50 * 1024 * 1024) {
+                alert("ไฟล์รูปภาพมีขนาดใหญ่เกินไป (เกิน 50MB) กรุณาลดขนาดไฟล์ก่อนเลือก");
+                return;
+            }
+            
             setFile(selectedFile);
             setPreviewUrl(URL.createObjectURL(selectedFile));
         }
@@ -35,9 +43,19 @@ export default function RunSubmissionForm({ campaignId, activityType, onClose, o
 
         setUploading(true);
         try {
+            // 0. Compress Image
+            let safeFile = file;
+            if (file.type.startsWith("image/")) {
+                safeFile = await compressImage(file);
+                // Guard size after compression (e.g., 5MB max)
+                if (safeFile.size > 5 * 1024 * 1024) {
+                    throw new Error("ไฟล์รูปใหญ่เกิน 5MB หลังจากการบีบอัด");
+                }
+            }
+
             // 1. Upload Image
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', safeFile);
 
             const uploadRes = await axios.post('/api/campaign/runUpload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
