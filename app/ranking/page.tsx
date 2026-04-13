@@ -30,8 +30,6 @@ export interface IRanking {
   task_id?: number;
 }
 
-// ... imports
-
 const users = [
   {
     value: '1',
@@ -318,50 +316,69 @@ export default function RankingPage() {
   }
 
   const renderValue = selectedValue === 'bingo' ? (row: IRanking) => (
-    <div className="flex flex-col gap-1 w-full mt-1 max-w-[150px]">
-      <div className="flex justify-between text-xs sm:text-sm font-medium text-gray-700">
+    <div className="flex flex-col gap-1 w-full min-w-[100px] sm:min-w-[150px] items-end">
+      <div className="flex justify-between w-full text-xs sm:text-sm font-medium text-base-content/80">
         <span>{row.bingo || 0}/30</span>
-        <span>{Math.round(((row.bingo || 0) / 30) * 100)}%</span>
+        <span className="text-primary">{Math.round(((row.bingo || 0) / 30) * 100)}%</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div className="bg-yellow-400 h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(((row.bingo || 0) / 30) * 100, 100)}%` }}></div>
-      </div>
+      <progress className="progress progress-warning w-full" value={row.bingo || 0} max="30"></progress>
     </div>
   ) : undefined;
 
   return (
-    <div className="p-4 flex flex-col gap-4 text-black">
-      <div className="flex justify-between items-center flex-wrap gap-2">
-        <h1 className="text-2xl font-bold">จัดอันดับ</h1>
-
-        {/* Date Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">ข้อมูล ณ วันที่:</span>
-          <input
-            type="date"
-            value={filterDate}
-            max={getYesterday()}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="border rounded p-1"
-            disabled
-          />
+    <div className="min-h-screen bg-base-200 text-base-content pb-20 relative">
+      <div className="navbar bg-base-100 sticky top-0 z-50 shadow-sm px-4">
+        <div className="flex-1">
+          <h1 className="font-bold text-xl text-primary">จัดอันดับ</h1>
         </div>
-
-        {/* Scrollable Tabs if needed, or flex wrap */}
-        <div className="flex items-center gap-2 overflow-x-scroll max-w-full pb-2">
-          {users.map((user) => (
-            <button
-              key={user.value}
-              onClick={() => setSelectedValue(user.value)}
-              className={`p-2 rounded-lg transition-colors duration-300 min-w-max ${selectedValue == user.value ? 'bg-white shadow ring-1 ring-gray-200' : 'bg-gray-100 text-gray-400'
-                }`}>
-              {user.label}
-            </button>
-          ))}
+        <div className="flex-none">
+          <div className="flex flex-col items-end pt-1">
+            <span className="text-[10px] text-base-content/60 font-semibold tracking-wide">ข้อมูลล่าสุด ณ วันที่</span>
+            <input
+              type="date"
+              value={filterDate}
+              max={getYesterday()}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="bg-transparent border-none text-xs sm:text-sm font-bold p-0 m-0 w-max outline-none text-base-content"
+              disabled
+            />
+          </div>
         </div>
       </div>
 
-      <RankTable ranking={filteredData} unit={getUnit()} renderValue={renderValue} />
+      <div className="max-w-xl mx-auto p-4 md:p-6 space-y-4 mt-2">
+        {/* Header Controls Area */}
+        <div className="flex flex-col gap-3">
+          {/* Category Tabs */}
+          <div className="card bg-base-100 shadow-sm border border-base-200/50 p-2 overflow-hidden">
+            <div className="overflow-x-auto scrollbar-hide">
+              <div role="tablist" className="tabs tabs-boxed bg-transparent gap-1 flex-nowrap w-max min-w-full">
+                {users.map((user) => {
+                  const isActive = selectedValue === user.value;
+                  return (
+                    <button
+                      key={user.value}
+                      role="tab"
+                      onClick={() => setSelectedValue(user.value)}
+                      className={`tab h-auto py-2 px-3 sm:px-4 flex-nowrap transition-all duration-300 rounded-xl flex-1 shrink-0 ${isActive
+                        ? 'tab-active !bg-primary/10 shadow-sm border border-primary/20 scale-105'
+                        : 'hover:bg-base-200 opacity-60 hover:opacity-100'
+                        }`}
+                    >
+                      {user.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Table View */}
+        <div className="mt-2">
+          <RankTable ranking={filteredData} unit={getUnit()} renderValue={renderValue} />
+        </div>
+      </div>
     </div>
   );
 }

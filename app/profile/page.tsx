@@ -50,105 +50,96 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="text-black flex flex-col items-center p-4 space-y-4">
-      {/* Avatar + ชื่อ */}
-      <div className="flex flex-col items-center">
+    <div className="min-h-screen bg-base-200 pb-10 text-base-content flex flex-col items-center">
+      {/* Avatar & Header Section */}
+      <div className="bg-base-100 flex flex-col items-center pt-8 pb-6 px-4 shadow-sm w-full">
         <UserPicture />
       </div>
 
-      {/* ระดับผู้ใช้ */}
-      <div className="flex items-center justify-between w-full border rounded-xl px-4 py-2 shadow-sm">
-        <p className="font-medium">ผู้เริ่มต้น</p>
-        <Link href="/landing/level">
-          <InfoCircleOutlined />
-        </Link>
-      </div>
+      <div className="w-full px-4 space-y-4 mt-4 max-w-md mx-auto">
 
-      {/* น้ำหนัก */}
-      <div className="w-full border rounded-xl px-4 py-3 shadow-sm">
-        <p className="text-gray-500">น้ำหนัก (กก.)</p>
-        <div className="flex justify-between items-center font-bold text-lg">
-          <span>{user?.weight ?? "-"}</span>
-          <RightOutlined />
-        </div>
-        <p className="text-sm text-gray-400">
-          {user?.dob ? `วันเกิด: ${user.dob}` : "ไม่มีข้อมูลวันเกิด"}
-        </p>
-      </div>
-
-      {/* ข้อมูลการออกกำลังกาย */}
-      <div className="flex justify-between items-center w-full border rounded-xl px-4 py-3 shadow-sm">
-        <p>ข้อมูลการออกกำลังกาย</p>
-      </div>
-
-      {/* BMI */}
-      <div className="w-full border rounded-xl px-4 py-3 shadow-sm">
-        <div className="flex justify-between items-center mb-1">
-          <p className="font-medium">BMI</p>
-          <InfoCircleOutlined />
-        </div>
-        <p className="font-bold text-lg">
-          {user?.weight && user?.height
-            ? (user.weight / (user.height / 100) ** 2).toFixed(2)
-            : "-"}
-        </p>
-        <p className="text-sm text-gray-500">
-          {user?.weight && user?.height
-            ? getBmiStatus(user.weight / (user.height / 100) ** 2)
-            : "ไม่มีข้อมูล"}
-        </p>
-      </div>
-
-      {/* BMR & TDEE */}
-      <div className="w-full border rounded-xl px-4 py-3 shadow-sm space-y-3">
-        <div className="flex justify-end">
-          <Link href="/landing/activity-kcal">
-            <InfoCircleOutlined />
-          </Link>
-        </div>
-
-        <div>
-          <div className="flex justify-between">
-            <p>BMR (kcal)</p>
-            <p className="font-medium">
-              {user?.weight && user?.height ? calcBmr(user).toFixed(1) : "-"}
-            </p>
-          </div>
-          <p className="text-sm text-gray-400">
-            อัตราการเผาผลาญพลังงานขั้นพื้นฐาน
-          </p>
-        </div>
-
-        <div>
-          <div className="flex justify-between">
-            <p>TDEE (kcal)</p>
-            <p className="font-medium">
-              {user?.weight && user?.height ? calcTdee(user).toFixed(1) : "-"}
-            </p>
-          </div>
-          <p className="text-sm text-gray-400">
-            พลังงานรวมที่ร่างกายใช้ไปในหนึ่งวัน
-          </p>
-        </div>
-      </div>
-
-      {/* เมนูโปรไฟล์ */}
-      <div className="w-full border rounded-xl divide-y shadow-sm">
-        {[
-          { label: "แก้ไขโปรไฟล์", path: "/profile/edit" },
-          { label: "นโยบายความเป็นส่วนตัว", path: "/profile/privacy-policy" },
-        ].map((item, idx) => (
-          <Link
-            key={idx}
-            href={item.path}
-            className="flex justify-between items-center px-4 py-3 hover:bg-gray-50 cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <span>{item.label}</span>
+        {/* ข้อมูลทั่วไป (น้ำหนัก & วันเกิด) */}
+        <div className="stats shadow w-full bg-base-100 rounded-2xl">
+          <div className="stat">
+            <div className="stat-figure text-primary/40 hidden sm:block">
+              <RightOutlined />
             </div>
-            <RightOutlined />
-          </Link>
-        ))}
+            <div className="stat-title text-base-content/70">น้ำหนักปัจจุบัน (กก.)</div>
+            <div className="stat-value text-primary font-bold">{user?.weight ?? "-"}</div>
+            <div className="stat-desc mt-1 text-base-content/60 font-medium">
+              {user?.dob ? `วันเกิด: ${user.dob}` : "ไม่มีข้อมูลวันเกิด"}
+            </div>
+          </div>
+        </div>
+
+        {/* ข้อมูลสุขภาพ & การออกกำลังกาย */}
+        <div className="flex justify-between items-center px-1 pt-2">
+          <p className="font-bold text-base-content/80 text-sm">ข้อมูลสุขภาพ</p>
+        </div>
+
+        {/* BMI Stats */}
+        <div className="stats shadow w-full bg-base-100 rounded-2xl">
+          <div className="stat">
+            <div className="stat-figure text-base-content/40 cursor-help" title="ข้อมูล BMI">
+              <InfoCircleOutlined className="text-xl" />
+            </div>
+            <div className="stat-title text-base-content/70">ดัชนีมวลกาย (BMI)</div>
+            {user?.weight && user?.height ? (
+              <>
+                <div className={`stat-value ${getBmiColor(user.weight / (user.height / 100) ** 2)}`}>
+                  {(user.weight / (user.height / 100) ** 2).toFixed(2)}
+                </div>
+                <div className="stat-desc mt-1 font-medium text-base text-base-content/80">
+                  อยู่ในเกณฑ์: {getBmiStatus(user.weight / (user.height / 100) ** 2)}
+                </div>
+              </>
+            ) : (
+              <div className="stat-value text-base-content/30">-</div>
+            )}
+          </div>
+        </div>
+
+        {/* พลังงาน BMR & TDEE (2 คอลัมน์) */}
+        <div className="stats shadow w-full bg-base-100 rounded-2xl">
+          <div className="stat px-3">
+            <div className="stat-title max-w-full text-xs xs:text-sm text-base-content/70 flex justify-between">
+              BMR <Link href="/landing/activity-kcal" className="text-primary"><InfoCircleOutlined /></Link>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold mt-1">
+              {user?.weight && user?.height ? calcBmr(user).toFixed(0) : "-"} <span className="text-xs font-normal">kcal</span>
+            </div>
+            <div className="stat-desc mt-1 text-[10px] sm:text-xs">เผาผลาญพื้นฐาน</div>
+          </div>
+
+          <div className="stat px-3 border-l border-base-200">
+            <div className="stat-title max-w-full text-xs xs:text-sm text-base-content/70 flex justify-between">
+              TDEE <Link href="/landing/activity-kcal" className="text-primary"><InfoCircleOutlined /></Link>
+            </div>
+            <div className="text-xl sm:text-2xl font-bold mt-1 text-secondary">
+              {user?.weight && user?.height ? calcTdee(user).toFixed(0) : "-"} <span className="text-xs font-normal">kcal</span>
+            </div>
+            <div className="stat-desc mt-1 text-[10px] sm:text-xs text-secondary/80">พลังงานที่ใช้ต่อวัน</div>
+          </div>
+        </div>
+
+        {/* Settings Menu */}
+        <div className="mt-6 mb-4">
+          <ul className="menu bg-base-100 w-full rounded-2xl shadow-sm text-base font-medium">
+            <li>
+              <Link href="/profile/edit" className="flex justify-between py-4">
+                <span>จัดการโปรไฟล์</span>
+                <RightOutlined className="opacity-50" />
+              </Link>
+            </li>
+            <li>
+              <Link href="/profile/privacy-policy" className="flex justify-between py-4">
+                <span>นโยบายความเป็นส่วนตัว</span>
+                <RightOutlined className="opacity-50" />
+              </Link>
+            </li>
+          </ul>
+        </div>
+
       </div>
     </div>
   );
@@ -163,8 +154,16 @@ function getBmiStatus(bmi: number): string {
   return "อ้วนมาก";
 }
 
+// ✅ โทนสีสำหรับค่า BMI
+function getBmiColor(bmi: number): string {
+  if (bmi < 18.5) return "text-info";
+  if (bmi < 23) return "text-success";
+  if (bmi < 25) return "text-warning";
+  if (bmi < 30) return "text-error text-opacity-80";
+  return "text-error";
+}
+
 // ✅ Helper ฟังก์ชันสำหรับคำนวณ BMR (ใช้ Mifflin-St Jeor)
-// หมายเหตุ: เพศยังไม่ถูกแยก ถ้ามี gender ค่อยเพิ่มสูตรชาย/หญิง
 function calcBmr(user: UserInfo): number {
   const weight = user.weight ?? 0;
   const height = user.height ?? 0;
