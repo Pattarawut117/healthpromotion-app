@@ -31,31 +31,36 @@ export default function CampaignCard() {
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
   return (
     <div>
-      <div className="grid grid-cols-2 gap-4 mt-4 text-black">
+      <div className="grid grid-cols-2 gap-3 mt-4 text-base-content">
         {campaigns.map((item) => (
           <div
             key={item.id}
-            className="bg-card text-card-foreground rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col"
+            className="card bg-base-100 shadow-xl card-compact hover:shadow-2xl transition-all duration-300 w-full"
           >
-            <div className="flex-grow">
+            <figure className="w-full bg-slate-50 relative aspect-video overflow-hidden">
               <img
                 alt={item.activity_name}
-                width={200}
-                height={200}
                 src={item.title}
-                className="mx-auto"
+                className="object-cover w-full h-full"
               />
-            </div>
-            <div className="p-2 text-center">
-              <p className="font-semibold text-lg">{item.activity_name}</p>
-              <p className="text-muted-foreground text-sm">{item.activity_type}</p>
-            </div>
-            <Link href={`/campaign/${item.id}`}>
-              <div className="flex items-center justify-center gap-2 bg-orange-300 text-primary-foreground rounded-full px-4 py-2 m-4 cursor-pointer hover:bg-orange-400 transition-colors duration-300">
-                <p className="text-sm">เข้าร่วม</p>
-                <RightOutlined />
+            </figure>
+            <div className="card-body p-3">
+              <h2 className="card-title text-sm line-clamp-2 leading-snug">
+                {item.activity_name}
+              </h2>
+              <div className="mt-1">
+                <div className="badge badge-primary badge-outline text-[10px] sm:text-xs">
+                  {item.activity_type}
+                </div>
               </div>
-            </Link>
+              <div className="card-actions justify-end mt-2">
+                <Link href={`/campaign/${item.id}`} className="w-full">
+                  <button className="btn btn-sm sm:btn-md bg-orange-300 hover:bg-orange-400 border-none text-black rounded-full w-full text-xs">
+                    เข้าร่วม <RightOutlined className="text-[10px] sm:text-xs" />
+                  </button>
+                </Link>
+              </div>
+            </div>
           </div>
         ))}
       </div>

@@ -128,512 +128,262 @@ export default function EditProfilePage() {
     }
   }, [userId, formData, fetchUser]);
 
-  const inputClasses =
-    "w-full p-2 border border-input rounded-md focus:ring-primary focus:border-primary bg-background text-foreground";
-
-  if (loading) return <p className="p-4">กำลังโหลดข้อมูล...</p>;
+  if (loading) return <div className="min-h-screen bg-base-200 flex items-center justify-center"><span className="loading loading-spinner text-primary"></span></div>;
 
   return (
-    <div className="max-w-lg mx-auto p-4 space-y-6 pb-6 text-black">
-      <div className="flex items-center gap-4">
-        <Link href="/profile">
-          <ArrowLeftOutlined className="text-xl" />
-        </Link>
-        <h1 className="text-xl font-bold">แก้ไขโปรไฟล์ (Edit Profile)</h1>
+    <div className="min-h-screen bg-base-200 text-base-content pb-24 relative">
+      {/* Top Navbar */}
+      <div className="navbar bg-base-100 sticky top-0 z-50 shadow-sm px-4">
+        <div className="navbar-start">
+          <Link href="/profile" className="btn btn-ghost btn-sm px-2">
+            <ArrowLeftOutlined /> กลับ
+          </Link>
+        </div>
+        <div className="navbar-center font-bold text-lg">
+          แก้ไขโปรไฟล์
+        </div>
+        <div className="navbar-end"></div>
       </div>
 
-      <div className="space-y-4">
+      <div className="max-w-lg mx-auto p-4 md:p-6 mt-2 space-y-6">
+
         {/* 1. Personal Info */}
-        <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
-          <legend className="font-semibold mb-4">ข้อมูลส่วนบุคคล (Personal Info)</legend>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ชื่อ (First Name)
-              </label>
+        <div className="card bg-base-100 shadow-sm border border-base-200/50">
+          <div className="card-body p-4 sm:p-6">
+            <h2 className="card-title text-lg border-b border-base-200 pb-2 mb-2">ข้อมูลส่วนบุคคล (Personal Info)</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium">ชื่อ (First Name)</span></label>
+                <input
+                  type="text"
+                  name="sname"
+                  value={formData.sname || ""}
+                  onChange={handleChange}
+                  placeholder="ชื่อ"
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium">นามสกุล (Last Name)</span></label>
+                <input
+                  type="text"
+                  name="lname"
+                  value={formData.lname || ""}
+                  onChange={handleChange}
+                  placeholder="นามสกุล"
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
+            </div>
+
+            <div className="form-control w-full mt-2">
+              <label className="label py-1"><span className="label-text font-medium">เบอร์โทร (Tel)</span></label>
               <input
-                type="text"
-                name="sname"
-                value={formData.sname || ""}
+                type="tel"
+                name="tel"
+                value={formData.tel || ""}
                 onChange={handleChange}
-                placeholder="ชื่อ"
-                className={inputClasses}
+                placeholder="เบอร์โทรศัพท์"
+                className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                นามสกุล (Last Name)
-              </label>
-              <input
-                type="text"
-                name="lname"
-                value={formData.lname || ""}
-                onChange={handleChange}
-                placeholder="นามสกุล"
-                className={inputClasses}
+
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium">วันเกิด (DOB)</span></label>
+                <input
+                  type="date"
+                  name="dob"
+                  value={formData.dob || ""}
+                  onChange={handleChange}
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium">เพศ (Gender)</span></label>
+                <select
+                  name="gender"
+                  value={formData.gender || ""}
+                  onChange={handleChange}
+                  className="select select-sm sm:select-md select-bordered focus:select-primary w-full font-normal"
+                >
+                  <option value="" disabled>-- ระบุ --</option>
+                  <option value="ชาย">ชาย (Male)</option>
+                  <option value="หญิง">หญิง (Female)</option>
+                  <option value="อื่นๆ">อื่นๆ (Other)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-control w-full mt-2">
+              <label className="label py-1"><span className="label-text font-medium">หน่วยงาน (Unit)</span></label>
+              <Select
+                name="unit"
+                value={unitData
+                  .map(u => ({ value: u.value, label: u.text }))
+                  .find(opt => opt.value === formData.unit)}
+                onChange={(option) => setFormData(prev => ({ ...prev, unit: option?.value || "" }))}
+                options={unitData.map(u => ({ value: u.value, label: u.text }))}
+                placeholder="ระบุหน่วยงาน"
+                className="text-sm"
+                classNamePrefix="select"
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    borderRadius: "0.5rem",
+                    borderColor: "oklch(var(--b3))",
+                    minHeight: "3rem",
+                  })
+                }}
+              />
+            </div>
+
+            <div className="form-control w-full mt-2">
+              <label className="label py-1"><span className="label-text font-medium">สังกัด/แผนก (Division)</span></label>
+              <Select
+                name="division"
+                value={divisionOptions.find((opt) => opt.value === formData.division)}
+                onChange={(option) => setFormData(prev => ({ ...prev, division: option?.value || "" }))}
+                options={divisionOptions}
+                placeholder="ระบุสังกัด"
+                className="text-sm"
+                classNamePrefix="select"
+                isClearable
+                isSearchable
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    borderRadius: "0.5rem",
+                    borderColor: "oklch(var(--b3))",
+                    minHeight: "3rem",
+                  })
+                }}
               />
             </div>
           </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              เบอร์โทร (Tel)
-            </label>
-            <input
-              type="text"
-              name="tel"
-              value={formData.tel || ""}
-              onChange={handleChange}
-              placeholder="เบอร์โทร"
-              className={inputClasses}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                วันเกิด (DOB)
-              </label>
-              <input
-                type="date"
-                name="dob"
-                value={formData.dob || ""}
-                onChange={handleChange}
-                className={inputClasses}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                เพศ (Gender)
-              </label>
-              <select
-                name="gender"
-                value={formData.gender || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="ชาย">ชาย (Male)</option>
-                <option value="หญิง">หญิง (Female)</option>
-                <option value="อื่นๆ">อื่นๆ (Other)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              หน่วยงาน (Unit)
-            </label>
-            <Select
-              name="unit"
-              value={unitData
-                .map(u => ({ value: u.value, label: u.text }))
-                .find(opt => opt.value === formData.unit)}
-              onChange={(option) => setFormData(prev => ({ ...prev, unit: option?.value || "" }))}
-              options={unitData.map(u => ({ value: u.value, label: u.text }))}
-              placeholder="ระบุหน่วยงาน"
-              className="basic-single"
-              classNamePrefix="select"
-              isClearable
-              isSearchable
-            />
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              สังกัด/แผนก (Division)
-            </label>
-            <Select
-              name="division"
-              value={divisionOptions.find((opt) => opt.value === formData.division)}
-              onChange={(option) => setFormData(prev => ({ ...prev, division: option?.value || "" }))}
-              options={divisionOptions}
-              placeholder="ระบุสังกัด"
-              className="basic-single"
-              classNamePrefix="select"
-              isClearable
-              isSearchable
-            />
-          </div>
-
-          {/* <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              ท่านนั่งหรือเอนกายเฉยๆติดต่อกันนาน เกิน 2 ชั่วโมงหรือไม่
-            </label>
-            <select name="workingLongtime" id="workingLongtime" value={formData.workingLongtime || ""} onChange={handleChange} className={`select ${inputClasses}`}>
-              <option value="">-- ระบุ --</option>
-              <option value="น้อยกว่า 2 ชั่วโมง">น้อยกว่า 2 ชั่วโมง</option>
-              <option value="2-4 ชั่วโมง">2-4 ชั่วโมง</option>
-              <option value="4-6 ชั่วโมง">4-6 ชั่วโมง</option>
-              <option value="6-8 ชั่วโมง">6-8 ชั่วโมง</option>
-              <option value="8 ชั่วโมงขึ้นไป">8 ชั่วโมงขึ้นไป</option>
-            </select>
-          </div> */}
         </div>
 
         {/* 2. Body Composition */}
-        <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
-          <legend className="font-semibold mb-4">ข้อมูลร่างกาย (Body)</legend>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ส่วนสูง (cm)
-              </label>
-              <input
-                type="number"
-                name="height"
-                value={formData.height || ""}
-                onChange={handleChange}
-                placeholder="cm"
-                className={inputClasses}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                น้ำหนัก (kg)
-              </label>
-              <input
-                type="number"
-                name="weight"
-                value={formData.weight || ""}
-                onChange={handleChange}
-                placeholder="kg"
-                className={inputClasses}
-              />
-            </div>
-          </div>
+        <div className="card bg-base-100 shadow-sm border border-base-200/50">
+          <div className="card-body p-4 sm:p-6">
+            <h2 className="card-title text-lg border-b border-base-200 pb-2 mb-2">ข้อมูลร่างกาย (Body)</h2>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              BMI (Auto-calculated)
-            </label>
-            <div className="p-2 bg-muted rounded-md text-center font-bold border border-input bg-gray-50">
-              {formData.bmi || "-"}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium text-xs sm:text-sm">ส่วนสูง (cm)</span></label>
+                <input
+                  type="number"
+                  name="height"
+                  value={formData.height || ""}
+                  onChange={handleChange}
+                  placeholder="ซม."
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium text-xs sm:text-sm">น้ำหนัก (kg)</span></label>
+                <input
+                  type="number"
+                  name="weight"
+                  value={formData.weight || ""}
+                  onChange={handleChange}
+                  placeholder="กก."
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                รอบเอว (Waist cm)
-              </label>
-              <input
-                type="text"
-                name="waist"
-                value={formData.waist || ""}
+            <div className="form-control w-full mt-2">
+              <label className="label py-1"><span className="label-text font-medium">BMI (คำนวณอัตโนมัติ)</span></label>
+              <div className="w-full bg-base-200 border border-base-300 rounded-lg p-3 text-center text-lg font-bold text-base-content opacity-70">
+                {formData.bmi || "-"}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium text-xs sm:text-sm">รอบเอว (Waist cm)</span></label>
+                <input
+                  type="number"
+                  name="waist"
+                  value={formData.waist || ""}
+                  onChange={handleChange}
+                  placeholder="ซม."
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
+              <div className="form-control w-full">
+                <label className="label py-1"><span className="label-text font-medium text-xs sm:text-sm">% ไขมัน (Body Fat)</span></label>
+                <input
+                  type="number"
+                  name="body_fat_percentage"
+                  value={formData.body_fat_percentage || ""}
+                  onChange={handleChange}
+                  placeholder="%"
+                  className="input input-sm sm:input-md input-bordered focus:input-primary w-full"
+                />
+              </div>
+            </div>
+
+            <div className="form-control w-full mt-2">
+              <label className="label py-1"><span className="label-text font-medium">โรคประจำตัว (Congenital Disease)</span></label>
+              <textarea
+                name="condentialDisease"
+                value={formData.condentialDisease || ""}
                 onChange={handleChange}
-                placeholder="cm"
-                className={inputClasses}
+                placeholder="ระบุโรคประจำตัว"
+                className="textarea textarea-bordered focus:textarea-primary w-full h-24 text-base"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                % ไขมัน (Body Fat %)
-              </label>
-              <input
-                type="number"
-                name="body_fat_percentage"
-                value={formData.body_fat_percentage || ""}
-                onChange={handleChange}
-                placeholder="%"
-                className={inputClasses}
-              />
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              โรคประจำตัว (Congenital Disease)
-            </label>
-            <textarea
-              name="condentialDisease"
-              value={formData.condentialDisease || ""}
-              onChange={handleChange}
-              placeholder="ระบุโรคประจำตัว"
-              className={inputClasses}
-              rows={2}
-            />
           </div>
         </div>
 
-        {/* 3. Sleep & Lifestyle */}
-        {/* <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
-          <legend className="font-semibold mb-4">
-            การนอนและพฤติกรรม (Sleep & Habits)
-          </legend>
-          <div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ส่วนใหญ่ท่านนอนวันละกี่ชั่วโมง
-              </label>
-              <select name="sleepPerhour" id="sleepPerhour" value={formData.sleepPerhour || ""} onChange={handleChange} className={`select ${inputClasses}`}>
-                <option value="">-- ระบุ --</option>
-                <option value="น้อยกว่า 2 ชั่วโมง">น้อยกว่า 2 ชั่วโมง</option>
-                <option value="2-4 ชั่วโมง">2-4 ชั่วโมง</option>
-                <option value="4-6 ชั่วโมง">4-6 ชั่วโมง</option>
-                <option value="6-8 ชั่วโมง">6-8 ชั่วโมง</option>
-                <option value="8 ชั่วโมงขึ้นไป">8 ชั่วโมงขึ้นไป</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                นอนพอไหม?
-              </label>
-              <select
-                name="sleepEnough"
-                value={formData.sleepEnough || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="พอ">พอ</option>
-                <option value="ไม่พอ">ไม่พอ</option>
-              </select>
-            </div>
-          </div>
+        {/* Action Button Sticky on Mobile */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t border-base-200 z-40 sm:relative sm:border-0 sm:bg-transparent sm:p-0">
+          <button
+            onClick={handleSubmit}
+            className="btn btn-primary w-full rounded-full text-base sm:text-lg shadow-lg sm:shadow-sm h-12"
+          >
+            บันทึกการเปลี่ยนแปลง (Save)
+          </button>
+        </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              มีปัญหาการนอนหลับ?
-            </label>
-            <select
-              name="sleepProblem"
-              value={formData.sleepProblem || ""}
-              onChange={handleChange}
-              className={`select ${inputClasses}`}
-            >
-              <option value="">-- ระบุ --</option>
-              <option value="ไม่มี">ไม่มี</option>
-              <option value="หลับยาก">หลับยาก</option>
-              <option value="ตื่นกลางดึก">ตื่นกลางดึก</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                สูบบุหรี่?
-              </label>
-              <select
-                name="isSmoke"
-                value={formData.isSmoke || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="ไม่สูบ">ไม่สูบ</option>
-                <option value="สูบ">สูบ</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ดื่มแอลกอฮอล์?
-              </label>
-              <select
-                name="drinkBeer"
-                value={formData.drinkBeer || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="ไม่เคยดื่มเลย">ไม่เคยดื่มเลย</option>
-                <option value="เดือนละครั้ง">เดือนละครั้ง</option>
-                <option value="สัปดาห์ละครั้ง">สัปดาห์ละครั้ง</option>
-                <option value="เกือบทุกวัน">เกือบทุกวัน</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ท่านดื่มน้ำวันละไหร่ (แก้ว 250 มล. ขวดเล็ก 600 มล. ขวดใหญ่ 1500 มล.)
-              </label>
-              <select
-                name="drinkWater"
-                value={formData.drinkWater || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)">ดื่มน้อยกว่า 4 แก้ว (1,000 มล.)</option>
-                <option value="4-6 แก้ว (1,000-1,500 มล.)">4-6 แก้ว (1,000-1,500 มล.)</option>
-                <option value="มากกว่า 6-8 แก้ว (1,500-2,000 มล.)">มากกว่า 6-8 แก้ว (1,500-2,000 มล.)</option>
-                <option value="มากกว่า 8-10 แก้ว (2,000-2,500 มล.)">มากกว่า 8-10 แก้ว (2,000-2,500 มล.)</option>
-              </select>
-            </div>
-          </div>
-        </div> */}
-
-        {/* 4. Diet */}
-        {/* <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
-          <legend className="font-semibold mb-4">อาหารการกิน (Diet)</legend>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ทานผักผลไม้?
-              </label>
-              <select
-                name="eatVegetable"
-                value={formData.eatVegetable || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="ไม่กินเลย">ไม่กินเลย</option>
-                <option value="กิน 1-3 ครั้งต่อสัปดาห์">กิน 1-3 ครั้งต่อสัปดาห์</option>
-                <option value="กิน 4-6 ครั้งต่อสัปดาห์">กิน 4-6 ครั้งต่อสัปดาห์</option>
-                <option value="กินทุกวัน">กินทุกวัน</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  ทานเปรี้ยว?
-                </label>
-                <select
-                  name="eatSour"
-                  value={formData.eatSour || ""}
-                  onChange={handleChange}
-                  className={`select ${inputClasses}`}
-                >
-                  <option value="">-- ระบุ --</option>
-                  <option value="ไม่เติมเครื่องปรุงรสเค็มเลย">ไม่เติมเครื่องปรุงรสเค็มเลย</option>
-                  <option value="เติมเครื่องปรุงรสเค็มน้อย">เติมเครื่องปรุงรสเค็มน้อย</option>
-                  <option value="เติมเครื่องปรุงรสเค็มเป็นบางครั้ง">เติมเครื่องปรุงรสเค็มปานกลาง</option>
-                  <option value="เติมเครื่องปรุงรสเค็มเป็นทุกครั้ง">เติมเครื่องปรุงรสเค็มมาก</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  ทานหวาน?
-                </label>
-                <select
-                  name="eatSweetness"
-                  value={formData.eatSweetness || ""}
-                  onChange={handleChange}
-                  className={`select ${inputClasses}`}
-                >
-                  <option value="">-- ระบุ --</option>
-                  <option value="ไม่ดื่มเลย">ไม่ดื่มเลย</option>
-                  <option value="ดื่มน้อยกว่า 1 ครั้งต่อสัปดาห์">ดื่มน้อยกว่า 1 ครั้งต่อสัปดาห์</option>
-                  <option value="ดื่ม 1-3 ครั้งต่อสัปดาห์">ดื่ม 1-3 ครั้งต่อสัปดาห์</option>
-                  <option value="ดื่ม 4-6 ครั้งต่อสัปดาห์">ดื่ม 4-6 ครั้งต่อสัปดาห์</option>
-                  <option value="ดื่มทุกวัน">ดื่มทุกวัน</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div> */}
-
-        {/* 5. Mental & Other */}
-        {/* <div className="p-4 border rounded-2xl shadow-sm bg-card text-card-foreground">
-          <legend className="font-semibold mb-4">
-            สุขภาวะทางจิต (Mental & Other)
-          </legend>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                มีสมาธิน้อยลง
-              </label>
-              <select
-                name="adhd"
-                value={formData.adhd || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="น้อยมากหรือแทบไม่มี">น้อยมากหรือแทบไม่มี</option>
-                <option value="เป็นบางครั้ง">เป็นบางครั้ง</option>
-                <option value="เป็นบ่อยครั้ง">บ่อย</option>
-                <option value="เป็นทุกครั้ง">ทุกครั้ง</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                หงุดหงิด กระวนกระวาย วุ่นวายใจหรือไม่
-              </label>
-              <select
-                name="madness"
-                value={formData.madness || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="น้อยมากหรือแทบไม่มี">น้อยมากหรือแทบไม่มี</option>
-                <option value="เป็นบางครั้ง">เป็นบางครั้ง</option>
-                <option value="เป็นบ่อยครั้ง">บ่อย</option>
-                <option value="เป็นทุกครั้ง">ทุกครั้ง</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                รู้สึกเบื่อหน่ายหรือไม่
-              </label>
-              <select
-                name="bored"
-                value={formData.bored || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="น้อยมากหรือแทบไม่มี">น้อยมากหรือแทบไม่มี</option>
-                <option value="เป็นบางครั้ง">เป็นบางครั้ง</option>
-                <option value="เป็นบ่อยครั้ง">บ่อย</option>
-                <option value="เป็นทุกครั้ง">ทุกครั้ง</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                ไม่อยากพบปะผู้คนหรือไม่
-              </label>
-              <select
-                name="introvert"
-                value={formData.introvert || ""}
-                onChange={handleChange}
-                className={`select ${inputClasses}`}
-              >
-                <option value="">-- ระบุ --</option>
-                <option value="น้อยมากหรือแทบไม่มี">น้อยมากหรือแทบไม่มี</option>
-                <option value="เป็นบางครั้ง">เป็นบางครั้ง</option>
-                <option value="เป็นบ่อยครั้ง">บ่อย</option>
-                <option value="เป็นทุกครั้ง">ทุกครั้ง</option>
-              </select>
-            </div>
-          </div>
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              ท่านมีกิจกรรมทางกายหรือเคลื่อนไหวหรือไม่อย่างไร
-            </label>
-            <select name="activitiesTried" id="activitiesTried" value={formData.activitiesTried || ""} onChange={handleChange} className={`select ${inputClasses}`}>
-              <option value="">-- ระบุ --</option>
-              <option value="ไม่มีกิจกรรมเลย">ไม่มีกิจกรรมเลย</option>
-              <option value="มีกิจกรรมทางกายน้อยกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน">มีกิจกรรมทางกายน้อยกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน</option>
-              <option value="มีกิจกรรมทางกายมากกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน">มีกิจกรรมทางกายมากกว่าสัปดาห์ละ 150 นาทีหรือน้อยกว่า 30 นาทีต่อวัน</option>
-            </select>
-          </div>
-        </div> */}
-
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-orange-400 text-white py-3 rounded-xl font-semibold shadow hover:bg-orange-500 transition text-lg"
-        >
-          บันทึกการเปลี่ยนแปลง (Save Changes)
-        </button>
-
+        {/* DaisyUI Alert Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-xl shadow-xl w-80 text-center">
-              <p className="text-lg font-semibold mb-4">{modalMessage}</p>
-              <button
-                onClick={() => setShowModal(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg w-full"
-              >
-                ปิด (Close)
-              </button>
+          <dialog className="modal modal-open modal-bottom sm:modal-middle bg-black/40 backdrop-blur-sm">
+            <div className="modal-box text-center p-8">
+              {modalMessage.includes("สำเร็จ") ? (
+                <div className="mb-4 text-success flex justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              ) : (
+                <div className="mb-4 text-error flex justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              )}
+
+              <h3 className="font-bold text-xl">{modalMessage.includes("สำเร็จ") ? "เรียบร้อย!" : "เกิดข้อผิดพลาด"}</h3>
+              <p className="py-4 text-base-content/80 text-lg">{modalMessage}</p>
+
+              <div className="modal-action justify-center mt-2">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="btn btn-neutral w-full rounded-full text-lg"
+                >
+                  ปิดหน้าต่าง
+                </button>
+              </div>
             </div>
-          </div>
+          </dialog>
         )}
       </div>
-    </div >
+    </div>
   );
 }
