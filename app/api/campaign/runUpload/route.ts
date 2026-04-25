@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/utils/supabase';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 export async function POST(request: NextRequest) {
     const data = await request.formData();
@@ -12,21 +13,21 @@ export async function POST(request: NextRequest) {
     const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
 
     try {
-        const { error } = await getSupabase().storage
-            .from('health_logs')
-            .upload(filename, file);
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
 
-        if (error) {
-            console.error('Supabase upload error:', error);
-            return NextResponse.json({ success: false, error: error.message });
-        }
+        const uploadDir = join(process.cwd(), 'public', 'run');
 
-        // Get public URL
-        const { data: publicUrlData } = getSupabase().storage
-            .from('health_logs')
-            .getPublicUrl(filename);
+        // สร้างโฟลเดอร์หากยังไม่มี
+        await mkdir(uploadDir, { recursive: true });
 
-        return NextResponse.json({ success: true, path: publicUrlData.publicUrl });
+        const filePath = join(uploadDir, filename);
+        await writeFile(filePath, buffer);
+
+        // สร้าง Public URL เพื่อให้ฝั่ง Frontend สามารถเข้าถึงและแสดงรูปได้
+        const publicUrl = `/run/${filename}`;
+
+        return NextResponse.json({ success: true, path: publicUrl });
 
     } catch (error) {
         console.error('Error uploading file:', error);

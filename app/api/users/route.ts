@@ -12,7 +12,7 @@ interface UserInfo {
   height?: string;
   weight?: string;
   bmi?: number;
-  condentialDisease?: any;
+  condentialDisease?: string[];
   sleepPerhour?: string;
   sleepEnough?: string;
   isSmoke?: string;

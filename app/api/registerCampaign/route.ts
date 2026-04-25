@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/utils/supabase";
+import { prisma } from "@/lib/prisma";
 
 interface RegisterCampaignRequest {
     user_id: string;
@@ -19,25 +19,26 @@ export async function GET(req: Request) {
     }
 
     try {
-        let query = getSupabase()
-            .from('activities_user_register')
-            .select('*')
-            .eq('user_id', user_id);
+        const whereClause: any = { user_id: user_id };
 
         if (campaign_id) {
-            query = query.eq('campaign_id', campaign_id);
+            whereClause.campaign_id = Number(campaign_id);
         }
 
         // If activity_type is provided, check if ANY campaign with this activity_type is registered
         if (activity_type) {
-            query = query.eq('activity_type', activity_type);
+            whereClause.activity_type = activity_type;
         }
 
-        const { data, error } = await query;
+        const record = await prisma.activities_user_register.findFirst({
+            where: whereClause,
+            select: { code_id: true }
+        });
 
-        if (error) throw error;
-
-        return NextResponse.json({ isRegistered: data.length > 0 });
+        return NextResponse.json({ 
+            isRegistered: !!record,
+            code_id: record?.code_id || null 
+        });
     } catch (error) {
         console.error("Error checking registration:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
@@ -50,111 +51,89 @@ export async function POST(req: Request) {
         const { user_id, campaign_id, activity_name, activity_type } = body;
 
         // 1️⃣ เช็คว่าลงทะเบียนแล้วหรือยัง
-        const { data: existing, error: checkError } = await getSupabase()
-            .from('activities_user_register')
-            .select('*')
-            .eq('user_id', user_id)
-            .eq('campaign_id', campaign_id);
+        const existingCount = await prisma.activities_user_register.count({
+            where: {
+                user_id: user_id,
+                campaign_id: Number(campaign_id)
+            }
+        });
 
-        if (checkError) throw checkError;
-
-        if (existing && existing.length > 0) {
+        if (existingCount > 0) {
             return NextResponse.json(
                 { message: "User already registered for this campaign" },
                 { status: 400 }
             );
         }
 
+        let code_id: string | undefined = undefined;
+
         // -------------------------
-        // 2️⃣ ถ้าเป็น BINGO
+        // 2️⃣ สร้างรหัส code_id หากเป็น RUN
         // -------------------------
-        if (activity_type === "HEALTH MISSION") {
+        if (activity_type === "RUN") {
+            const activity = await prisma.activities.findUnique({
+                where: { id: Number(campaign_id) },
+                select: { target_value: true }
+            });
 
-            // หา team ล่าสุด
-            const { data: teams, error: teamError } = await getSupabase()
-                .from('teams')
-                .select('id, team_name')
-                .eq('campaign_id', campaign_id)
-                .order('id', { ascending: false })
-                .limit(1);
+            if (activity && activity.target_value) {
+                let prefix = "";
+                if (activity.target_value === 300000) {
+                    prefix = "3TUH";
+                } else if (activity.target_value === 600000) {
+                    prefix = "6TUH";
+                }
 
-            if (teamError) throw teamError;
+                if (prefix !== "") {
+                    const lastRecord = await prisma.activities_user_register.findFirst({
+                        where: {
+                            code_id: {
+                                startsWith: prefix
+                            }
+                        },
+                        orderBy: {
+                            code_id: 'desc'
+                        },
+                        select: {
+                            code_id: true
+                        }
+                    });
 
-            let teamId: number;
-            let teamName: string;
+                    let nextNumber = 1;
+                    if (lastRecord && lastRecord.code_id) {
+                        const numberStr = lastRecord.code_id.slice(4);
+                        const lastNumber = parseInt(numberStr, 10);
+                        if (!isNaN(lastNumber)) {
+                            nextNumber = lastNumber + 1;
+                        }
+                    }
 
-            if (!teams || teams.length === 0) {
-                // 👉 ยังไม่มีทีม → สร้างทีม 1
-                teamName = "Team 1";
+                    if (nextNumber > 9999) {
+                        return NextResponse.json(
+                            { message: "Registration limit reached for this campaign code." },
+                            { status: 400 }
+                        );
+                    }
 
-                const { data: newTeam, error: createTeamError } = await getSupabase()
-                    .from('teams')
-                    .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
-                    .select('id')
-                    .single();
-
-                if (createTeamError) throw createTeamError;
-                teamId = newTeam.id;
-
-            } else {
-                // 👉 มีทีมแล้ว
-                const lastTeam = teams[0];
-
-                const { count, error: countError } = await getSupabase()
-                    .from('team_members')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('team_id', lastTeam.id);
-
-                if (countError) throw countError;
-
-                // count is possibly null if error, but here unlikely
-                const memberCount = count || 0;
-
-                if (memberCount < 10) {
-                    // ยังไม่ครบ → เข้าทีมเดิม
-                    teamId = lastTeam.id;
-                    teamName = lastTeam.team_name;
-                } else {
-                    // ครบแล้ว → สร้างทีมใหม่
-                    const nextNumber =
-                        parseInt(lastTeam.team_name.replace("Team ", "")) + 1;
-
-                    teamName = `Team ${nextNumber}`;
-
-                    const { data: newTeam, error: createTeamError } = await getSupabase()
-                        .from('teams')
-                        .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
-                        .select('id')
-                        .single();
-
-                    if (createTeamError) throw createTeamError;
-                    teamId = newTeam.id;
+                    code_id = `${prefix}${String(nextNumber).padStart(4, '0')}`;
                 }
             }
-
-            // เพิ่มสมาชิกลงทีม
-            const { error: addMemberError } = await getSupabase()
-                .from('team_members')
-                .insert({ team_id: teamId, user_id: user_id });
-
-            if (addMemberError) throw addMemberError;
         }
 
         // -------------------------
         // 3️⃣ บันทึกการสมัครกิจกรรม
         // -------------------------
-        const { error: registerError } = await getSupabase()
-            .from('activities_user_register')
-            .insert({
+        await prisma.activities_user_register.create({
+            data: {
                 user_id,
-                campaign_id,
+                campaign_id: Number(campaign_id),
                 activity_name,
-                activity_type
-            });
+                activity_type,
+                code_id
+            }
+        });
 
-        if (registerError) throw registerError;
-
-        return NextResponse.json({ message: "Registration successful" });
+        return NextResponse.json({ message: "Registration successful", code_id });
 
     } catch (error) {
         console.error("Error registering for campaign:", error);

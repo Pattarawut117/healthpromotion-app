@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/utils/supabase";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
     try {
-        const { data: rows } = await getSupabase().from('health_logs').select('*, user_info(sname)');
+        const rows = await prisma.health_logs.findMany({
+            include: {
+                user_info: {
+                    select: {
+                        sname: true
+                    }
+                }
+            }
+        });
 
         // Aggregate values by user_id
         const aggregatedMap = new Map();
@@ -35,18 +43,19 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { user_id, campaign_id, activity_type, value, pic_url } = body;
+        const { user_id, campaign_id, activity_type, value, code_id, pic_url } = body;
 
         // 2. Insert bingo submission
-        await getSupabase().from('health_logs').insert([
-            {
+        await prisma.health_logs.create({
+            data: {
                 user_id,
                 campaign_id,
+                code_id,
                 activity_type,
-                value,
+                value: value !== undefined ? Number(value) : null,
                 pic_url
             }
-        ]);
+        });
 
         return NextResponse.json({ message: "Bingo submission successful" });
     } catch (error) {

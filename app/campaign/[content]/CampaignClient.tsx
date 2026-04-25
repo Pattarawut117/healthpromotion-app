@@ -30,6 +30,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
     const { profile } = useLiff();
     const [isRegistered, setIsRegistered] = useState(false);
     const [showSubmissionForm, setShowSubmissionForm] = useState(false);
+    const [codeId, setCodeId] = useState<string | null>(null);
 
     const handleJoin = async () => {
         if (!campaign || !profile?.userId) {
@@ -50,7 +51,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                 activity_type: campaign.activity_type,
             };
 
-            await axios.post('/api/registerCampaign', payload);
+            const res = await axios.post('/api/registerCampaign', payload);
             Swal.fire({
                 title: "Registration successful!",
                 text: "ลงทะเบียนสำเร็จ",
@@ -58,6 +59,9 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                 confirmButtonText: "ตกลง"
             });
             setIsRegistered(true);
+            if (res.data.code_id) {
+                setCodeId(res.data.code_id);
+            }
         } catch (error: unknown) {
             console.error("Registration error:", error);
             if (axios.isAxiosError(error) && error.response?.data?.message) {
@@ -80,9 +84,12 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
         const checkRegistration = async () => {
             if (profile?.userId && campaign?.id) {
                 try {
-                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&activity_type=${campaign.activity_type}`);
+                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&campaign_id=${campaign.id}`);
                     if (res.data.isRegistered) {
                         setIsRegistered(true);
+                        if (res.data.code_id) {
+                            setCodeId(res.data.code_id);
+                        }
                     }
                 } catch (error) {
                     console.error("Error checking registration status:", error);
@@ -156,6 +163,11 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t border-base-200 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pt-4 pb-6">
                 {isRegistered ? (
                     <div className="flex flex-col gap-3">
+                        {codeId && (
+                            <div className="bg-primary/10 text-primary p-3 rounded-xl border border-primary/20 text-center shadow-inner">
+                                ลำดับของคุณ: <span className="font-bold text-lg">{codeId}</span>
+                            </div>
+                        )}
                         {/* Status Label */}
                         <div className="badge badge-success text-white w-full py-3 h-auto font-medium shadow-sm">
                             คุณลงทะเบียนกิจกรรมนี้แล้ว
@@ -186,7 +198,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                     <button
                         onClick={handleJoin}
                         className="btn btn-primary w-full rounded-full text-base shadow-md h-12"
-                        disabled={!isActive}
+                        disabled={isActive}
                     >
                         เข้าร่วมกิจกรรม
                     </button>
