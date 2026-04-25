@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/utils/supabase";
+import { prisma } from "@/lib/prisma";
 
 // กำหนด TypeScript Interface สำหรับข้อมูลผู้ใช้
 interface UserInfo {
@@ -12,7 +12,7 @@ interface UserInfo {
   height?: string;
   weight?: string;
   bmi?: number;
-  condentialDisease?: string;
+  condentialDisease?: any;
   sleepPerhour?: string;
   sleepEnough?: string;
   isSmoke?: string;
@@ -47,19 +47,9 @@ export async function GET(req: Request) {
       );
     }
 
-    const { data, error } = await getSupabase()
-      .from('user_info')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error) {
-      // If no rows found, Supabase returns error with code PGRST116 (sometimes) or just error
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-      throw error;
-    }
+    const data = await prisma.user_info.findUnique({
+      where: { user_id: userId },
+    });
 
     if (!data) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -87,17 +77,17 @@ export async function POST(req: Request) {
       );
     }
 
-    const userInfo = {
+    const userInfoData = {
       user_id: body.user_id,
       sname: body.sname ?? null,
       lname: body.lname ?? null,
       tel: body.tel ?? null,
-      dob: body.dob ?? null,
+      dob: body.dob ? new Date(body.dob) : null,
       gender: body.gender ?? null,
-      height: body.height ?? null,
-      weight: body.weight ?? null,
+      height: body.height ? parseInt(body.height) : null,
+      weight: body.weight ? parseInt(body.weight) : null,
       bmi: body.bmi ?? null,
-      condential_disease: body.condentialDisease ?? null,
+      condential_disease: body.condentialDisease ? (Array.isArray(body.condentialDisease) ? body.condentialDisease : [body.condentialDisease]) : [],
       sleep_per_hour: body.sleepPerhour ?? null,
       sleep_enough: body.sleepEnough ?? null,
       is_smoking: body.isSmoke ?? null,
@@ -115,18 +105,16 @@ export async function POST(req: Request) {
       activities_tried: body.activitiesTried ?? null,
       working_longtime: body.workingLongtime ?? null,
       division: body.division ?? null,
-      waist: body.waist ?? null,
+      waist: body.waist ? parseFloat(body.waist) : null,
       body_fat_percentage: body.body_fat_percentage ?? null,
     };
 
     // ✅ Insert ถ้าไม่เคยมี, Update ถ้ามีแล้ว (Upsert)
-    const { error } = await getSupabase()
-      .from('user_info')
-      .upsert(userInfo, { onConflict: 'user_id' });
-
-    if (error) {
-      throw error;
-    }
+    await prisma.user_info.upsert({
+      where: { user_id: body.user_id },
+      update: userInfoData,
+      create: userInfoData,
+    });
 
     return NextResponse.json({
       message: "Register success",

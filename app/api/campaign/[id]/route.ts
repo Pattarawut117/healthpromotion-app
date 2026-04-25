@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabase } from "@/utils/supabase";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
     request: Request,
@@ -8,26 +8,28 @@ export async function GET(
     const params = await props.params;
     const id = params.id;
     try {
-        const { data, error } = await getSupabase()
-            .from('activities')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) {
-            // Supabase returns 'PGRST116' for no rows found when using .single()
-            if (error.code === 'PGRST116') {
-                return NextResponse.json(
-                    { message: "Campaign not found" },
-                    { status: 404 }
-                );
+        const data = await prisma.activities.findUnique({
+            where: {
+                id: BigInt(id)
             }
-            throw error;
+        });
+
+        if (!data) {
+            return NextResponse.json(
+                { message: "Campaign not found" },
+                { status: 404 }
+            );
         }
 
-        return NextResponse.json(data);
+        // Convert BigInt to Number for JSON serialization
+        const serializedData = {
+            ...data,
+            id: Number(data.id)
+        };
+
+        return NextResponse.json(serializedData);
     } catch (error) {
-        console.log(error);
+        console.error("DB Error (GET /api/campaign/[id]):", error);
         return NextResponse.json(
             { message: "Internal Server Error" },
             { status: 500 }
