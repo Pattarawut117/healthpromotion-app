@@ -1,30 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/utils/supabase";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
     try {
-        let allData: Record<string, unknown>[] = [];
-        let start = 0;
-        const limit = 1000;
-        const maxRecords = 10000;
-
-        while (allData.length < maxRecords) {
-            const { data, error } = await getSupabase()
-                .from('challenge_21_days_entries')
-                .select('*, user_info(sname)')
-                .range(start, start + limit - 1)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            if (!data || data.length === 0) break;
-
-            allData = allData.concat(data);
-
-            if (data.length < limit) break;
-
-            start += limit;
-        }
+        const allData = await prisma.challenge21DaysEntries.findMany({
+            take: 10000,
+            include: {
+                user_info: {
+                    select: {
+                        sname: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
 
         return NextResponse.json(allData);
     } catch (error) {
@@ -41,16 +32,16 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { user_id, category, quantity, duration_minutes, description, image_url } = body;
 
-        await getSupabase().from('challenge_21_days_entries').insert([
-            {
+        await prisma.challenge21DaysEntries.create({
+            data: {
                 user_id,
                 category,
                 quantity,
-                duration_minutes,
+                durationMinutes: duration_minutes,
                 description,
                 image_url
             }
-        ]);
+        });
 
         return NextResponse.json({ message: "21days submission successful" });
     } catch (error) {

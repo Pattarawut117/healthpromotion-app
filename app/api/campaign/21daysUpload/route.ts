@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/utils/supabase";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 export async function POST(req: NextRequest) {
     try {
@@ -26,28 +27,18 @@ export async function POST(req: NextRequest) {
         const clean = file.name.replace(/[^\w.-]/g, "_");
         const filename = `${Date.now()}-${clean || "image.jpg"}`;
 
-        const supabase = getSupabase();
+        // Create directory if not exists
+        const uploadDir = path.join(process.cwd(), "public", "21challenge");
+        await mkdir(uploadDir, { recursive: true });
 
-        const { error } = await supabase.storage
-            .from("21days_challenge")
-            .upload(filename, buffer, {
-                contentType: file.type || "image/jpeg",
-                cacheControl: "3600",
-                upsert: false,
-            });
+        // Save file locally
+        const filePath = path.join(uploadDir, filename);
+        await writeFile(filePath, buffer);
 
-        if (error) {
-            console.error("Supabase upload error:", error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-        }
-
-        const { data } = supabase.storage
-            .from("21days_challenge")
-            .getPublicUrl(filename);
-
+        // Return the public URL path
         return NextResponse.json({
             success: true,
-            path: data.publicUrl,
+            path: `/21challenge/${filename}`,
         });
     } catch (err) {
         console.error("Upload crashed:", err);

@@ -35,9 +35,9 @@ export async function GET(req: Request) {
             select: { code_id: true }
         });
 
-        return NextResponse.json({ 
+        return NextResponse.json({
             isRegistered: !!record,
-            code_id: record?.code_id || null 
+            code_id: record?.code_id || null
         });
     } catch (error) {
         console.error("Error checking registration:", error);
@@ -63,6 +63,23 @@ export async function POST(req: Request) {
                 { message: "User already registered for this campaign" },
                 { status: 400 }
             );
+        }
+
+        // 1.5️⃣ เช็คว่าถ้าเป็นกิจกรรมประเภท RUN จะสามารถลงได้แค่ 1 กิจกรรมเท่านั้น
+        if (activity_type === "RUN") {
+            const existingRunCount = await prisma.activities_user_register.count({
+                where: {
+                    user_id: user_id,
+                    activity_type: "RUN"
+                }
+            });
+
+            if (existingRunCount > 0) {
+                return NextResponse.json(
+                    { message: "คุณได้ลงทะเบียนกิจกรรมประเภทวิ่งแล้ว" },
+                    { status: 400 }
+                );
+            }
         }
 
         let code_id: string | undefined = undefined;

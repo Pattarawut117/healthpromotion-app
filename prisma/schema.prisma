@@ -69,6 +69,7 @@ model user_info {
   sleep_enough             String?                    @db.VarChar(50)
   activities_user_register activities_user_register[]
   health_logs              health_logs[]
+  challenges               Challenge21DaysEntries[]
 }
 
 model health_logs {
@@ -85,4 +86,20 @@ model health_logs {
   // การตั้งค่าความสัมพันธ์
   user_info  user_info?  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
   activities activities? @relation(fields: [campaign_id], references: [id], onDelete: SetNull)
+}
+
+model Challenge21DaysEntries {
+  id              BigInt    @id @default(autoincrement())
+  user_id         String?   @map("user_id") @db.VarChar(255)
+  category        String?   @db.VarChar(100)
+  quantity        Int?
+  durationMinutes Int?      @map("duration_minutes")
+  description     String?   @db.Text
+  image_url       String?   @map("image_url") @db.Text
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  // การตั้งค่าความสัมพันธ์กลับไปยัง UserInfo
+  user_info user_info? @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("challenge_21_days_entries")
 }
