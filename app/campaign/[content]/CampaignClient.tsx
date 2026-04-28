@@ -29,6 +29,8 @@ interface CampaignClientProps {
 export default function CampaignClient({ campaign }: CampaignClientProps) {
     const { profile } = useLiff();
     const [isRegistered, setIsRegistered] = useState(false);
+    const [isRegisteredForOther, setIsRegisteredForOther] = useState(false);
+    const [codeId, setCodeId] = useState<string | null>(null);
     const [showSubmissionForm, setShowSubmissionForm] = useState(false);
 
     const handleJoin = async () => {
@@ -50,7 +52,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                 activity_type: campaign.activity_type,
             };
 
-            await axios.post('/api/registerCampaign', payload);
+            const res = await axios.post('/api/registerCampaign', payload);
             Swal.fire({
                 title: "Registration successful!",
                 text: "ลงทะเบียนสำเร็จ",
@@ -58,6 +60,9 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                 confirmButtonText: "ตกลง"
             });
             setIsRegistered(true);
+            if (res.data.code_id) {
+                setCodeId(res.data.code_id);
+            }
         } catch (error: unknown) {
             console.error("Registration error:", error);
             if (axios.isAxiosError(error) && error.response?.data?.message) {
@@ -80,9 +85,14 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
         const checkRegistration = async () => {
             if (profile?.userId && campaign?.id) {
                 try {
-                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&activity_type=${campaign.activity_type}`);
-                    if (res.data.isRegistered) {
+                    const res = await axios.get(`/api/registerCampaign?user_id=${profile.userId}&activity_type=${campaign.activity_type}&campaign_id=${campaign.id}`);
+                    if (res.data.isRegisteredForThisCampaign) {
                         setIsRegistered(true);
+                        if (res.data.code_id) {
+                            setCodeId(res.data.code_id);
+                        }
+                    } else if (res.data.isRegisteredForActivityType) {
+                        setIsRegisteredForOther(true);
                     }
                 } catch (error) {
                     console.error("Error checking registration status:", error);
@@ -144,6 +154,13 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                     </div>
                 </div>
 
+                {codeId && (
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex flex-col items-center justify-center shadow-sm gap-1 mt-1 mb-1">
+                        <span className="text-primary/80 font-medium text-sm">รหัสผู้เข้าร่วมกิจกรรม</span>
+                        <span className="font-mono text-3xl font-bold text-primary tracking-widest">{codeId}</span>
+                    </div>
+                )}
+
                 {!isActive && (
                     <div className="alert alert-warning mt-4 p-3 rounded-xl gap-2 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -157,9 +174,12 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                 {isRegistered ? (
                     <div className="flex flex-col gap-3">
                         {/* Status Label */}
-                        <div className="badge badge-success text-white w-full py-3 h-auto font-medium shadow-sm">
-                            คุณลงทะเบียนกิจกรรมนี้แล้ว
-                        </div>
+                        {
+                            isActive ? (<div></div>
+                            ) : (<div className="badge badge-error text-white w-full py-3 h-auto font-medium shadow-sm">
+                                คุณลงทะเบียนกิจกรรมนี้แล้ว
+                            </div>)
+                        }
 
                         {/* Primary Activities */}
                         {isActive && campaign.activity_type === "RUN" && (
@@ -182,11 +202,24 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                             </div>
                         )}
                     </div>
+                ) : isRegisteredForOther && campaign.activity_type === "RUN" ? (
+                    <div className="flex flex-col gap-2">
+                        <div className="alert alert-warning py-3 text-sm rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <span>คุณได้ลงทะเบียนแคมเปญวิ่งอื่นไปแล้ว ไม่สามารถลงทะเบียนซ้ำได้</span>
+                        </div>
+                        <button
+                            className="btn btn-primary w-full rounded-full text-base shadow-md h-12 opacity-50 cursor-not-allowed"
+                            disabled
+                        >
+                            เข้าร่วมกิจกรรม
+                        </button>
+                    </div>
                 ) : (
                     <button
                         onClick={handleJoin}
                         className="btn btn-primary w-full rounded-full text-base shadow-md h-12"
-                        disabled={!isActive}
+                        disabled={isActive}
                     >
                         เข้าร่วมกิจกรรม
                     </button>
@@ -194,16 +227,18 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
             </div>
 
             {/* Run Submission Form Modal */}
-            {showSubmissionForm && (
-                <RunSubmissionForm
-                    campaignId={campaign.id}
-                    activityType={campaign.activity_type}
-                    onClose={() => setShowSubmissionForm(false)}
-                    onSuccess={() => {
-                        console.log("Run submitted");
-                    }}
-                />
-            )}
-        </div>
+            {
+                showSubmissionForm && (
+                    <RunSubmissionForm
+                        campaignId={campaign.id}
+                        activityType={campaign.activity_type}
+                        onClose={() => setShowSubmissionForm(false)}
+                        onSuccess={() => {
+                            console.log("Run submitted");
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }
