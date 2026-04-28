@@ -38,7 +38,7 @@ export async function GET(req: Request) {
 
         if (data && data.length > 0) {
             isRegisteredForActivityType = true;
-            
+
             if (campaign_id) {
                 const specificCampaignRecord = data.find(d => d.campaign_id === Number(campaign_id));
                 if (specificCampaignRecord) {
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
             }
         }
 
-        return NextResponse.json({ 
+        return NextResponse.json({
             isRegisteredForThisCampaign,
             isRegisteredForActivityType,
             code_id
@@ -87,9 +87,9 @@ export async function POST(req: Request) {
                 .select('*')
                 .eq('user_id', user_id)
                 .eq('activity_type', 'RUN');
-                
+
             if (checkRunError) throw checkRunError;
-            
+
             if (existingRun && existingRun.length > 0) {
                 return NextResponse.json(
                     { message: "User already registered for another RUN campaign" },
@@ -151,7 +151,13 @@ export async function POST(req: Request) {
         // -------------------------
         // 3️⃣ บันทึกการสมัครกิจกรรม
         // -------------------------
-        const insertData: any = {
+        const insertData: {
+            user_id: string;
+            campaign_id: string;
+            activity_name: string;
+            activity_type: string;
+            code_id?: string | null;
+        } = {
             user_id,
             campaign_id,
             activity_name,
