@@ -24,11 +24,6 @@ export async function GET(req: Request) {
             .select('*')
             .eq('user_id', user_id);
 
-        if (campaign_id) {
-            query = query.eq('campaign_id', campaign_id);
-        }
-
-        // If activity_type is provided, check if ANY campaign with this activity_type is registered
         if (activity_type) {
             query = query.eq('activity_type', activity_type);
         }
@@ -37,7 +32,27 @@ export async function GET(req: Request) {
 
         if (error) throw error;
 
-        return NextResponse.json({ isRegistered: data.length > 0 });
+        let isRegisteredForThisCampaign = false;
+        let isRegisteredForActivityType = false;
+        let code_id = null;
+
+        if (data && data.length > 0) {
+            isRegisteredForActivityType = true;
+
+            if (campaign_id) {
+                const specificCampaignRecord = data.find(d => d.campaign_id === Number(campaign_id));
+                if (specificCampaignRecord) {
+                    isRegisteredForThisCampaign = true;
+                    code_id = specificCampaignRecord.code_id || null;
+                }
+            }
+        }
+
+        return NextResponse.json({
+            isRegisteredForThisCampaign,
+            isRegisteredForActivityType,
+            code_id
+        });
     } catch (error) {
         console.error("Error checking registration:", error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
@@ -65,96 +80,101 @@ export async function POST(req: Request) {
             );
         }
 
-        // -------------------------
-        // 2️⃣ ถ้าเป็น BINGO
-        // -------------------------
-        if (activity_type === "HEALTH MISSION") {
+        // 1.5️⃣ ถ้าเป็น RUN เช็คว่าเคยลงทะเบียน RUN อันอื่นไปหรือยัง
+        if (activity_type === "RUN") {
+            const { data: existingRun, error: checkRunError } = await getSupabase()
+                .from('activities_user_register')
+                .select('*')
+                .eq('user_id', user_id)
+                .eq('activity_type', 'RUN');
 
-            // หา team ล่าสุด
-            const { data: teams, error: teamError } = await getSupabase()
-                .from('teams')
-                .select('id, team_name')
-                .eq('campaign_id', campaign_id)
-                .order('id', { ascending: false })
-                .limit(1);
+            if (checkRunError) throw checkRunError;
 
-            if (teamError) throw teamError;
+            if (existingRun && existingRun.length > 0) {
+                return NextResponse.json(
+                    { message: "User already registered for another RUN campaign" },
+                    { status: 400 }
+                );
+            }
+        }
 
-            let teamId: number;
-            let teamName: string;
+        let code_id: string | null = null;
 
-            if (!teams || teams.length === 0) {
-                // 👉 ยังไม่มีทีม → สร้างทีม 1
-                teamName = "Team 1";
+        if (activity_type === "RUN") {
+            const { data: activity, error: activityError } = await getSupabase()
+                .from('activities')
+                .select('target_value')
+                .eq('id', Number(campaign_id))
+                .maybeSingle();
 
-                const { data: newTeam, error: createTeamError } = await getSupabase()
-                    .from('teams')
-                    .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
-                    .select('id')
-                    .single();
+            if (activityError) throw activityError;
 
-                if (createTeamError) throw createTeamError;
-                teamId = newTeam.id;
+            if (activity && activity.target_value) {
+                let prefix = "";
+                if (activity.target_value === 300000) {
+                    prefix = "3TUH";
+                } else if (activity.target_value === 600000) {
+                    prefix = "6TUH";
+                }
 
-            } else {
-                // 👉 มีทีมแล้ว
-                const lastTeam = teams[0];
+                if (prefix !== "") {
+                    const { data: lastRecords, error: lastRecordsError } = await getSupabase()
+                        .from('activities_user_register')
+                        .select('code_id')
+                        .like('code_id', `${prefix}%`)
+                        .order('code_id', { ascending: false })
+                        .limit(1);
 
-                const { count, error: countError } = await getSupabase()
-                    .from('team_members')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('team_id', lastTeam.id);
+                    if (lastRecordsError) throw lastRecordsError;
 
-                if (countError) throw countError;
+                    let nextNumber = 1;
+                    if (lastRecords && lastRecords.length > 0 && lastRecords[0].code_id) {
+                        const numberStr = lastRecords[0].code_id.slice(4);
+                        const lastNumber = parseInt(numberStr, 10);
+                        if (!isNaN(lastNumber)) {
+                            nextNumber = lastNumber + 1;
+                        }
+                    }
 
-                // count is possibly null if error, but here unlikely
-                const memberCount = count || 0;
+                    if (nextNumber > 9999) {
+                        return NextResponse.json(
+                            { message: "Registration limit reached for this campaign code." },
+                            { status: 400 }
+                        );
+                    }
 
-                if (memberCount < 10) {
-                    // ยังไม่ครบ → เข้าทีมเดิม
-                    teamId = lastTeam.id;
-                    teamName = lastTeam.team_name;
-                } else {
-                    // ครบแล้ว → สร้างทีมใหม่
-                    const nextNumber =
-                        parseInt(lastTeam.team_name.replace("Team ", "")) + 1;
-
-                    teamName = `Team ${nextNumber}`;
-
-                    const { data: newTeam, error: createTeamError } = await getSupabase()
-                        .from('teams')
-                        .insert({ team_name: teamName, leader_user_id: user_id, campaign_id: campaign_id })
-                        .select('id')
-                        .single();
-
-                    if (createTeamError) throw createTeamError;
-                    teamId = newTeam.id;
+                    code_id = `${prefix}${String(nextNumber).padStart(4, '0')}`;
                 }
             }
-
-            // เพิ่มสมาชิกลงทีม
-            const { error: addMemberError } = await getSupabase()
-                .from('team_members')
-                .insert({ team_id: teamId, user_id: user_id });
-
-            if (addMemberError) throw addMemberError;
         }
 
         // -------------------------
         // 3️⃣ บันทึกการสมัครกิจกรรม
         // -------------------------
+        const insertData: {
+            user_id: string;
+            campaign_id: string;
+            activity_name: string;
+            activity_type: string;
+            code_id?: string | null;
+        } = {
+            user_id,
+            campaign_id,
+            activity_name,
+            activity_type
+        };
+
+        if (code_id) {
+            insertData.code_id = code_id;
+        }
+
         const { error: registerError } = await getSupabase()
             .from('activities_user_register')
-            .insert({
-                user_id,
-                campaign_id,
-                activity_name,
-                activity_type
-            });
+            .insert(insertData);
 
         if (registerError) throw registerError;
 
-        return NextResponse.json({ message: "Registration successful" });
+        return NextResponse.json({ message: "Registration successful", code_id });
 
     } catch (error) {
         console.error("Error registering for campaign:", error);
