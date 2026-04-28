@@ -186,7 +186,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                     <button
                         onClick={handleJoin}
                         className="btn btn-primary w-full rounded-full text-base shadow-md h-12"
-                        disabled={!isActive}
+                        disabled={isActive}
                     >
                         เข้าร่วมกิจกรรม
                     </button>
