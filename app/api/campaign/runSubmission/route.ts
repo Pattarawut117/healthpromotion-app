@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/utils/supabase";
 
+interface Activity {
+    target_value?: number;
+    activity_id?: number;
+    activity_type?: string;
+    campaign_id?: string;
+}
+
 export async function GET() {
     try {
         const { data: rows } = await getSupabase()
@@ -16,7 +23,7 @@ export async function GET() {
 
         const targetMap = new Map();
         registrations?.forEach(reg => {
-            const target = (reg.activities as any)?.target_value;
+            const target = (reg.activities as Activity)?.target_value;
             targetMap.set(reg.user_id, target);
         });
 
