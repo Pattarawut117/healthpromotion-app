@@ -28,6 +28,7 @@ export interface IRanking {
   };
   value?: number;
   task_id?: number;
+  target_value?: number;
 }
 
 const users = [
@@ -111,6 +112,7 @@ export default function RankingPage() {
   const [ranking, setRanking] = useState<IRanking[]>([]);
   // Default to yesterday
   const [filterDate, setFilterDate] = useState(getYesterday());
+  const [runFilter, setRunFilter] = useState('all');
 
   useEffect(() => {
     const load = async () => {
@@ -251,13 +253,17 @@ export default function RankingPage() {
               exercise: 0,
               campaign_id: 1, // Run default
               user_info: { sname: log.user_info?.sname || 'Unknown' },
-              value: 0
+              value: 0,
+              target_value: log.target_value
             };
           }
 
           // Accumulate Run Distance
-          const distance = parseFloat(log.distance) || 0;
+          const distance = parseFloat(log.value) || 0;
           map[uid].value = (map[uid].value || 0) + distance;
+          if (log.target_value) {
+            map[uid].target_value = log.target_value;
+          }
         }
 
         setRanking(Object.values(map));
@@ -273,9 +279,13 @@ export default function RankingPage() {
   // Filter and Sort based on Tab
   const getFilteredRanking = () => {
     if (selectedValue === '1') { // Run
-      return ranking
-        .filter(r => (r.value || 0) > 0) // Show only if they ran? Or show all
-        .sort((a, b) => (b.value || 0) - (a.value || 0));
+      let filtered = ranking.filter(r => (r.value || 0) > 0);
+      
+      if (runFilter !== 'all') {
+        filtered = filtered.filter(r => String(r.target_value) === runFilter);
+      }
+      
+      return filtered.sort((a, b) => (b.value || 0) - (a.value || 0));
     }
 
     // 21 Days Categories and Bingo
@@ -302,6 +312,9 @@ export default function RankingPage() {
   };
 
   const filteredData = getFilteredRanking();
+
+  // Get unique run target values for filtering
+  const runTargetValues = Array.from(new Set(ranking.filter(r => r.target_value).map(r => String(r.target_value)))).sort();
 
   const getUnit = () => {
     switch (selectedValue) {
@@ -359,7 +372,10 @@ export default function RankingPage() {
                     <button
                       key={user.value}
                       role="tab"
-                      onClick={() => setSelectedValue(user.value)}
+                      onClick={() => {
+                        setSelectedValue(user.value);
+                        setRunFilter('all');
+                      }}
                       className={`tab h-auto py-2 px-3 sm:px-4 flex-nowrap transition-all duration-300 rounded-xl flex-1 shrink-0 ${isActive
                         ? 'tab-active !bg-primary/10 shadow-sm border border-primary/20 scale-105'
                         : 'hover:bg-base-200 opacity-60 hover:opacity-100'
@@ -372,6 +388,27 @@ export default function RankingPage() {
               </div>
             </div>
           </div>
+
+          {/* RUN Sub-filter */}
+          {selectedValue === '1' && runTargetValues.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 py-1">
+              <button
+                onClick={() => setRunFilter('all')}
+                className={`btn btn-xs sm:btn-sm rounded-full ${runFilter === 'all' ? 'btn-primary' : 'btn-ghost bg-base-100 shadow-sm border border-base-200/50'}`}
+              >
+                ทั้งหมด
+              </button>
+              {runTargetValues.map(val => (
+                <button
+                  key={val}
+                  onClick={() => setRunFilter(val)}
+                  className={`btn btn-xs sm:btn-sm rounded-full ${runFilter === val ? 'btn-primary' : 'btn-ghost bg-base-100 shadow-sm border border-base-200/50'}`}
+                >
+                  {Number(val).toLocaleString()}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Table View */}
