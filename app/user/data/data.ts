@@ -831,6 +831,12 @@ const unitData: Unit[] = [
         text: "งานเคมีบำบัด",
         value: "งานเคมีบำบัด"
     },
+    {
+        id: 165,
+        text: "ศูนย์การแพทย์ธรรมศาสตร์",
+        value: "ศูนย์การแพทย์ธรรมศาสตร์"
+    }
+
 ]
 
 export default unitData;
@@ -891,4 +897,9 @@ export const divisionData: Division[] = [
         text: "ฝ่ายเภสัชกรรม",
         value: "ฝ่ายเภสัชกรรม"
     },
+    {
+        id: 12,
+        text: "ศูนย์การแพทย์ธรรมศาสตร์",
+        value: "ศูนย์การแพทย์ธรรมศาสตร์"
+    }
 ]
