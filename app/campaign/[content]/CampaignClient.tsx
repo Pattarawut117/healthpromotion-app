@@ -22,6 +22,13 @@ interface ICampaign {
     is_active: string;
 }
 
+interface HealthLog {
+    id: number;
+    value: number;
+    pic_url?: string;
+    created_at: string;
+}
+
 interface CampaignClientProps {
     campaign: ICampaign;
 }
@@ -32,6 +39,28 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
     const [isRegisteredForOther, setIsRegisteredForOther] = useState(false);
     const [codeId, setCodeId] = useState<string | null>(null);
     const [showSubmissionForm, setShowSubmissionForm] = useState(false);
+    const [healthLogs, setHealthLogs] = useState<HealthLog[]>([]);
+    const [loadingLogs, setLoadingLogs] = useState(false);
+
+    const fetchHealthLogs = async () => {
+        if (!profile?.userId || !campaign?.id) return;
+        setLoadingLogs(true);
+        try {
+            const res = await axios.get(`/api/campaign/healthLogs?user_id=${profile.userId}&campaign_id=${campaign.id}`);
+            setHealthLogs(res.data || []);
+        } catch (error) {
+            console.error("Error fetching health logs:", error);
+        } finally {
+            setLoadingLogs(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isRegistered && profile?.userId && campaign?.id) {
+            fetchHealthLogs();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isRegistered, profile?.userId, campaign?.id]);
 
     const handleJoin = async () => {
         if (!campaign || !profile?.userId) {
@@ -108,6 +137,10 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
     const endDate = new Date(campaign.end_date);
     const isActive = now >= startDate && now <= endDate;
 
+    const thaiToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
+    const hasSubmittedToday = healthLogs.length > 0 && 
+        new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(healthLogs[0].created_at)) === thaiToday;
+
     return (
 
         <div className="min-h-screen bg-base-100 relative pb-28">
@@ -167,6 +200,33 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                         <span>ไม่อยู่ในช่วงเวลาที่กำหนด</span>
                     </div>
                 )}
+
+                {/* Health Logs Section */}
+                {isRegistered && campaign.activity_type === "RUN" && (
+                    <div className="mt-8 mb-4">
+                        <h2 className="text-lg font-semibold mb-3 text-base-content">ประวัติการส่งผลของคุณ</h2>
+                        {loadingLogs ? (
+                            <div className="text-center py-4">
+                                <span className="loading loading-spinner loading-md text-primary"></span>
+                            </div>
+                        ) : healthLogs.length > 0 ? (
+                            <div className="space-y-3">
+                                {healthLogs.map((log) => (
+                                    <div key={log.id} className="bg-base-100 border border-base-200 p-4 rounded-xl shadow-sm flex items-center justify-between gap-4">
+                                        <div className="flex-1">
+                                            <p className="text-sm text-base-content/60">{new Date(log.created_at).toLocaleString('th-TH')}</p>
+                                            <p className="font-semibold text-lg text-primary">{log.value.toLocaleString()} <span className="text-sm text-base-content/70">ก้าว</span></p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-base-200 text-base-content/60 text-center py-6 rounded-xl text-sm">
+                                ยังไม่มีประวัติการส่งผล
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Sticky Bottom Action Bar */}
@@ -184,10 +244,11 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                         {/* Primary Activities */}
                         {isActive && campaign.activity_type === "RUN" && (
                             <button
-                                className="btn btn-primary w-full rounded-full shadow-md"
+                                className="btn btn-primary w-full rounded-full shadow-md disabled:opacity-70"
                                 onClick={() => setShowSubmissionForm(true)}
+                                disabled={hasSubmittedToday}
                             >
-                                🏃‍♂️ ส่งผลการวิ่ง
+                                {hasSubmittedToday ? "🏃‍♂️ คุณส่งผลของวันนี้ไปแล้ว" : "🏃‍♂️ ส่งผลการวิ่ง"}
                             </button>
                         )}
                         {isActive && campaign.activity_type === "HEALTH MISSION" && (
@@ -232,9 +293,11 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                     <RunSubmissionForm
                         campaignId={campaign.id}
                         activityType={campaign.activity_type}
+                        codeId={codeId}
                         onClose={() => setShowSubmissionForm(false)}
                         onSuccess={() => {
                             console.log("Run submitted");
+                            fetchHealthLogs();
                         }}
                     />
                 )

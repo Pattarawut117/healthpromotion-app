@@ -46,7 +46,32 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { user_id, campaign_id, activity_type, value, pic_url } = body;
+        const { user_id, campaign_id, activity_type, value, code_id, pic_url } = body;
+
+        // 1. Check if user already submitted today (in Asia/Bangkok time)
+        const thaiDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
+
+        const { data: recentLogs, error: recentLogsError } = await getSupabase()
+            .from('health_logs')
+            .select('created_at')
+            .eq('user_id', user_id)
+            .eq('campaign_id', campaign_id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (recentLogsError) {
+            throw recentLogsError;
+        }
+
+        if (recentLogs && recentLogs.length > 0) {
+            const lastLogThaiDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(recentLogs[0].created_at));
+            if (lastLogThaiDate === thaiDate) {
+                return NextResponse.json(
+                    { message: "คุณส่งผลของวันนี้ไปแล้ว กรุณาส่งใหม่ในวันพรุ่งนี้" },
+                    { status: 400 }
+                );
+            }
+        }
 
         // 2. Insert bingo submission
         await getSupabase().from('health_logs').insert([
@@ -55,6 +80,7 @@ export async function POST(req: NextRequest) {
                 campaign_id,
                 activity_type,
                 value,
+                code_id,
                 pic_url
             }
         ]);

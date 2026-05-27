@@ -9,11 +9,12 @@ import { compressImage } from "@/utils/imageCompression";
 interface RunSubmissionFormProps {
     campaignId: number;
     activityType: string;
+    codeId: string | null;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-export default function RunSubmissionForm({ campaignId, activityType, onClose, onSuccess }: RunSubmissionFormProps) {
+export default function RunSubmissionForm({ campaignId, activityType, codeId, onClose, onSuccess }: RunSubmissionFormProps) {
     const { profile } = useLiff();
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -23,13 +24,13 @@ export default function RunSubmissionForm({ campaignId, activityType, onClose, o
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
-            
+
             // Check max file size (e.g., 50MB before compression)
             if (selectedFile.size > 50 * 1024 * 1024) {
                 alert("ไฟล์รูปภาพมีขนาดใหญ่เกินไป (เกิน 50MB) กรุณาลดขนาดไฟล์ก่อนเลือก");
                 return;
             }
-            
+
             setFile(selectedFile);
             setPreviewUrl(URL.createObjectURL(selectedFile));
         }
@@ -69,6 +70,7 @@ export default function RunSubmissionForm({ campaignId, activityType, onClose, o
                     user_id: profile.userId,
                     campaign_id: campaignId,
                     activity_type: activityType,
+                    code_id: codeId,
                     value: parseFloat(distance),
                     pic_url: imageUrl
                 });
