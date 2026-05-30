@@ -138,7 +138,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
     const isActive = now >= startDate && now <= endDate;
 
     const thaiToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
-    const hasSubmittedToday = healthLogs.length > 0 && 
+    const hasSubmittedToday = healthLogs.length > 0 &&
         new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(healthLogs[0].created_at)) === thaiToday;
 
     return (
@@ -214,7 +214,16 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                                 {healthLogs.map((log) => (
                                     <div key={log.id} className="bg-base-100 border border-base-200 p-4 rounded-xl shadow-sm flex items-center justify-between gap-4">
                                         <div className="flex-1">
-                                            <p className="text-sm text-base-content/60">{new Date(log.created_at).toLocaleString('th-TH')}</p>
+                                            <p className="text-sm text-base-content/60">
+                                                {(() => {
+                                                    if (!log.created_at) return '-';
+                                                    const [datePart, timePart] = log.created_at.split('T');
+                                                    if (!datePart) return log.created_at;
+                                                    const [year, month, day] = datePart.split('-');
+                                                    const time = timePart ? timePart.split('.')[0].split('+')[0].split('-')[0].split('Z')[0] : '';
+                                                    return `${day}/${month}/${year} ${time}`;
+                                                })()}
+                                            </p>
                                             <p className="font-semibold text-lg text-primary">{log.value.toLocaleString()} <span className="text-sm text-base-content/70">ก้าว</span></p>
                                         </div>
                                     </div>

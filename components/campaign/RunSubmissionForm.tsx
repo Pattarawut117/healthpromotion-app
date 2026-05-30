@@ -42,15 +42,28 @@ export default function RunSubmissionForm({ campaignId, activityType, codeId, on
             return;
         }
 
+        const parsedDistance = parseFloat(distance);
+        if (isNaN(parsedDistance) || parsedDistance <= 0 || parsedDistance > 200000) {
+            alert("กรุณาระบุจำนวนก้าวที่ถูกต้อง (ต้องมากกว่า 0 และไม่เกิน 200,000 ก้าว)");
+            return;
+        }
+
         setUploading(true);
         try {
             // 0. Compress Image
             let safeFile = file;
             if (file.type.startsWith("image/")) {
-                safeFile = await compressImage(file);
-                // Guard size after compression (e.g., 5MB max)
-                if (safeFile.size > 5 * 1024 * 1024) {
-                    throw new Error("ไฟล์รูปใหญ่เกิน 5MB หลังจากการบีบอัด");
+                try {
+                    safeFile = await compressImage(file);
+                    // Guard size after compression (e.g., 5MB max)
+                    if (safeFile.size > 5 * 1024 * 1024) {
+                        throw new Error("ไฟล์รูปใหญ่เกิน 5MB หลังจากการบีบอัด");
+                    }
+                } catch (compressError: unknown) {
+                    if (compressError instanceof Error && compressError.message === "ไฟล์รูปใหญ่เกิน 5MB หลังจากการบีบอัด") {
+                        throw compressError;
+                    }
+                    throw new Error("ไม่สามารถบีบอัดรูปภาพได้ อาจเป็นไฟล์ที่ไม่รองรับ (เช่น HEIC) กรุณาใช้ไฟล์ JPG/PNG");
                 }
             }
 
@@ -59,7 +72,8 @@ export default function RunSubmissionForm({ campaignId, activityType, codeId, on
             formData.append('file', safeFile);
 
             const uploadRes = await axios.post('/api/campaign/runUpload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 30000
             });
 
             if (uploadRes.data.success) {
@@ -71,8 +85,10 @@ export default function RunSubmissionForm({ campaignId, activityType, codeId, on
                     campaign_id: campaignId,
                     activity_type: activityType,
                     code_id: codeId,
-                    value: parseFloat(distance),
+                    value: parsedDistance,
                     pic_url: imageUrl
+                }, {
+                    timeout: 30000
                 });
 
                 alert("ส่งผลวิ่งเรียบร้อยแล้ว! (Run submitted successfully!)");
@@ -84,8 +100,14 @@ export default function RunSubmissionForm({ campaignId, activityType, codeId, on
 
         } catch (error: unknown) {
             console.error("Submission error", error);
-            const msg = (axios.isAxiosError(error) && error.response?.data?.message) ? error.response.data.message : "เกิดข้อผิดพลาดในการส่งข้อมูล";
-            alert(msg);
+            if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+                alert("การเชื่อมต่อเครือข่ายมีปัญหาหรือใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง");
+            } else if (error instanceof Error && (error.message.includes("ไม่สามารถบีบอัดรูปภาพได้") || error.message.includes("ไฟล์รูปใหญ่เกิน 5MB"))) {
+                alert(error.message);
+            } else {
+                const msg = (axios.isAxiosError(error) && error.response?.data?.message) ? error.response.data.message : "เกิดข้อผิดพลาดในการส่งข้อมูล";
+                alert(msg);
+            }
         } finally {
             setUploading(false);
         }
@@ -163,7 +185,7 @@ export default function RunSubmissionForm({ campaignId, activityType, codeId, on
                             <button
                                 className="w-full py-2.5 rounded-xl text-white font-semibold bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={handleSubmit}
-                                disabled={!file || !distance || uploading}
+                                disabled={!file || !distance || !profile?.userId || uploading}
                             >
                                 {uploading ? "กำลังส่ง..." : "ยืนยัน"}
                             </button>

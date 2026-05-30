@@ -118,6 +118,8 @@ export default function RankingPage() {
   useEffect(() => {
     const load = async () => {
       try {
+        //หากต้องการใช้ 21Days ให้ปลด comment บรรทัดล่าง
+        //หากต้องการใช้ run ให้ปลด comment บรรทัดล่าง
         const [logRes] = await Promise.all([
           // axios.get('/api/campaign/21daysSubmit'),
           axios.get('/api/campaign/runSubmission'),
