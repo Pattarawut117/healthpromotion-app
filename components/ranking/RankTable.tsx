@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IRanking } from '@/app/ranking/page';
 
-export default function RankTable({ ranking, unit = 'คะแนน', renderValue }: { ranking: IRanking[], unit?: string, renderValue?: (row: IRanking) => React.ReactNode }) {
+export default function RankTable({ ranking, unit = 'คะแนน', renderValue, isRun = false }: { ranking: IRanking[], unit?: string, renderValue?: (row: IRanking) => React.ReactNode, isRun?: boolean }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -9,6 +9,7 @@ export default function RankTable({ ranking, unit = 'คะแนน', renderVal
   useEffect(() => {
     setCurrentPage(1);
   }, [ranking]);
+  console.log('ranking', ranking)
 
   const totalPages = Math.ceil(ranking.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -62,13 +63,8 @@ export default function RankTable({ ranking, unit = 'คะแนน', renderVal
                     <td className="px-1 sm:px-4">
                       <div className="flex flex-col">
                         <div className="font-semibold text-base-content text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">
-                          {row.sname || row.user_info?.sname || '-'}
+                          {isRun ? (row.code_id || '-') : (row.sname || row.user_info?.sname || '-')}
                         </div>
-                        {row.target_value && (
-                          <div className="badge badge-ghost badge-xs sm:badge-sm text-[10px] sm:text-xs opacity-70">
-                            ประเภท: {row.target_value.toLocaleString()}
-                          </div>
-                        )}
                       </div>
                     </td>
                     <td className="text-right font-bold text-sm sm:text-lg text-primary px-1 sm:px-4">

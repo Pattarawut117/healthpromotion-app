@@ -12,25 +12,30 @@ export async function GET() {
     try {
         const { data: rows } = await getSupabase()
             .from('health_logs')
-            .select('*, user_info(sname)')
+            .select('*')
             .eq('activity_type', 'RUN');
 
         // Get registration info to get target_value
         const { data: registrations } = await getSupabase()
             .from('activities_user_register')
-            .select('user_id, activities(target_value)')
+            .select('user_id, code_id, activities(target_value)')
             .eq('activity_type', 'RUN');
 
         const targetMap = new Map();
+        const codeMap = new Map();
         registrations?.forEach(reg => {
             const target = (reg.activities as Activity)?.target_value;
             targetMap.set(reg.user_id, target);
+            if (reg.code_id) {
+                codeMap.set(reg.user_id, reg.code_id);
+            }
         });
 
-        // Attach target_value to each row
+        // Attach target_value and code_id to each row
         const dataWithTarget = rows?.map(row => ({
             ...row,
-            target_value: targetMap.get(row.user_id)
+            target_value: targetMap.get(row.user_id),
+            code_id: codeMap.get(row.user_id) || row.code_id
         }));
 
         return NextResponse.json(dataWithTarget || []);

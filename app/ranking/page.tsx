@@ -29,6 +29,7 @@ export interface IRanking {
   value?: number;
   task_id?: number;
   target_value?: number;
+  code_id?: string;
 }
 
 const users = [
@@ -117,15 +118,15 @@ export default function RankingPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [streakRes, logRes, bingoRes] = await Promise.all([
-          axios.get('/api/campaign/21daysSubmit'),
+        const [logRes] = await Promise.all([
+          // axios.get('/api/campaign/21daysSubmit'),
           axios.get('/api/campaign/runSubmission'),
-          axios.get('/api/campaign/bingoSubmissions')
+          // axios.get('/api/campaign/bingoSubmissions')
         ]);
 
-        const logs21Days = streakRes.data;   // All usage logs for 21 days
+        // const logs21Days = streakRes.data;   // All usage logs for 21 days
         const logsRun = logRes.data;         // run logs
-        const logsBingo = bingoRes.data;     // bingo logs
+        // const logsBingo = bingoRes.data;     // bingo logs
         const map: Record<string, IRanking> = {};
         // Temporary storage for unique dates
         const userDates: Record<string, {
@@ -136,50 +137,50 @@ export default function RankingPage() {
         }> = {};
 
         // 1) Process 21Days Logs (Aggregation by Unique Days)
-        for (const log of logs21Days) {
-          const uid = log.user_id;
+        // for (const log of logs21Days) {
+        //   const uid = log.user_id;
 
-          // Init map entry
-          if (!map[uid]) {
-            map[uid] = {
-              user_id: uid,
-              sname: log.user_info?.sname || 'Unknown',
-              max_streak: 0,
-              total_logs: 0,
-              water: 0,
-              food: 0,
-              sleep: 0,
-              exercise: 0,
-              bingo: 0,
-              campaign_id: 3,
-              user_info: { sname: log.user_info?.sname || 'Unknown' },
-              value: 0
-            };
-          }
+        //   // Init map entry
+        //   if (!map[uid]) {
+        //     map[uid] = {
+        //       user_id: uid,
+        //       sname: log.user_info?.sname || 'Unknown',
+        //       max_streak: 0,
+        //       total_logs: 0,
+        //       water: 0,
+        //       food: 0,
+        //       sleep: 0,
+        //       exercise: 0,
+        //       bingo: 0,
+        //       campaign_id: 3,
+        //       user_info: { sname: log.user_info?.sname || 'Unknown' },
+        //       value: 0
+        //     };
+        //   }
 
-          // Init date tracking
-          if (!userDates[uid]) {
-            userDates[uid] = {
-              water: new Set(),
-              food: new Set(),
-              sleep: new Set(),
-              exercise: new Set()
-            };
-          }
+        //   // Init date tracking
+        //   if (!userDates[uid]) {
+        //     userDates[uid] = {
+        //       water: new Set(),
+        //       food: new Set(),
+        //       sleep: new Set(),
+        //       exercise: new Set()
+        //     };
+        //   }
 
-          // Extract Date YYYY-MM-DD
-          const dateStr = log.created_at ? log.created_at.substring(0, 10) : '';
+        //   // Extract Date YYYY-MM-DD
+        //   const dateStr = log.created_at ? log.created_at.substring(0, 10) : '';
 
-          // Filter: If log date is AFTER filterDate, skip it
-          if (!dateStr || (filterDate && dateStr > filterDate)) continue;
-          if (!dateStr) continue;
+        //   // Filter: If log date is AFTER filterDate, skip it
+        //   if (!dateStr || (filterDate && dateStr > filterDate)) continue;
+        //   if (!dateStr) continue;
 
-          // Add to unique date sets
-          if (log.category === 'water') userDates[uid].water.add(dateStr);
-          else if (log.category === 'food') userDates[uid].food.add(dateStr);
-          else if (log.category === 'sleep') userDates[uid].sleep.add(dateStr);
-          else if (log.category === 'exercise') userDates[uid].exercise.add(dateStr);
-        }
+        //   // Add to unique date sets
+        //   if (log.category === 'water') userDates[uid].water.add(dateStr);
+        //   else if (log.category === 'food') userDates[uid].food.add(dateStr);
+        //   else if (log.category === 'sleep') userDates[uid].sleep.add(dateStr);
+        //   else if (log.category === 'exercise') userDates[uid].exercise.add(dateStr);
+        // }
 
         // Apply counts to map
         for (const uid in userDates) {
@@ -193,44 +194,44 @@ export default function RankingPage() {
 
         // Process Bingo Logs
         const userBingoTasks: Record<string, Set<string>> = {};
-        for (const log of logsBingo) {
-          const uid = log.user_id;
+        // for (const log of logsBingo) {
+        //   const uid = log.user_id;
 
-          if (!map[uid]) {
-            map[uid] = {
-              user_id: uid,
-              sname: log.user_info?.sname || 'Unknown',
-              max_streak: 0,
-              total_logs: 0,
-              water: 0,
-              food: 0,
-              sleep: 0,
-              exercise: 0,
-              bingo: 0,
-              campaign_id: 4,
-              user_info: { sname: log.user_info?.sname || 'Unknown' },
-              value: 0
-            };
-          }
+        //   if (!map[uid]) {
+        //     map[uid] = {
+        //       user_id: uid,
+        //       sname: log.user_info?.sname || 'Unknown',
+        //       max_streak: 0,
+        //       total_logs: 0,
+        //       water: 0,
+        //       food: 0,
+        //       sleep: 0,
+        //       exercise: 0,
+        //       bingo: 0,
+        //       campaign_id: 4,
+        //       user_info: { sname: log.user_info?.sname || 'Unknown' },
+        //       value: 0
+        //     };
+        //   }
 
-          // Check status === 'APPROVED' before counting
-          if (log.status !== 'APPROVED') continue;
+        //   // Check status === 'APPROVED' before counting
+        //   if (log.status !== 'APPROVED') continue;
 
-          if (!userBingoTasks[uid]) {
-            userBingoTasks[uid] = new Set();
-          }
+        //   if (!userBingoTasks[uid]) {
+        //     userBingoTasks[uid] = new Set();
+        //   }
 
-          // Count unique tasks
-          if (log.task_id) {
-            userBingoTasks[uid].add(String(log.task_id));
-          }
-        }
+        //   // Count unique tasks
+        //   if (log.task_id) {
+        //     userBingoTasks[uid].add(String(log.task_id));
+        //   }
+        // }
 
-        for (const uid in userBingoTasks) {
-          if (map[uid]) {
-            map[uid].bingo = userBingoTasks[uid].size;
-          }
-        }
+        // for (const uid in userBingoTasks) {
+        //   if (map[uid]) {
+        //     map[uid].bingo = userBingoTasks[uid].size;
+        //   }
+        // }
 
         // 2) Process Run Logs
         for (const log of logsRun) {
@@ -254,7 +255,8 @@ export default function RankingPage() {
               campaign_id: 1, // Run default
               user_info: { sname: log.user_info?.sname || 'Unknown' },
               value: 0,
-              target_value: log.target_value
+              target_value: log.target_value,
+              code_id: log.code_id
             };
           }
 
@@ -263,6 +265,9 @@ export default function RankingPage() {
           map[uid].value = (map[uid].value || 0) + distance;
           if (log.target_value) {
             map[uid].target_value = log.target_value;
+          }
+          if (log.code_id) {
+            map[uid].code_id = log.code_id;
           }
         }
 
@@ -280,11 +285,11 @@ export default function RankingPage() {
   const getFilteredRanking = () => {
     if (selectedValue === '1') { // Run
       let filtered = ranking.filter(r => (r.value || 0) > 0);
-      
+
       if (runFilter !== 'all') {
         filtered = filtered.filter(r => String(r.target_value) === runFilter);
       }
-      
+
       return filtered.sort((a, b) => (b.value || 0) - (a.value || 0));
     }
 
@@ -323,7 +328,7 @@ export default function RankingPage() {
       case 'sleep': return 'จำนวน (วัน)';
       case 'exercise': return 'จำนวน (วัน)';
       case 'bingo': return 'ความคืบหน้า (30 กิจกรรม)';
-      case '1': return 'ระยะทาง (Km)';
+      case '1': return 'Steps';
       default: return 'คะแนน';
     }
   }
@@ -413,7 +418,7 @@ export default function RankingPage() {
 
         {/* Table View */}
         <div className="mt-2">
-          <RankTable ranking={filteredData} unit={getUnit()} renderValue={renderValue} />
+          <RankTable ranking={filteredData} unit={getUnit()} renderValue={renderValue} isRun={selectedValue === '1'} />
         </div>
       </div>
     </div>
