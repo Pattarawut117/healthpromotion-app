@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
         }
 
         if (recentLogs && recentLogs.length > 0) {
-            const lastLogThaiDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(recentLogs[0].created_at));
-            if (lastLogThaiDate === thaiDate) {
+            const lastLogDate = recentLogs[0].created_at?.split('T')[0];
+            if (lastLogDate === thaiDate) {
                 return NextResponse.json(
                     { message: "คุณส่งผลของวันนี้ไปแล้ว กรุณาส่งใหม่ในวันพรุ่งนี้" },
                     { status: 400 }

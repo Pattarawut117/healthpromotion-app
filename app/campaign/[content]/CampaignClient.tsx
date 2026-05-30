@@ -139,7 +139,7 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
 
     const thaiToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
     const hasSubmittedToday = healthLogs.length > 0 &&
-        new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date(healthLogs[0].created_at)) === thaiToday;
+        (healthLogs[0].created_at?.split('T')[0] === thaiToday);
 
     return (
 
