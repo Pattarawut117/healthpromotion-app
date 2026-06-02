@@ -14,6 +14,8 @@ export async function GET() {
             .from('health_logs')
             .select('*')
             .eq('activity_type', 'RUN');
+            .range(0, 9999);
+        //if errror delete .range()
 
         // Get registration info to get target_value
         const { data: registrations } = await getSupabase()
