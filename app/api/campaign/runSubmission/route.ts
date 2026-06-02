@@ -13,7 +13,7 @@ export async function GET() {
         const { data: rows } = await getSupabase()
             .from('health_logs')
             .select('*')
-            .eq('activity_type', 'RUN');
+            .eq('activity_type', 'RUN')
             .range(0, 9999);
         //if errror delete .range()
 
