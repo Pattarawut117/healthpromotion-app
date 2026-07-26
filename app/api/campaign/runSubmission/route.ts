@@ -10,22 +10,47 @@ interface Activity {
 
 export async function GET() {
     try {
-        const { data: rows } = await getSupabase()
-            .from('health_logs')
-            .select('*')
-            .eq('activity_type', 'RUN')
-            .range(0, 9999);
-        //if errror delete .range()
+        // 1. Fetch run health logs with pagination and selective columns to optimize Vercel/Serverless limits
+        let allRows: { user_id?: string; value?: string | number; created_at?: string; code_id?: string; [key: string]: unknown }[] = [];
+        let logStart = 0;
+        const limit = 1000;
 
-        // Get registration info to get target_value
-        const { data: registrations } = await getSupabase()
-            .from('activities_user_register')
-            .select('user_id, code_id, activities(target_value)')
-            .eq('activity_type', 'RUN');
+        while (true) {
+            const { data, error } = await getSupabase()
+                .from('health_logs')
+                .select('user_id, value, created_at, code_id')
+                .eq('activity_type', 'RUN')
+                .range(logStart, logStart + limit - 1);
+
+            if (error) throw error;
+            if (!data || data.length === 0) break;
+
+            allRows = allRows.concat(data);
+            if (data.length < limit) break;
+            logStart += limit;
+        }
+        // 2. Get registration info with pagination to get target_value and code_id
+        let allRegistrations: { user_id?: string; code_id?: string; activities?: unknown; [key: string]: unknown }[] = [];
+        let regStart = 0;
+
+        while (true) {
+            const { data, error } = await getSupabase()
+                .from('activities_user_register')
+                .select('user_id, code_id, activities(target_value)')
+                .eq('activity_type', 'RUN')
+                .range(regStart, regStart + limit - 1);
+
+            if (error) throw error;
+            if (!data || data.length === 0) break;
+
+            allRegistrations = allRegistrations.concat(data);
+            if (data.length < limit) break;
+            regStart += limit;
+        }
 
         const targetMap = new Map();
         const codeMap = new Map();
-        registrations?.forEach(reg => {
+        allRegistrations.forEach(reg => {
             const target = (reg.activities as Activity)?.target_value;
             targetMap.set(reg.user_id, target);
             if (reg.code_id) {
@@ -34,13 +59,13 @@ export async function GET() {
         });
 
         // Attach target_value and code_id to each row
-        const dataWithTarget = rows?.map(row => ({
+        const dataWithTarget = allRows.map(row => ({
             ...row,
             target_value: targetMap.get(row.user_id),
             code_id: codeMap.get(row.user_id) || row.code_id
         }));
 
-        return NextResponse.json(dataWithTarget || []);
+        return NextResponse.json(dataWithTarget);
     } catch (error) {
         console.error("Error fetching run logs:", error);
         return NextResponse.json(
