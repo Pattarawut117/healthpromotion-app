@@ -6,9 +6,8 @@ export async function GET() {
         let allData: Record<string, unknown>[] = [];
         let start = 0;
         const limit = 1000;
-        const maxRecords = 10000;
 
-        while (allData.length < maxRecords) {
+        while (true) {
             const { data, error } = await getSupabase()
                 .from('challenge_21_days_entries')
                 .select('*, user_info(sname)')
