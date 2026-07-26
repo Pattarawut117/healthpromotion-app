@@ -29,7 +29,6 @@ export async function GET() {
             if (data.length < limit) break;
             logStart += limit;
         }
-
         // 2. Get registration info with pagination to get target_value and code_id
         let allRegistrations: { user_id?: string; code_id?: string; activities?: unknown; [key: string]: unknown }[] = [];
         let regStart = 0;
