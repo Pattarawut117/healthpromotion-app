@@ -201,6 +201,13 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                     </div>
                 )}
 
+                {/* Mental Assessment Section */}
+                {isRegistered && isActive && campaign.activity_type === "MENTAL" && (
+                    <div className="mt-6 w-full">
+                        <MentalAssessment />
+                    </div>
+                )}
+
                 {/* Health Logs Section */}
                 {isRegistered && campaign.activity_type === "RUN" && (
                     <div className="mt-8 mb-4">
@@ -239,62 +246,59 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
             </div>
 
             {/* Sticky Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t border-base-200 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pt-4 pb-6">
-                {isRegistered ? (
-                    <div className="flex flex-col gap-3">
-                        {/* Status Label */}
-                        {
-                            isActive ? (<div></div>
-                            ) : (<div className="badge badge-error text-white w-full py-3 h-auto font-medium shadow-sm">
-                                คุณลงทะเบียนกิจกรรมนี้แล้ว
-                            </div>)
-                        }
+            {(!isRegistered || campaign.activity_type !== "MENTAL") && (
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-base-100 border-t border-base-200 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] pt-4 pb-6">
+                    {isRegistered ? (
+                        <div className="flex flex-col gap-3">
+                            {/* Status Label */}
+                            {
+                                isActive ? (<div></div>
+                                ) : (<div className="badge badge-error text-white w-full py-3 h-auto font-medium shadow-sm">
+                                    คุณลงทะเบียนกิจกรรมนี้แล้ว
+                                </div>)
+                            }
 
-                        {/* Primary Activities */}
-                        {isActive && campaign.activity_type === "RUN" && (
-                            <button
-                                className="btn btn-primary w-full rounded-full shadow-md disabled:opacity-70"
-                                onClick={() => setShowSubmissionForm(true)}
-                                disabled={hasSubmittedToday}
-                            >
-                                {hasSubmittedToday ? "🏃‍♂️ คุณส่งผลของวันนี้ไปแล้ว" : "🏃‍♂️ ส่งผลการวิ่ง"}
-                            </button>
-                        )}
-                        {isActive && campaign.activity_type === "HEALTH MISSION" && (
-                            <div className="flex justify-center">
-                                {/* <BingoBoard /> */}
-                                <FloatingActionButton campaignId={campaign.id} />
-                            </div>
-                        )}
-                        {isActive && campaign.activity_type === "MENTAL" && (
-                            <div className="w-full">
-                                <MentalAssessment />
-                            </div>
-                        )}
-                    </div>
-                ) : isRegisteredForOther && campaign.activity_type === "RUN" ? (
-                    <div className="flex flex-col gap-2">
-                        <div className="alert alert-warning py-3 text-sm rounded-xl">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                            <span>คุณได้ลงทะเบียนแคมเปญวิ่งอื่นไปแล้ว ไม่สามารถลงทะเบียนซ้ำได้</span>
+                            {/* Primary Activities */}
+                            {isActive && campaign.activity_type === "RUN" && (
+                                <button
+                                    className="btn btn-primary w-full rounded-full shadow-md disabled:opacity-70"
+                                    onClick={() => setShowSubmissionForm(true)}
+                                    disabled={hasSubmittedToday}
+                                >
+                                    {hasSubmittedToday ? "🏃‍♂️ คุณส่งผลของวันนี้ไปแล้ว" : "🏃‍♂️ ส่งผลการวิ่ง"}
+                                </button>
+                            )}
+                            {isActive && campaign.activity_type === "HEALTH MISSION" && (
+                                <div className="flex justify-center">
+                                    {/* <BingoBoard /> */}
+                                    <FloatingActionButton campaignId={campaign.id} />
+                                </div>
+                            )}
                         </div>
+                    ) : isRegisteredForOther && campaign.activity_type === "RUN" ? (
+                        <div className="flex flex-col gap-2">
+                            <div className="alert alert-warning py-3 text-sm rounded-xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                <span>คุณได้ลงทะเบียนแคมเปญวิ่งอื่นไปแล้ว ไม่สามารถลงทะเบียนซ้ำได้</span>
+                            </div>
+                            <button
+                                className="btn btn-primary w-full rounded-full text-base shadow-md h-12 opacity-50 cursor-not-allowed"
+                                disabled
+                            >
+                                เข้าร่วมกิจกรรม
+                            </button>
+                        </div>
+                    ) : (
                         <button
-                            className="btn btn-primary w-full rounded-full text-base shadow-md h-12 opacity-50 cursor-not-allowed"
-                            disabled
+                            onClick={handleJoin}
+                            className="btn btn-primary w-full rounded-full text-base shadow-md h-12"
+                            disabled={!isActive}
                         >
                             เข้าร่วมกิจกรรม
                         </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={handleJoin}
-                        className="btn btn-primary w-full rounded-full text-base shadow-md h-12"
-                        disabled={isActive}
-                    >
-                        เข้าร่วมกิจกรรม
-                    </button>
-                )}
-            </div>
+                    )}
+                </div>
+            )}
 
             {/* Run Submission Form Modal */}
             {
