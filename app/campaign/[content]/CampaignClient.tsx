@@ -7,9 +7,9 @@ import Swal from 'sweetalert2';
 import { useLiff } from "@/contexts/LiffContext";
 import { LeftOutlined } from '@ant-design/icons';
 import RunSubmissionForm from '@/components/campaign/RunSubmissionForm';
-// import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
+import BingoBoard from '@/components/campaign/bingoBoard/Bingo';
 import MentalAssessment from '@/components/campaign/mentalCampaign/MentalAssessment';
-import FloatingActionButton from '@/components/campaign/bingoBoard/FloatingActionButton';
+// import FloatingActionButton from '@/components/campaign/bingoBoard/FloatingActionButton';
 
 interface ICampaign {
     id: number;
@@ -270,8 +270,8 @@ export default function CampaignClient({ campaign }: CampaignClientProps) {
                             )}
                             {isActive && campaign.activity_type === "HEALTH MISSION" && (
                                 <div className="flex justify-center">
-                                    {/* <BingoBoard /> */}
-                                    <FloatingActionButton campaignId={campaign.id} />
+                                    <BingoBoard /> 
+                                    {/* <FloatingActionButton campaignId={campaign.id} /> */}
                                 </div>
                             )}
                         </div>
